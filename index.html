@@ -1,1 +1,742 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Smart AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Arial, sans-serif;
+            background: #f4f6f8;
+            color: #111827;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: auto;
+            padding: 25px 16px 40px;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .logo {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 15px;
+        }
+
+        /* =========================
+           QUESTION
+        ========================= */
+
+        .question-box {
+            background: white;
+            border-radius: 18px;
+            padding: 16px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            margin-bottom: 22px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 130px;
+            resize: vertical;
+            border: 1px solid #d1d5db;
+            border-radius: 13px;
+            padding: 14px;
+            font-size: 17px;
+            font-family: inherit;
+            outline: none;
+            direction: rtl;
+        }
+
+        textarea:focus {
+            border-color: #6366f1;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        button {
+            border: none;
+            border-radius: 12px;
+            padding: 13px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .ask-button {
+            flex: 1;
+            background: #111827;
+            color: white;
+        }
+
+        .ask-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .clear-button {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        /* =========================
+           LOADING
+        ========================= */
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            color: #6b7280;
+            font-size: 15px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        /* =========================
+           RESULTS
+        ========================= */
+
+        .results {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .provider {
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .status {
+            font-size: 12px;
+            padding: 5px 9px;
+            border-radius: 20px;
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .answer {
+            white-space: pre-wrap;
+            line-height: 1.8;
+            font-size: 16px;
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .error-message {
+            color: #991b1b;
+            line-height: 1.7;
+        }
+
+        .model {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            color: #9ca3af;
+            font-size: 11px;
+            direction: ltr;
+            text-align: left;
+        }
+
+        /* =========================
+           EMPTY
+        ========================= */
+
+        .empty {
+            text-align: center;
+            color: #9ca3af;
+            padding: 35px 10px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.04);
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 800px) {
+
+            .results {
+                grid-template-columns: 1fr;
+            }
+
+            .logo {
+                font-size: 30px;
+            }
+
+            textarea {
+                min-height: 110px;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .clear-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+
+    <div class="header">
+        <div class="logo">Smart AI</div>
+        <div class="subtitle">
+            اسأل عدة نماذج ذكاء اصطناعي وقارن الإجابات
+        </div>
+    </div>
+
+
+    <!-- QUESTION -->
+
+    <div class="question-box">
+
+        <textarea
+            id="question"
+            placeholder="اكتب سؤالك هنا..."
+            maxlength="10000"
+        ></textarea>
+
+        <div class="buttons">
+
+            <button
+                id="askButton"
+                class="ask-button"
+                onclick="askSmartAI()"
+            >
+                اسأل Smart AI
+            </button>
+
+            <button
+                class="clear-button"
+                onclick="clearAll()"
+            >
+                مسح
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- LOADING -->
+
+    <div id="loading" class="loading">
+        جاري إرسال السؤال إلى نماذج الذكاء الاصطناعي...
+    </div>
+
+
+    <!-- RESULTS -->
+
+    <div id="results">
+
+        <div class="empty">
+            اكتب سؤالًا واضغط «اسأل Smart AI»
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // =====================================================
+    // SMART AI WORKER
+    // =====================================================
+
+    const API_URL =
+        "https://smart-ai.kaka10906.workers.dev/";
+
+
+    // =====================================================
+    // ASK SMART AI
+    // =====================================================
+
+    async function askSmartAI() {
+
+        const questionElement =
+            document.getElementById("question");
+
+        const askButton =
+            document.getElementById("askButton");
+
+        const loading =
+            document.getElementById("loading");
+
+        const results =
+            document.getElementById("results");
+
+
+        const question =
+            questionElement.value.trim();
+
+
+        // -------------------------------------------------
+        // CHECK QUESTION
+        // -------------------------------------------------
+
+        if (!question) {
+
+            alert("اكتب السؤال أولًا.");
+
+            questionElement.focus();
+
+            return;
+        }
+
+
+        // -------------------------------------------------
+        // LOADING
+        // -------------------------------------------------
+
+        askButton.disabled = true;
+
+        askButton.textContent =
+            "جاري السؤال...";
+
+        loading.classList.add("active");
+
+
+        results.innerHTML = "";
+
+
+        // -------------------------------------------------
+        // SHOW LOADING CARDS
+        // -------------------------------------------------
+
+        results.innerHTML = `
+
+            ${createLoadingCard("DeepSeek")}
+
+            ${createLoadingCard("Gemini")}
+
+            ${createLoadingCard("Mistral")}
+
+        `;
+
+
+        try {
+
+            // =============================================
+            // SEND REQUEST
+            // =============================================
+
+            const response =
+                await fetch(API_URL, {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        question: question
+                    })
+
+                });
+
+
+            // =============================================
+            // READ RESPONSE
+            // =============================================
+
+            const data =
+                await response.json();
+
+
+            // =============================================
+            // HTTP ERROR
+            // =============================================
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data?.error ||
+                    "حدث خطأ في الاتصال بالـWorker."
+                );
+
+            }
+
+
+            // =============================================
+            // DISPLAY RESULTS
+            // =============================================
+
+            displayResults(data);
+
+
+        }
+        catch (error) {
+
+            results.innerHTML = `
+
+                <div class="empty">
+
+                    <strong>
+                        حدث خطأ
+                    </strong>
+
+                    <br><br>
+
+                    ${escapeHTML(
+                        error?.message ||
+                        "تعذر الاتصال بالخادم."
+                    )}
+
+                </div>
+
+            `;
+
+        }
+        finally {
+
+            askButton.disabled = false;
+
+            askButton.textContent =
+                "اسأل Smart AI";
+
+            loading.classList.remove("active");
+
+        }
+
+    }
+
+
+    // =====================================================
+    // DISPLAY RESULTS
+    // =====================================================
+
+    function displayResults(data) {
+
+        const results =
+            document.getElementById("results");
+
+
+        const deepseek =
+            data?.results?.deepseek;
+
+        const gemini =
+            data?.results?.gemini;
+
+        const mistral =
+            data?.results?.mistral;
+
+
+        results.innerHTML = `
+
+            ${createProviderCard(
+                "DeepSeek",
+                deepseek
+            )}
+
+            ${createProviderCard(
+                "Gemini",
+                gemini
+            )}
+
+            ${createProviderCard(
+                "Mistral",
+                mistral
+            )}
+
+        `;
+
+    }
+
+
+    // =====================================================
+    // PROVIDER CARD
+    // =====================================================
+
+    function createProviderCard(
+        providerName,
+        result
+    ) {
+
+        if (!result) {
+
+            return `
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <div class="provider">
+                            ${providerName}
+                        </div>
+
+                        <div class="status error">
+                            خطأ
+                        </div>
+
+                    </div>
+
+                    <div class="error-message">
+                        لا توجد نتيجة.
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+
+        if (result.ok) {
+
+            return `
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <div class="provider">
+                            ${providerName}
+                        </div>
+
+                        <div class="status success">
+                            نجح
+                        </div>
+
+                    </div>
+
+                    <div class="answer">
+                        ${escapeHTML(
+                            result.answer || ""
+                        )}
+                    </div>
+
+                    <div class="model">
+                        ${escapeHTML(
+                            result.model || ""
+                        )}
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+
+
+        // -------------------------------------------------
+        // PROVIDER ERROR
+        // -------------------------------------------------
+
+        return `
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div class="provider">
+                        ${providerName}
+                    </div>
+
+                    <div class="status error">
+                        فشل
+                    </div>
+
+                </div>
+
+                <div class="error-message">
+
+                    ${escapeHTML(
+                        result.error ||
+                        "حدث خطأ."
+                    )}
+
+                </div>
+
+                <div class="model">
+                    ${escapeHTML(
+                        result.model || ""
+                    )}
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // =====================================================
+    // LOADING CARD
+    // =====================================================
+
+    function createLoadingCard(provider) {
+
+        return `
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div class="provider">
+                        ${provider}
+                    </div>
+
+                    <div class="status">
+                        جاري...
+                    </div>
+
+                </div>
+
+                <div class="answer">
+                    جاري انتظار الإجابة...
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // =====================================================
+    // CLEAR
+    // =====================================================
+
+    function clearAll() {
+
+        document.getElementById(
+            "question"
+        ).value = "";
+
+        document.getElementById(
+            "results"
+        ).innerHTML = `
+
+            <div class="empty">
+                اكتب سؤالًا واضغط «اسأل Smart AI»
+            </div>
+
+        `;
+
+        document.getElementById(
+            "question"
+        ).focus();
+
+    }
+
+
+    // =====================================================
+    // HTML ESCAPE
+    // =====================================================
+
+    function escapeHTML(text) {
+
+        return String(text)
+
+            .replaceAll("&", "&amp;")
+
+            .replaceAll("<", "&lt;")
+
+            .replaceAll(">", "&gt;")
+
+            .replaceAll('"', "&quot;")
+
+            .replaceAll("'", "&#039;");
+
+    }
+
+
+    // =====================================================
+    // ENTER KEY
+    // =====================================================
+
+    document
+        .getElementById("question")
+        .addEventListener(
+            "keydown",
+            function(event) {
+
+                if (
+                    event.key === "Enter" &&
+                    event.shiftKey === false
+                ) {
+
+                    event.preventDefault();
+
+                    askSmartAI();
+
+                }
+
+            }
+        );
+
+</script>
+
+</body>
+</html>
