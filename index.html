@@ -1,34 +1,52 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Smart AI</title>
 
     <style>
+
         * {
             box-sizing: border-box;
         }
 
         body {
             margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                         Arial, sans-serif;
-            background: #f4f6f8;
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Arial,
+                sans-serif;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    #eef1f5 0%,
+                    #f8f9fb 100%
+                );
+
             color: #111827;
         }
 
         .container {
             width: 100%;
-            max-width: 1100px;
+            max-width: 1200px;
             margin: auto;
-            padding: 25px 16px 40px;
+            padding: 24px 16px 50px;
         }
 
-        /* =========================
+        /* =========================================
            HEADER
-        ========================= */
+        ========================================= */
 
         .header {
             text-align: center;
@@ -36,59 +54,72 @@
         }
 
         .logo {
-            font-size: 36px;
-            font-weight: 800;
-            margin-bottom: 6px;
+            font-size: 38px;
+            font-weight: 900;
+            letter-spacing: -1px;
         }
 
         .subtitle {
+            margin-top: 6px;
             color: #6b7280;
             font-size: 15px;
         }
 
-        /* =========================
-           QUESTION
-        ========================= */
+        /* =========================================
+           QUESTION BOX
+        ========================================= */
 
         .question-box {
             background: white;
-            border-radius: 18px;
-            padding: 16px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            border-radius: 24px;
+            padding: 18px;
+
+            box-shadow:
+                0 10px 35px rgba(0,0,0,0.07);
+
             margin-bottom: 22px;
         }
 
         textarea {
             width: 100%;
-            min-height: 130px;
+            min-height: 125px;
+
             resize: vertical;
-            border: 1px solid #d1d5db;
-            border-radius: 13px;
-            padding: 14px;
-            font-size: 17px;
+
+            border: 2px solid #e5e7eb;
+            border-radius: 17px;
+
+            padding: 16px;
+
             font-family: inherit;
+            font-size: 17px;
+            line-height: 1.7;
+
             outline: none;
+
             direction: rtl;
+
+            transition: border 0.2s;
         }
 
         textarea:focus {
-            border-color: #6366f1;
+            border-color: #111827;
         }
 
-        .buttons {
+        .button-row {
             display: flex;
             gap: 10px;
-            margin-top: 12px;
+            margin-top: 13px;
         }
 
         button {
             border: none;
-            border-radius: 12px;
-            padding: 13px 20px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
             font-family: inherit;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            border-radius: 14px;
+            padding: 14px 20px;
         }
 
         .ask-button {
@@ -97,8 +128,12 @@
             color: white;
         }
 
+        .ask-button:active {
+            transform: scale(0.99);
+        }
+
         .ask-button:disabled {
-            opacity: 0.6;
+            opacity: 0.55;
             cursor: not-allowed;
         }
 
@@ -107,60 +142,125 @@
             color: #111827;
         }
 
-        /* =========================
+        /* =========================================
            LOADING
-        ========================= */
+        ========================================= */
 
         .loading {
             display: none;
+
+            background: white;
+            border-radius: 16px;
+
+            padding: 14px;
+
+            margin-bottom: 18px;
+
             text-align: center;
-            padding: 15px;
+
             color: #6b7280;
-            font-size: 15px;
+
+            box-shadow:
+                0 5px 20px rgba(0,0,0,0.05);
         }
 
-        .loading.active {
+        .loading.show {
             display: block;
         }
 
-        /* =========================
+        .loading-dot {
+            display: inline-block;
+
+            width: 8px;
+            height: 8px;
+
+            border-radius: 50%;
+
+            background: #6b7280;
+
+            margin: 0 3px;
+
+            animation: pulse 1s infinite;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.30s;
+        }
+
+        @keyframes pulse {
+
+            0%, 100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+        }
+
+        /* =========================================
            RESULTS
-        ========================= */
+        ========================================= */
 
         .results {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 18px;
         }
+
+        /* =========================================
+           CARD
+        ========================================= */
 
         .card {
             background: white;
-            border-radius: 18px;
+
+            border-radius: 22px;
+
             padding: 18px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
-            min-height: 220px;
+
+            min-height: 300px;
+
             display: flex;
             flex-direction: column;
+
+            box-shadow:
+                0 10px 30px rgba(0,0,0,0.06);
         }
 
         .card-header {
             display: flex;
+
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 14px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #eee;
+
+            padding-bottom: 14px;
+
+            border-bottom:
+                1px solid #edf0f3;
         }
 
         .provider {
-            font-size: 19px;
-            font-weight: 800;
+            font-size: 22px;
+            font-weight: 900;
         }
 
         .status {
-            font-size: 12px;
-            padding: 5px 9px;
-            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 800;
+
+            padding: 6px 11px;
+
+            border-radius: 30px;
+
             background: #f3f4f6;
             color: #6b7280;
         }
@@ -175,96 +275,250 @@
             color: #991b1b;
         }
 
+        .status.loading {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        /* =========================================
+           ANSWER
+        ========================================= */
+
+        .answer-area {
+            flex: 1;
+
+            padding-top: 18px;
+
+            display: flex;
+            flex-direction: column;
+        }
+
         .answer {
             white-space: pre-wrap;
-            line-height: 1.8;
-            font-size: 16px;
-            flex: 1;
+
             word-break: break-word;
+
+            line-height: 1.9;
+
+            font-size: 17px;
+
+            direction: rtl;
+
+            text-align: right;
         }
 
         .error-message {
             color: #991b1b;
-            line-height: 1.7;
+
+            font-size: 16px;
+
+            line-height: 1.8;
+        }
+
+        /* =========================================
+           CARD FOOTER
+        ========================================= */
+
+        .card-footer {
+            margin-top: 18px;
+
+            padding-top: 12px;
+
+            border-top:
+                1px solid #edf0f3;
+
+            display: flex;
+
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 10px;
         }
 
         .model {
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
             color: #9ca3af;
+
             font-size: 11px;
+
             direction: ltr;
+
             text-align: left;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
         }
 
-        /* =========================
+        .copy-button {
+            padding: 7px 11px;
+
+            background: #f3f4f6;
+
+            color: #374151;
+
+            font-size: 12px;
+
+            white-space: nowrap;
+        }
+
+        .copy-button:hover {
+            background: #e5e7eb;
+        }
+
+        /* =========================================
            EMPTY
-        ========================= */
+        ========================================= */
 
         .empty {
-            text-align: center;
-            color: #9ca3af;
-            padding: 35px 10px;
+            grid-column: 1 / -1;
+
             background: white;
-            border-radius: 18px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.04);
+
+            border-radius: 22px;
+
+            padding: 45px 20px;
+
+            text-align: center;
+
+            color: #9ca3af;
+
+            box-shadow:
+                0 8px 25px rgba(0,0,0,0.05);
         }
 
-        /* =========================
-           MOBILE
-        ========================= */
+        .empty-title {
+            color: #374151;
 
-        @media (max-width: 800px) {
+            font-size: 20px;
+
+            font-weight: 800;
+
+            margin-bottom: 8px;
+        }
+
+        /* =========================================
+           SUMMARY
+        ========================================= */
+
+        .summary {
+            grid-column: 1 / -1;
+
+            background: white;
+
+            border-radius: 18px;
+
+            padding: 13px 16px;
+
+            text-align: center;
+
+            color: #6b7280;
+
+            font-size: 14px;
+
+            box-shadow:
+                0 5px 20px rgba(0,0,0,0.04);
+        }
+
+        .summary strong {
+            color: #111827;
+        }
+
+        /* =========================================
+           MOBILE
+        ========================================= */
+
+        @media (max-width: 850px) {
 
             .results {
                 grid-template-columns: 1fr;
             }
 
             .logo {
-                font-size: 30px;
+                font-size: 32px;
+            }
+
+            .card {
+                min-height: 250px;
+            }
+
+        }
+
+        @media (max-width: 500px) {
+
+            .container {
+                padding:
+                    16px 10px 35px;
+            }
+
+            .question-box {
+                border-radius: 20px;
+                padding: 13px;
             }
 
             textarea {
-                min-height: 110px;
+                min-height: 115px;
+                font-size: 16px;
             }
 
-            .buttons {
+            .button-row {
                 flex-direction: column;
             }
 
             .clear-button {
                 width: 100%;
             }
+
+            .card {
+                border-radius: 20px;
+            }
+
+            .provider {
+                font-size: 21px;
+            }
+
         }
+
     </style>
+
 </head>
+
 
 <body>
 
 <div class="container">
 
-    <!-- HEADER -->
+
+    <!-- =========================================
+         HEADER
+    ========================================== -->
 
     <div class="header">
-        <div class="logo">Smart AI</div>
-        <div class="subtitle">
-            اسأل عدة نماذج ذكاء اصطناعي وقارن الإجابات
+
+        <div class="logo">
+            اسأل Smart AI
         </div>
+
+        <div class="subtitle">
+            سؤال واحد — عدة نماذج ذكاء اصطناعي
+        </div>
+
     </div>
 
 
-    <!-- QUESTION -->
+    <!-- =========================================
+         QUESTION
+    ========================================== -->
 
     <div class="question-box">
 
         <textarea
             id="question"
-            placeholder="اكتب سؤالك هنا..."
             maxlength="10000"
+            placeholder="اكتب سؤالك هنا..."
         ></textarea>
 
-        <div class="buttons">
+
+        <div class="button-row">
 
             <button
                 id="askButton"
@@ -273,6 +527,7 @@
             >
                 اسأل Smart AI
             </button>
+
 
             <button
                 class="clear-button"
@@ -286,22 +541,43 @@
     </div>
 
 
-    <!-- LOADING -->
+    <!-- =========================================
+         LOADING
+    ========================================== -->
 
-    <div id="loading" class="loading">
-        جاري إرسال السؤال إلى نماذج الذكاء الاصطناعي...
+    <div
+        id="loading"
+        class="loading"
+    >
+
+        جاري الحصول على الإجابات
+
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+        <span class="loading-dot"></span>
+
     </div>
 
 
-    <!-- RESULTS -->
+    <!-- =========================================
+         RESULTS
+    ========================================== -->
 
     <div id="results">
 
         <div class="empty">
-            اكتب سؤالًا واضغط «اسأل Smart AI»
+
+            <div class="empty-title">
+                مرحبًا بك في Smart AI
+            </div>
+
+            اكتب سؤالًا واضغط على
+            «اسأل Smart AI»
+
         </div>
 
     </div>
+
 
 </div>
 
@@ -309,7 +585,7 @@
 <script>
 
     // =====================================================
-    // SMART AI WORKER
+    // WORKER
     // =====================================================
 
     const API_URL =
@@ -317,7 +593,7 @@
 
 
     // =====================================================
-    // ASK SMART AI
+    // ASK
     // =====================================================
 
     async function askSmartAI() {
@@ -339,10 +615,6 @@
             questionElement.value.trim();
 
 
-        // -------------------------------------------------
-        // CHECK QUESTION
-        // -------------------------------------------------
-
         if (!question) {
 
             alert("اكتب السؤال أولًا.");
@@ -354,7 +626,7 @@
 
 
         // -------------------------------------------------
-        // LOADING
+        // START
         // -------------------------------------------------
 
         askButton.disabled = true;
@@ -362,14 +634,11 @@
         askButton.textContent =
             "جاري السؤال...";
 
-        loading.classList.add("active");
-
-
-        results.innerHTML = "";
+        loading.classList.add("show");
 
 
         // -------------------------------------------------
-        // SHOW LOADING CARDS
+        // LOADING CARDS
         // -------------------------------------------------
 
         results.innerHTML = `
@@ -383,56 +652,61 @@
         `;
 
 
+        const startTime =
+            performance.now();
+
+
         try {
 
             // =============================================
-            // SEND REQUEST
+            // REQUEST
             // =============================================
 
             const response =
-                await fetch(API_URL, {
+                await fetch(
+                    API_URL,
+                    {
+                        method: "POST",
 
-                    method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                        body: JSON.stringify({
+                            question: question
+                        })
+                    }
+                );
 
-                    body: JSON.stringify({
-                        question: question
-                    })
-
-                });
-
-
-            // =============================================
-            // READ RESPONSE
-            // =============================================
 
             const data =
                 await response.json();
 
 
-            // =============================================
-            // HTTP ERROR
-            // =============================================
-
             if (!response.ok) {
 
                 throw new Error(
                     data?.error ||
-                    "حدث خطأ في الاتصال بالـWorker."
+                    "حدث خطأ في الاتصال."
                 );
 
             }
 
 
-            // =============================================
-            // DISPLAY RESULTS
-            // =============================================
+            const endTime =
+                performance.now();
 
-            displayResults(data);
+
+            const elapsed =
+                ((endTime - startTime) / 1000)
+                .toFixed(2);
+
+
+            displayResults(
+                data,
+                elapsed
+            );
 
 
         }
@@ -442,15 +716,13 @@
 
                 <div class="empty">
 
-                    <strong>
-                        حدث خطأ
-                    </strong>
-
-                    <br><br>
+                    <div class="empty-title">
+                        تعذر الاتصال
+                    </div>
 
                     ${escapeHTML(
                         error?.message ||
-                        "تعذر الاتصال بالخادم."
+                        "حدث خطأ غير معروف."
                     )}
 
                 </div>
@@ -465,7 +737,7 @@
             askButton.textContent =
                 "اسأل Smart AI";
 
-            loading.classList.remove("active");
+            loading.classList.remove("show");
 
         }
 
@@ -476,7 +748,10 @@
     // DISPLAY RESULTS
     // =====================================================
 
-    function displayResults(data) {
+    function displayResults(
+        data,
+        elapsed
+    ) {
 
         const results =
             document.getElementById("results");
@@ -490,6 +765,13 @@
 
         const mistral =
             data?.results?.mistral;
+
+
+        const successful =
+            data?.summary?.successful ?? 0;
+
+        const total =
+            data?.summary?.total ?? 3;
 
 
         results.innerHTML = `
@@ -509,6 +791,19 @@
                 mistral
             )}
 
+            <div class="summary">
+
+                تم الحصول على
+                <strong>${successful}</strong>
+                من
+                <strong>${total}</strong>
+                إجابات
+
+                — زمن الطلب:
+                <strong>${elapsed} ثانية</strong>
+
+            </div>
+
         `;
 
     }
@@ -519,7 +814,7 @@
     // =====================================================
 
     function createProviderCard(
-        providerName,
+        provider,
         result
     ) {
 
@@ -532,17 +827,21 @@
                     <div class="card-header">
 
                         <div class="provider">
-                            ${providerName}
+                            ${provider}
                         </div>
 
                         <div class="status error">
-                            خطأ
+                            فشل
                         </div>
 
                     </div>
 
-                    <div class="error-message">
-                        لا توجد نتيجة.
+                    <div class="answer-area">
+
+                        <div class="error-message">
+                            لم تصل نتيجة من هذه المنصة.
+                        </div>
+
                     </div>
 
                 </div>
@@ -554,6 +853,10 @@
 
         if (result.ok) {
 
+            const answer =
+                result.answer || "";
+
+
             return `
 
                 <div class="card">
@@ -561,7 +864,7 @@
                     <div class="card-header">
 
                         <div class="provider">
-                            ${providerName}
+                            ${provider}
                         </div>
 
                         <div class="status success">
@@ -570,16 +873,31 @@
 
                     </div>
 
-                    <div class="answer">
-                        ${escapeHTML(
-                            result.answer || ""
-                        )}
+
+                    <div class="answer-area">
+
+                        <div class="answer">
+                            ${escapeHTML(answer)}
+                        </div>
+
                     </div>
 
-                    <div class="model">
-                        ${escapeHTML(
-                            result.model || ""
-                        )}
+
+                    <div class="card-footer">
+
+                        <div class="model">
+                            ${escapeHTML(
+                                result.model || ""
+                            )}
+                        </div>
+
+                        <button
+                            class="copy-button"
+                            onclick='copyAnswer(${JSON.stringify(answer)}, this)'
+                        >
+                            نسخ
+                        </button>
+
                     </div>
 
                 </div>
@@ -589,9 +907,42 @@
         }
 
 
+        // =================================================
+        // ERROR
+        // =================================================
+
+        let error =
+            result.error ||
+            "حدث خطأ.";
+
+
         // -------------------------------------------------
-        // PROVIDER ERROR
+        // TRANSLATE COMMON ERRORS
         // -------------------------------------------------
+
+        if (
+            error
+                .toLowerCase()
+                .includes("insufficient balance")
+        ) {
+
+            error =
+                "الرصيد غير كافٍ لاستخدام هذه المنصة.";
+
+        }
+
+
+        if (
+            error
+                .toLowerCase()
+                .includes("api key")
+        ) {
+
+            error =
+                "مفتاح API غير مضبوط.";
+
+        }
+
 
         return `
 
@@ -600,7 +951,7 @@
                 <div class="card-header">
 
                     <div class="provider">
-                        ${providerName}
+                        ${provider}
                     </div>
 
                     <div class="status error">
@@ -609,19 +960,24 @@
 
                 </div>
 
-                <div class="error-message">
 
-                    ${escapeHTML(
-                        result.error ||
-                        "حدث خطأ."
-                    )}
+                <div class="answer-area">
+
+                    <div class="error-message">
+                        ${escapeHTML(error)}
+                    </div>
 
                 </div>
 
-                <div class="model">
-                    ${escapeHTML(
-                        result.model || ""
-                    )}
+
+                <div class="card-footer">
+
+                    <div class="model">
+                        ${escapeHTML(
+                            result.model || ""
+                        )}
+                    </div>
+
                 </div>
 
             </div>
@@ -635,7 +991,9 @@
     // LOADING CARD
     // =====================================================
 
-    function createLoadingCard(provider) {
+    function createLoadingCard(
+        provider
+    ) {
 
         return `
 
@@ -647,19 +1005,68 @@
                         ${provider}
                     </div>
 
-                    <div class="status">
+                    <div class="status loading">
                         جاري...
                     </div>
 
                 </div>
 
-                <div class="answer">
-                    جاري انتظار الإجابة...
+
+                <div class="answer-area">
+
+                    <div class="answer">
+                        جاري انتظار الإجابة...
+                    </div>
+
                 </div>
 
             </div>
 
         `;
+
+    }
+
+
+    // =====================================================
+    // COPY
+    // =====================================================
+
+    async function copyAnswer(
+        text,
+        button
+    ) {
+
+        try {
+
+            await navigator.clipboard.writeText(
+                text
+            );
+
+            const oldText =
+                button.textContent;
+
+            button.textContent =
+                "تم النسخ ✓";
+
+
+            setTimeout(
+                function() {
+
+                    button.textContent =
+                        oldText;
+
+                },
+                1500
+            );
+
+        }
+        catch (error) {
+
+            alert(
+                "تعذر نسخ الإجابة."
+            );
+
+        }
 
     }
 
@@ -674,15 +1081,24 @@
             "question"
         ).value = "";
 
+
         document.getElementById(
             "results"
         ).innerHTML = `
 
             <div class="empty">
-                اكتب سؤالًا واضغط «اسأل Smart AI»
+
+                <div class="empty-title">
+                    مرحبًا بك في Smart AI
+                </div>
+
+                اكتب سؤالًا واضغط على
+                «اسأل Smart AI»
+
             </div>
 
         `;
+
 
         document.getElementById(
             "question"
@@ -692,28 +1108,43 @@
 
 
     // =====================================================
-    // HTML ESCAPE
+    // ESCAPE HTML
     // =====================================================
 
     function escapeHTML(text) {
 
         return String(text)
 
-            .replaceAll("&", "&amp;")
+            .replaceAll(
+                "&",
+                "&amp;"
+            )
 
-            .replaceAll("<", "&lt;")
+            .replaceAll(
+                "<",
+                "&lt;"
+            )
 
-            .replaceAll(">", "&gt;")
+            .replaceAll(
+                ">",
+                "&gt;"
+            )
 
-            .replaceAll('"', "&quot;")
+            .replaceAll(
+                '"',
+                "&quot;"
+            )
 
-            .replaceAll("'", "&#039;");
+            .replaceAll(
+                "'",
+                "&#039;"
+            );
 
     }
 
 
     // =====================================================
-    // ENTER KEY
+    // ENTER
     // =====================================================
 
     document
@@ -724,7 +1155,7 @@
 
                 if (
                     event.key === "Enter" &&
-                    event.shiftKey === false
+                    !event.shiftKey
                 ) {
 
                     event.preventDefault();
@@ -739,4 +1170,5 @@
 </script>
 
 </body>
+
 </html>
