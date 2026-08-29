@@ -3,487 +3,770 @@
 
 <head>
 
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Smart AI</title>
-
-    <style>
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family:
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                Arial,
-                sans-serif;
-
-            background:
-                linear-gradient(
-                    180deg,
-                    #eef1f5 0%,
-                    #f8f9fb 100%
-                );
-
-            color: #111827;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            margin: auto;
-            padding: 24px 16px 50px;
-        }
-
-        /* =========================================
-           HEADER
-        ========================================= */
-
-        .header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .logo {
-            font-size: 38px;
-            font-weight: 900;
-            letter-spacing: -1px;
-        }
-
-        .subtitle {
-            margin-top: 6px;
-            color: #6b7280;
-            font-size: 15px;
-        }
-
-        /* =========================================
-           QUESTION BOX
-        ========================================= */
-
-        .question-box {
-            background: white;
-            border-radius: 24px;
-            padding: 18px;
-
-            box-shadow:
-                0 10px 35px rgba(0,0,0,0.07);
+<meta charset="UTF-8">
 
-            margin-bottom: 22px;
-        }
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+>
 
-        textarea {
-            width: 100%;
-            min-height: 125px;
+<title>Smart AI</title>
 
-            resize: vertical;
+<style>
 
-            border: 2px solid #e5e7eb;
-            border-radius: 17px;
+* {
+    box-sizing: border-box;
+}
 
-            padding: 16px;
+html {
+    scroll-behavior: smooth;
+}
 
-            font-family: inherit;
-            font-size: 17px;
-            line-height: 1.7;
+body {
+    margin: 0;
 
-            outline: none;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
 
-            direction: rtl;
+    background:
+        linear-gradient(
+            180deg,
+            #eef1f5 0%,
+            #f8f9fb 100%
+        );
 
-            transition: border 0.2s;
-        }
+    color: #111827;
 
-        textarea:focus {
-            border-color: #111827;
-        }
+    min-height: 100vh;
+}
 
-        .button-row {
-            display: flex;
-            gap: 10px;
-            margin-top: 13px;
-        }
 
-        button {
-            border: none;
-            font-family: inherit;
-            font-size: 16px;
-            font-weight: 800;
-            cursor: pointer;
-            border-radius: 14px;
-            padding: 14px 20px;
-        }
+/* =========================================
+   CONTAINER
+========================================= */
 
-        .ask-button {
-            flex: 1;
-            background: #111827;
-            color: white;
-        }
+.container {
+    width: 100%;
+    max-width: 1200px;
 
-        .ask-button:active {
-            transform: scale(0.99);
-        }
+    margin: auto;
 
-        .ask-button:disabled {
-            opacity: 0.55;
-            cursor: not-allowed;
-        }
+    padding:
+        25px 16px
+        calc(50px + env(safe-area-inset-bottom));
+}
 
-        .clear-button {
-            background: #e5e7eb;
-            color: #111827;
-        }
 
-        /* =========================================
-           LOADING
-        ========================================= */
+/* =========================================
+   HEADER
+========================================= */
 
-        .loading {
-            display: none;
+.header {
+    text-align: center;
 
-            background: white;
-            border-radius: 16px;
+    margin-bottom: 24px;
+}
 
-            padding: 14px;
+.logo {
+    font-size: 40px;
 
-            margin-bottom: 18px;
+    font-weight: 900;
 
-            text-align: center;
+    letter-spacing: -1.5px;
+}
 
-            color: #6b7280;
+.subtitle {
+    margin-top: 6px;
 
-            box-shadow:
-                0 5px 20px rgba(0,0,0,0.05);
-        }
+    color: #6b7280;
 
-        .loading.show {
-            display: block;
-        }
+    font-size: 15px;
+}
 
-        .loading-dot {
-            display: inline-block;
 
-            width: 8px;
-            height: 8px;
+/* =========================================
+   STATUS BAR
+========================================= */
 
-            border-radius: 50%;
+.system-bar {
 
-            background: #6b7280;
+    background: white;
 
-            margin: 0 3px;
+    border-radius: 18px;
 
-            animation: pulse 1s infinite;
-        }
+    padding: 14px 16px;
 
-        .loading-dot:nth-child(2) {
-            animation-delay: 0.15s;
-        }
+    margin-bottom: 18px;
 
-        .loading-dot:nth-child(3) {
-            animation-delay: 0.30s;
-        }
+    box-shadow:
+        0 7px 25px rgba(0,0,0,0.05);
+}
 
-        @keyframes pulse {
+.system-top {
 
-            0%, 100% {
-                opacity: 0.3;
-            }
+    display: flex;
 
-            50% {
-                opacity: 1;
-            }
+    justify-content: space-between;
 
-        }
+    align-items: center;
 
-        /* =========================================
-           RESULTS
-        ========================================= */
+    gap: 10px;
 
-        .results {
-            display: grid;
+    margin-bottom: 12px;
+}
 
-            grid-template-columns:
-                repeat(3, 1fr);
+.system-title {
 
-            gap: 18px;
-        }
+    font-weight: 900;
 
-        /* =========================================
-           CARD
-        ========================================= */
+    font-size: 16px;
+}
 
-        .card {
-            background: white;
+.remaining {
 
-            border-radius: 22px;
+    font-size: 13px;
 
-            padding: 18px;
+    font-weight: 800;
 
-            min-height: 300px;
+    color: #374151;
 
-            display: flex;
-            flex-direction: column;
+    background: #f3f4f6;
 
-            box-shadow:
-                0 10px 30px rgba(0,0,0,0.06);
-        }
+    padding: 6px 10px;
 
-        .card-header {
-            display: flex;
+    border-radius: 20px;
+}
 
-            justify-content: space-between;
-            align-items: center;
+.providers-status {
 
-            padding-bottom: 14px;
+    display: flex;
 
-            border-bottom:
-                1px solid #edf0f3;
-        }
+    flex-wrap: wrap;
 
-        .provider {
-            font-size: 22px;
-            font-weight: 900;
-        }
+    gap: 8px;
+}
 
-        .status {
-            font-size: 13px;
-            font-weight: 800;
+.provider-status {
 
-            padding: 6px 11px;
+    display: inline-flex;
 
-            border-radius: 30px;
+    align-items: center;
 
-            background: #f3f4f6;
-            color: #6b7280;
-        }
+    gap: 6px;
 
-        .status.success {
-            background: #dcfce7;
-            color: #166534;
-        }
+    padding: 6px 10px;
 
-        .status.error {
-            background: #fee2e2;
-            color: #991b1b;
-        }
+    border-radius: 20px;
 
-        .status.loading {
-            background: #f3f4f6;
-            color: #6b7280;
-        }
+    background: #f3f4f6;
 
-        /* =========================================
-           ANSWER
-        ========================================= */
+    color: #6b7280;
 
-        .answer-area {
-            flex: 1;
+    font-size: 12px;
 
-            padding-top: 18px;
+    font-weight: 800;
+}
 
-            display: flex;
-            flex-direction: column;
-        }
+.provider-status.available {
 
-        .answer {
-            white-space: pre-wrap;
+    background: #dcfce7;
 
-            word-break: break-word;
+    color: #166534;
+}
 
-            line-height: 1.9;
+.provider-status.unavailable {
 
-            font-size: 17px;
+    background: #fee2e2;
 
-            direction: rtl;
+    color: #991b1b;
+}
 
-            text-align: right;
-        }
+.provider-status.limited {
 
-        .error-message {
-            color: #991b1b;
+    background: #fef3c7;
 
-            font-size: 16px;
+    color: #92400e;
+}
 
-            line-height: 1.8;
-        }
+.dot {
 
-        /* =========================================
-           CARD FOOTER
-        ========================================= */
+    width: 7px;
+    height: 7px;
 
-        .card-footer {
-            margin-top: 18px;
+    border-radius: 50%;
 
-            padding-top: 12px;
+    background: currentColor;
+}
 
-            border-top:
-                1px solid #edf0f3;
 
-            display: flex;
+/* =========================================
+   QUESTION BOX
+========================================= */
 
-            justify-content: space-between;
-            align-items: center;
+.question-box {
 
-            gap: 10px;
-        }
+    background: white;
 
-        .model {
-            color: #9ca3af;
+    border-radius: 24px;
 
-            font-size: 11px;
+    padding: 18px;
 
-            direction: ltr;
+    box-shadow:
+        0 10px 35px rgba(0,0,0,0.07);
 
-            text-align: left;
+    margin-bottom: 20px;
+}
 
-            overflow: hidden;
+textarea {
 
-            text-overflow: ellipsis;
-        }
+    width: 100%;
 
-        .copy-button {
-            padding: 7px 11px;
+    min-height: 125px;
 
-            background: #f3f4f6;
+    resize: vertical;
 
-            color: #374151;
+    border:
+        2px solid #e5e7eb;
 
-            font-size: 12px;
+    border-radius: 17px;
 
-            white-space: nowrap;
-        }
+    padding: 16px;
 
-        .copy-button:hover {
-            background: #e5e7eb;
-        }
+    font-family: inherit;
 
-        /* =========================================
-           EMPTY
-        ========================================= */
+    font-size: 17px;
 
-        .empty {
-            grid-column: 1 / -1;
+    line-height: 1.7;
 
-            background: white;
+    outline: none;
 
-            border-radius: 22px;
+    direction: rtl;
 
-            padding: 45px 20px;
+    text-align: right;
 
-            text-align: center;
+    transition:
+        border 0.2s,
+        box-shadow 0.2s;
+}
 
-            color: #9ca3af;
+textarea:focus {
 
-            box-shadow:
-                0 8px 25px rgba(0,0,0,0.05);
-        }
+    border-color: #111827;
 
-        .empty-title {
-            color: #374151;
+    box-shadow:
+        0 0 0 3px
+        rgba(17,24,39,0.07);
+}
 
-            font-size: 20px;
+textarea::placeholder {
 
-            font-weight: 800;
+    color: #9ca3af;
+}
 
-            margin-bottom: 8px;
-        }
 
-        /* =========================================
-           SUMMARY
-        ========================================= */
+/* =========================================
+   BUTTONS
+========================================= */
 
-        .summary {
-            grid-column: 1 / -1;
+.button-row {
 
-            background: white;
+    display: flex;
 
-            border-radius: 18px;
+    gap: 10px;
 
-            padding: 13px 16px;
+    margin-top: 13px;
+}
 
-            text-align: center;
+button {
 
-            color: #6b7280;
+    border: none;
 
-            font-size: 14px;
+    font-family: inherit;
 
-            box-shadow:
-                0 5px 20px rgba(0,0,0,0.04);
-        }
+    font-size: 16px;
 
-        .summary strong {
-            color: #111827;
-        }
+    font-weight: 800;
 
-        /* =========================================
-           MOBILE
-        ========================================= */
+    cursor: pointer;
 
-        @media (max-width: 850px) {
+    border-radius: 14px;
 
-            .results {
-                grid-template-columns: 1fr;
-            }
+    padding: 14px 20px;
 
-            .logo {
-                font-size: 32px;
-            }
+    transition:
+        transform 0.15s,
+        opacity 0.15s,
+        background 0.15s;
+}
 
-            .card {
-                min-height: 250px;
-            }
+button:active {
 
-        }
+    transform: scale(0.98);
+}
 
-        @media (max-width: 500px) {
+.ask-button {
 
-            .container {
-                padding:
-                    16px 10px 35px;
-            }
+    flex: 1;
 
-            .question-box {
-                border-radius: 20px;
-                padding: 13px;
-            }
+    background: #111827;
 
-            textarea {
-                min-height: 115px;
-                font-size: 16px;
-            }
+    color: white;
+}
 
-            .button-row {
-                flex-direction: column;
-            }
+.ask-button:hover {
 
-            .clear-button {
-                width: 100%;
-            }
+    background: #1f2937;
+}
 
-            .card {
-                border-radius: 20px;
-            }
+.ask-button:disabled {
 
-            .provider {
-                font-size: 21px;
-            }
+    opacity: 0.55;
 
-        }
+    cursor: not-allowed;
+}
 
-    </style>
+.clear-button {
+
+    background: #e5e7eb;
+
+    color: #111827;
+}
+
+.clear-button:hover {
+
+    background: #dfe2e6;
+}
+
+
+/* =========================================
+   LOADING
+========================================= */
+
+.loading {
+
+    display: none;
+
+    background: white;
+
+    border-radius: 16px;
+
+    padding: 14px;
+
+    margin-bottom: 18px;
+
+    text-align: center;
+
+    color: #6b7280;
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,0.05);
+}
+
+.loading.show {
+
+    display: block;
+}
+
+.loading-dot {
+
+    display: inline-block;
+
+    width: 8px;
+    height: 8px;
+
+    border-radius: 50%;
+
+    background: #6b7280;
+
+    margin: 0 3px;
+
+    animation:
+        pulse 1s infinite;
+}
+
+.loading-dot:nth-child(2) {
+
+    animation-delay: 0.15s;
+}
+
+.loading-dot:nth-child(3) {
+
+    animation-delay: 0.30s;
+}
+
+@keyframes pulse {
+
+    0%, 100% {
+        opacity: 0.3;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+
+/* =========================================
+   RESULTS
+========================================= */
+
+.results {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 18px;
+}
+
+
+/* =========================================
+   CARD
+========================================= */
+
+.card {
+
+    background: white;
+
+    border-radius: 22px;
+
+    padding: 18px;
+
+    min-height: 300px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.06);
+}
+
+.card-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding-bottom: 14px;
+
+    border-bottom:
+        1px solid #edf0f3;
+}
+
+.provider {
+
+    font-size: 22px;
+
+    font-weight: 900;
+}
+
+.status {
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    padding: 6px 11px;
+
+    border-radius: 30px;
+
+    background: #f3f4f6;
+
+    color: #6b7280;
+
+    white-space: nowrap;
+}
+
+.status.success {
+
+    background: #dcfce7;
+
+    color: #166534;
+}
+
+.status.error {
+
+    background: #fee2e2;
+
+    color: #991b1b;
+}
+
+.status.loading-status {
+
+    background: #f3f4f6;
+
+    color: #6b7280;
+}
+
+
+/* =========================================
+   ANSWER
+========================================= */
+
+.answer-area {
+
+    flex: 1;
+
+    padding-top: 18px;
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+.answer {
+
+    white-space: pre-wrap;
+
+    word-break: break-word;
+
+    line-height: 1.9;
+
+    font-size: 17px;
+
+    direction: rtl;
+
+    text-align: right;
+}
+
+.error-message {
+
+    color: #991b1b;
+
+    font-size: 16px;
+
+    line-height: 1.8;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.card-footer {
+
+    margin-top: 18px;
+
+    padding-top: 12px;
+
+    border-top:
+        1px solid #edf0f3;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 10px;
+}
+
+.model {
+
+    color: #9ca3af;
+
+    font-size: 11px;
+
+    direction: ltr;
+
+    text-align: left;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+.copy-button {
+
+    padding: 7px 11px;
+
+    background: #f3f4f6;
+
+    color: #374151;
+
+    font-size: 12px;
+
+    white-space: nowrap;
+}
+
+.copy-button:hover {
+
+    background: #e5e7eb;
+}
+
+
+/* =========================================
+   EMPTY
+========================================= */
+
+.empty {
+
+    grid-column: 1 / -1;
+
+    background: white;
+
+    border-radius: 22px;
+
+    padding: 45px 20px;
+
+    text-align: center;
+
+    color: #9ca3af;
+
+    box-shadow:
+        0 8px 25px rgba(0,0,0,0.05);
+}
+
+.empty-title {
+
+    color: #374151;
+
+    font-size: 20px;
+
+    font-weight: 800;
+
+    margin-bottom: 8px;
+}
+
+
+/* =========================================
+   SUMMARY
+========================================= */
+
+.summary {
+
+    grid-column: 1 / -1;
+
+    background: white;
+
+    border-radius: 18px;
+
+    padding: 13px 16px;
+
+    text-align: center;
+
+    color: #6b7280;
+
+    font-size: 14px;
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,0.04);
+}
+
+.summary strong {
+
+    color: #111827;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 850px) {
+
+    .results {
+
+        grid-template-columns: 1fr;
+    }
+
+    .logo {
+
+        font-size: 34px;
+    }
+
+    .card {
+
+        min-height: 250px;
+    }
+}
+
+
+@media (max-width: 500px) {
+
+    .container {
+
+        padding:
+            16px 10px
+            calc(35px + env(safe-area-inset-bottom));
+    }
+
+    .header {
+
+        margin-bottom: 18px;
+    }
+
+    .logo {
+
+        font-size: 31px;
+    }
+
+    .subtitle {
+
+        font-size: 14px;
+    }
+
+    .question-box {
+
+        border-radius: 20px;
+
+        padding: 13px;
+    }
+
+    textarea {
+
+        min-height: 115px;
+
+        font-size: 16px;
+    }
+
+    .button-row {
+
+        flex-direction: column;
+    }
+
+    .clear-button {
+
+        width: 100%;
+    }
+
+    .card {
+
+        border-radius: 20px;
+    }
+
+    .provider {
+
+        font-size: 21px;
+    }
+
+    .system-top {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+}
+
+</style>
 
 </head>
 
 
 <body>
+
 
 <div class="container">
 
@@ -506,6 +789,43 @@
 
 
     <!-- =========================================
+         PROVIDER STATUS
+    ========================================== -->
+
+    <div class="system-bar">
+
+        <div class="system-top">
+
+            <div class="system-title">
+                حالة مزودي الذكاء الاصطناعي
+            </div>
+
+            <div
+                id="remaining"
+                class="remaining"
+            >
+                الأسئلة المتبقية: —
+            </div>
+
+        </div>
+
+
+        <div
+            id="providersStatus"
+            class="providers-status"
+        >
+
+            <div class="provider-status">
+                <span class="dot"></span>
+                جاري الفحص...
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
          QUESTION
     ========================================== -->
 
@@ -515,6 +835,7 @@
             id="question"
             maxlength="10000"
             placeholder="اكتب سؤالك هنا..."
+            autocomplete="off"
         ></textarea>
 
 
@@ -523,15 +844,14 @@
             <button
                 id="askButton"
                 class="ask-button"
-                onclick="askSmartAI()"
             >
                 اسأل Smart AI
             </button>
 
 
             <button
+                id="clearButton"
                 class="clear-button"
-                onclick="clearAll()"
             >
                 مسح
             </button>
@@ -584,223 +904,605 @@
 
 <script>
 
-    // =====================================================
-    // WORKER
-    // =====================================================
-
-    const API_URL =
-        "https://smart-ai.kaka10906.workers.dev/";
+/* =====================================================
+   SMART AI FRONTEND
+===================================================== */
 
 
-    // =====================================================
-    // ASK
-    // =====================================================
+/* =====================================================
+   WORKER
+===================================================== */
 
-    async function askSmartAI() {
-
-        const questionElement =
-            document.getElementById("question");
-
-        const askButton =
-            document.getElementById("askButton");
-
-        const loading =
-            document.getElementById("loading");
-
-        const results =
-            document.getElementById("results");
+const API_URL =
+    "https://smart-ai.kaka10906.workers.dev/";
 
 
-        const question =
-            questionElement.value.trim();
+/* =====================================================
+   USER ID
+===================================================== */
+
+function getUserId() {
+
+    let userId =
+        localStorage.getItem("smartAI_userId");
 
 
-        if (!question) {
+    if (!userId) {
 
-            alert("اكتب السؤال أولًا.");
+        userId =
+            "user-" +
+            crypto.randomUUID();
 
-            questionElement.focus();
+
+        localStorage.setItem(
+            "smartAI_userId",
+            userId
+        );
+    }
+
+
+    return userId;
+}
+
+
+const USER_ID =
+    getUserId();
+
+
+/* =====================================================
+   ELEMENTS
+===================================================== */
+
+const questionElement =
+    document.getElementById("question");
+
+const askButton =
+    document.getElementById("askButton");
+
+const clearButton =
+    document.getElementById("clearButton");
+
+const loading =
+    document.getElementById("loading");
+
+const results =
+    document.getElementById("results");
+
+const providersStatus =
+    document.getElementById(
+        "providersStatus"
+    );
+
+const remainingElement =
+    document.getElementById(
+        "remaining"
+    );
+
+
+/* =====================================================
+   STARTUP
+===================================================== */
+
+loadProviderStatus();
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+async function loadProviderStatus() {
+
+    try {
+
+        const response =
+            await fetch(
+                API_URL + "status"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Status request failed"
+            );
+        }
+
+
+        displayProviderStatus(data);
+
+
+        updateRemaining(data);
+
+    }
+    catch (error) {
+
+        providersStatus.innerHTML = `
+
+            <div class="provider-status">
+                <span class="dot"></span>
+                تعذر قراءة حالة المزودين
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* =====================================================
+   DISPLAY STATUS
+===================================================== */
+
+function displayProviderStatus(data) {
+
+    const providers =
+        data?.providers ||
+        data?.provider_status ||
+        data?.status ||
+        {};
+
+
+    const names = [
+        "deepseek",
+        "gemini",
+        "mistral"
+    ];
+
+
+    providersStatus.innerHTML = "";
+
+
+    let found = false;
+
+
+    names.forEach(function(name) {
+
+        const info =
+            providers[name];
+
+
+        if (!info) {
 
             return;
         }
 
 
-        // -------------------------------------------------
-        // START
-        // -------------------------------------------------
-
-        askButton.disabled = true;
-
-        askButton.textContent =
-            "جاري السؤال...";
-
-        loading.classList.add("show");
+        found = true;
 
 
-        // -------------------------------------------------
-        // LOADING CARDS
-        // -------------------------------------------------
+        const state =
+            typeof info === "string"
+                ? info
+                : (
+                    info.status ||
+                    info.state ||
+                    "unknown"
+                );
 
-        results.innerHTML = `
 
-            ${createLoadingCard("DeepSeek")}
+        const normalized =
+            String(state).toLowerCase();
 
-            ${createLoadingCard("Gemini")}
 
-            ${createLoadingCard("Mistral")}
+        let label =
+            "غير معروف";
+
+        let className =
+            "";
+
+
+        if (
+            normalized === "available"
+        ) {
+
+            label = "متاح";
+
+            className =
+                "available";
+
+        }
+        else if (
+            normalized === "limited"
+        ) {
+
+            label = "محدود";
+
+            className =
+                "limited";
+
+        }
+        else if (
+            normalized === "unavailable" ||
+            normalized === "error"
+        ) {
+
+            label = "غير متاح";
+
+            className =
+                "unavailable";
+        }
+
+
+        const displayName =
+            name === "deepseek"
+                ? "DeepSeek"
+                : name === "gemini"
+                    ? "Gemini"
+                    : "Mistral";
+
+
+        providersStatus.innerHTML += `
+
+            <div
+                class="provider-status ${className}"
+            >
+
+                <span class="dot"></span>
+
+                ${displayName}:
+                ${label}
+
+            </div>
 
         `;
 
-
-        const startTime =
-            performance.now();
+    });
 
 
-        try {
+    if (!found) {
 
-            // =============================================
-            // REQUEST
-            // =============================================
+        providersStatus.innerHTML = `
 
-            const response =
-                await fetch(
-                    API_URL,
-                    {
-                        method: "POST",
+            <div class="provider-status">
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
+                <span class="dot"></span>
 
-                        body: JSON.stringify({
-                            question: question
+                لم تصل حالة المزودين
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* =====================================================
+   REMAINING QUESTIONS
+===================================================== */
+
+function updateRemaining(data) {
+
+    const remaining =
+        findRemaining(data);
+
+
+    if (
+        remaining !== null &&
+        remaining !== undefined
+    ) {
+
+        remainingElement.textContent =
+            "الأسئلة المتبقية: " +
+            remaining;
+
+        return;
+    }
+
+
+    /*
+       إذا لم يرسل الـ Worker
+       عدد الأسئلة المتبقية،
+       نتركها كما هي.
+    */
+
+}
+
+
+/* =====================================================
+   FIND REMAINING
+===================================================== */
+
+function findRemaining(data) {
+
+    const possibleValues = [
+
+        data?.remaining,
+
+        data?.questionsRemaining,
+
+        data?.remainingQuestions,
+
+        data?.quota?.remaining,
+
+        data?.usage?.remaining,
+
+        data?.user?.remaining,
+
+        data?.user?.questionsRemaining,
+
+        data?.summary?.remaining
+
+    ];
+
+
+    for (
+        const value of possibleValues
+    ) {
+
+        if (
+            value !== undefined &&
+            value !== null
+        ) {
+
+            return value;
+        }
+
+    }
+
+
+    return null;
+}
+
+
+/* =====================================================
+   ASK SMART AI
+===================================================== */
+
+async function askSmartAI() {
+
+    const question =
+        questionElement.value.trim();
+
+
+    if (!question) {
+
+        alert(
+            "اكتب السؤال أولًا."
+        );
+
+        questionElement.focus();
+
+        return;
+    }
+
+
+    askButton.disabled = true;
+
+    askButton.textContent =
+        "جاري السؤال...";
+
+
+    loading.classList.add(
+        "show"
+    );
+
+
+    results.innerHTML = `
+
+        ${createLoadingCard(
+            "Gemini"
+        )}
+
+        ${createLoadingCard(
+            "Mistral"
+        )}
+
+    `;
+
+
+    const startTime =
+        performance.now();
+
+
+    try {
+
+        const response =
+            await fetch(
+                API_URL,
+                {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json"
+
+                    },
+
+                    body:
+                        JSON.stringify({
+
+                            userId:
+                                USER_ID,
+
+                            question:
+                                question
+
                         })
-                    }
-                );
 
-
-            const data =
-                await response.json();
-
-
-            if (!response.ok) {
-
-                throw new Error(
-                    data?.error ||
-                    "حدث خطأ في الاتصال."
-                );
-
-            }
-
-
-            const endTime =
-                performance.now();
-
-
-            const elapsed =
-                ((endTime - startTime) / 1000)
-                .toFixed(2);
-
-
-            displayResults(
-                data,
-                elapsed
+                }
             );
 
 
-        }
-        catch (error) {
+        const data =
+            await response.json();
 
-            results.innerHTML = `
 
-                <div class="empty">
+        if (!response.ok) {
 
-                    <div class="empty-title">
-                        تعذر الاتصال
-                    </div>
-
-                    ${escapeHTML(
-                        error?.message ||
-                        "حدث خطأ غير معروف."
-                    )}
-
-                </div>
-
-            `;
+            throw new Error(
+                data?.error ||
+                data?.message ||
+                "حدث خطأ في الاتصال."
+            );
 
         }
-        finally {
 
-            askButton.disabled = false;
 
-            askButton.textContent =
-                "اسأل Smart AI";
+        const elapsed =
+            (
+                (
+                    performance.now() -
+                    startTime
+                ) / 1000
+            ).toFixed(2);
 
-            loading.classList.remove("show");
 
-        }
+        updateRemaining(data);
+
+
+        displayResults(
+            data,
+            elapsed
+        );
+
+
+        /*
+           بعد السؤال نعيد فحص الحالة
+           لأن حالة المزود قد تتغير.
+        */
+
+        loadProviderStatus();
 
     }
-
-
-    // =====================================================
-    // DISPLAY RESULTS
-    // =====================================================
-
-    function displayResults(
-        data,
-        elapsed
-    ) {
-
-        const results =
-            document.getElementById("results");
-
-
-        const deepseek =
-            data?.results?.deepseek;
-
-        const gemini =
-            data?.results?.gemini;
-
-        const mistral =
-            data?.results?.mistral;
-
-
-        const successful =
-            data?.summary?.successful ?? 0;
-
-        const total =
-            data?.summary?.total ?? 3;
-
+    catch (error) {
 
         results.innerHTML = `
 
-            ${createProviderCard(
+            <div class="empty">
+
+                <div class="empty-title">
+                    تعذر الحصول على الإجابة
+                </div>
+
+                ${escapeHTML(
+                    error?.message ||
+                    "حدث خطأ غير معروف."
+                )}
+
+            </div>
+
+        `;
+
+    }
+    finally {
+
+        askButton.disabled = false;
+
+        askButton.textContent =
+            "اسأل Smart AI";
+
+        loading.classList.remove(
+            "show"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   DISPLAY RESULTS
+===================================================== */
+
+function displayResults(
+    data,
+    elapsed
+) {
+
+    const resultData =
+        data?.results || {};
+
+
+    const deepseek =
+        resultData.deepseek;
+
+
+    const gemini =
+        resultData.gemini;
+
+
+    const mistral =
+        resultData.mistral;
+
+
+    const successful =
+        data?.summary?.successful ??
+        countSuccessful(
+            resultData
+        );
+
+
+    const total =
+        data?.summary?.total ??
+        countReturned(
+            resultData
+        );
+
+
+    let cards = "";
+
+
+    /*
+       DeepSeek يظهر فقط إذا أرسل الـ Worker
+       نتيجة له.
+
+       إذا كان unavailable وتم استبعاده،
+       لن نعرض بطاقة فشل له.
+    */
+
+    if (deepseek) {
+
+        cards +=
+            createProviderCard(
                 "DeepSeek",
                 deepseek
-            )}
+            );
 
-            ${createProviderCard(
+    }
+
+
+    if (gemini) {
+
+        cards +=
+            createProviderCard(
                 "Gemini",
                 gemini
-            )}
+            );
 
-            ${createProviderCard(
+    }
+
+
+    if (mistral) {
+
+        cards +=
+            createProviderCard(
                 "Mistral",
                 mistral
-            )}
+            );
 
-            <div class="summary">
+    }
 
-                تم الحصول على
-                <strong>${successful}</strong>
-                من
-                <strong>${total}</strong>
-                إجابات
 
-                — زمن الطلب:
-                <strong>${elapsed} ثانية</strong>
+    if (!cards) {
+
+        cards = `
+
+            <div class="empty">
+
+                <div class="empty-title">
+                    لم تصل أي إجابة
+                </div>
+
+                حاول مرة أخرى لاحقًا.
 
             </div>
 
@@ -809,139 +1511,95 @@
     }
 
 
-    // =====================================================
-    // PROVIDER CARD
-    // =====================================================
+    cards += `
 
-    function createProviderCard(
-        provider,
-        result
-    ) {
+        <div class="summary">
 
-        if (!result) {
+            تم الحصول على
 
-            return `
+            <strong>
+                ${successful}
+            </strong>
 
-                <div class="card">
+            من
 
-                    <div class="card-header">
+            <strong>
+                ${total}
+            </strong>
 
-                        <div class="provider">
-                            ${provider}
-                        </div>
+            إجابات
 
-                        <div class="status error">
-                            فشل
-                        </div>
+            — زمن الطلب:
 
-                    </div>
+            <strong>
+                ${elapsed} ثانية
+            </strong>
 
-                    <div class="answer-area">
+        </div>
 
-                        <div class="error-message">
-                            لم تصل نتيجة من هذه المنصة.
-                        </div>
-
-                    </div>
-
-                </div>
-
-            `;
-
-        }
+    `;
 
 
-        if (result.ok) {
+    results.innerHTML =
+        cards;
 
-            const answer =
-                result.answer || "";
-
-
-            return `
-
-                <div class="card">
-
-                    <div class="card-header">
-
-                        <div class="provider">
-                            ${provider}
-                        </div>
-
-                        <div class="status success">
-                            نجح
-                        </div>
-
-                    </div>
+}
 
 
-                    <div class="answer-area">
+/* =====================================================
+   COUNT SUCCESSFUL
+===================================================== */
 
-                        <div class="answer">
-                            ${escapeHTML(answer)}
-                        </div>
+function countSuccessful(
+    resultData
+) {
 
-                    </div>
+    return Object.values(
+        resultData
+    ).filter(function(result) {
 
+        return result &&
+            result.ok === true;
 
-                    <div class="card-footer">
+    }).length;
 
-                        <div class="model">
-                            ${escapeHTML(
-                                result.model || ""
-                            )}
-                        </div>
-
-                        <button
-                            class="copy-button"
-                            onclick='copyAnswer(${JSON.stringify(answer)}, this)'
-                        >
-                            نسخ
-                        </button>
-
-                    </div>
-
-                </div>
-
-            `;
-
-        }
+}
 
 
-        // =================================================
-        // ERROR
-        // =================================================
+/* =====================================================
+   COUNT RETURNED
+===================================================== */
 
-        let error =
-            result.error ||
-            "حدث خطأ.";
+function countReturned(
+    resultData
+) {
 
+    return Object.keys(
+        resultData
+    ).length;
 
-        // -------------------------------------------------
-        // TRANSLATE COMMON ERRORS
-        // -------------------------------------------------
-
-        if (
-            error
-                .toLowerCase()
-                .includes("insufficient balance")
-        ) {
-
-            error =
-                "الرصيد غير كافٍ لاستخدام هذه المنصة.";
-
-        }
+}
 
 
-        if (
-            error
-                .toLowerCase()
-                .includes("api key")
-        ) {
+/* =====================================================
+   PROVIDER CARD
+===================================================== */
 
-            error =
-                "مفتاح API غير مضبوط.";
+function createProviderCard(
+    provider,
+    result
+) {
 
-        }
+    if (!result) {
+
+        return "";
+    }
+
+
+    if (result.ok) {
+
+        const answer =
+            result.answer || "";
 
 
         return `
@@ -954,59 +1612,8 @@
                         ${provider}
                     </div>
 
-                    <div class="status error">
-                        فشل
-                    </div>
-
-                </div>
-
-
-                <div class="answer-area">
-
-                    <div class="error-message">
-                        ${escapeHTML(error)}
-                    </div>
-
-                </div>
-
-
-                <div class="card-footer">
-
-                    <div class="model">
-                        ${escapeHTML(
-                            result.model || ""
-                        )}
-                    </div>
-
-                </div>
-
-            </div>
-
-        `;
-
-    }
-
-
-    // =====================================================
-    // LOADING CARD
-    // =====================================================
-
-    function createLoadingCard(
-        provider
-    ) {
-
-        return `
-
-            <div class="card">
-
-                <div class="card-header">
-
-                    <div class="provider">
-                        ${provider}
-                    </div>
-
-                    <div class="status loading">
-                        جاري...
+                    <div class="status success">
+                        نجح
                     </div>
 
                 </div>
@@ -1015,157 +1622,334 @@
                 <div class="answer-area">
 
                     <div class="answer">
-                        جاري انتظار الإجابة...
+
+                        ${escapeHTML(
+                            answer
+                        )}
+
                     </div>
 
                 </div>
 
-            </div>
 
-        `;
+                <div class="card-footer">
 
-    }
+                    <div class="model">
 
+                        ${escapeHTML(
+                            result.model || ""
+                        )}
 
-    // =====================================================
-    // COPY
-    // =====================================================
-
-    async function copyAnswer(
-        text,
-        button
-    ) {
-
-        try {
-
-            await navigator.clipboard.writeText(
-                text
-            );
-
-            const oldText =
-                button.textContent;
-
-            button.textContent =
-                "تم النسخ ✓";
+                    </div>
 
 
-            setTimeout(
-                function() {
+                    <button
+                        class="copy-button"
+                        onclick='copyAnswer(
+                            ${JSON.stringify(
+                                answer
+                            )},
+                            this
+                        )'
+                    >
+                        نسخ
+                    </button>
 
-                    button.textContent =
-                        oldText;
-
-                },
-                1500
-            );
-
-        }
-        catch (error) {
-
-            alert(
-                "تعذر نسخ الإجابة."
-            );
-
-        }
-
-    }
-
-
-    // =====================================================
-    // CLEAR
-    // =====================================================
-
-    function clearAll() {
-
-        document.getElementById(
-            "question"
-        ).value = "";
-
-
-        document.getElementById(
-            "results"
-        ).innerHTML = `
-
-            <div class="empty">
-
-                <div class="empty-title">
-                    مرحبًا بك في Smart AI
                 </div>
 
-                اكتب سؤالًا واضغط على
-                «اسأل Smart AI»
-
             </div>
 
         `;
 
+    }
 
-        document.getElementById(
-            "question"
-        ).focus();
+
+    let error =
+        result.error ||
+        result.message ||
+        "حدث خطأ.";
+
+
+    const lowerError =
+        String(error).toLowerCase();
+
+
+    if (
+        lowerError.includes(
+            "insufficient balance"
+        )
+    ) {
+
+        error =
+            "الرصيد غير كافٍ لاستخدام هذه المنصة.";
 
     }
 
 
-    // =====================================================
-    // ESCAPE HTML
-    // =====================================================
+    if (
+        lowerError.includes(
+            "api key"
+        )
+    ) {
 
-    function escapeHTML(text) {
-
-        return String(text)
-
-            .replaceAll(
-                "&",
-                "&amp;"
-            )
-
-            .replaceAll(
-                "<",
-                "&lt;"
-            )
-
-            .replaceAll(
-                ">",
-                "&gt;"
-            )
-
-            .replaceAll(
-                '"',
-                "&quot;"
-            )
-
-            .replaceAll(
-                "'",
-                "&#039;"
-            );
+        error =
+            "مفتاح API غير مضبوط.";
 
     }
 
 
-    // =====================================================
-    // ENTER
-    // =====================================================
+    if (
+        lowerError.includes(
+            "402"
+        )
+    ) {
 
-    document
-        .getElementById("question")
-        .addEventListener(
-            "keydown",
-            function(event) {
+        error =
+            "الرصيد غير كافٍ حاليًا.";
 
-                if (
-                    event.key === "Enter" &&
-                    !event.shiftKey
-                ) {
+    }
 
-                    event.preventDefault();
 
-                    askSmartAI();
+    return `
 
-                }
+        <div class="card">
 
-            }
+            <div class="card-header">
+
+                <div class="provider">
+                    ${provider}
+                </div>
+
+                <div class="status error">
+                    فشل
+                </div>
+
+            </div>
+
+
+            <div class="answer-area">
+
+                <div class="error-message">
+
+                    ${escapeHTML(
+                        error
+                    )}
+
+                </div>
+
+            </div>
+
+
+            <div class="card-footer">
+
+                <div class="model">
+
+                    ${escapeHTML(
+                        result.model || ""
+                    )}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =====================================================
+   LOADING CARD
+===================================================== */
+
+function createLoadingCard(
+    provider
+) {
+
+    return `
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <div class="provider">
+                    ${provider}
+                </div>
+
+                <div class="status loading-status">
+                    جاري...
+                </div>
+
+            </div>
+
+
+            <div class="answer-area">
+
+                <div class="answer">
+
+                    جاري انتظار الإجابة...
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =====================================================
+   COPY
+===================================================== */
+
+async function copyAnswer(
+    text,
+    button
+) {
+
+    try {
+
+        await navigator.clipboard.writeText(
+            text
         );
+
+
+        const oldText =
+            button.textContent;
+
+
+        button.textContent =
+            "تم النسخ ✓";
+
+
+        setTimeout(
+            function() {
+
+                button.textContent =
+                    oldText;
+
+            },
+            1500
+        );
+
+    }
+    catch (error) {
+
+        alert(
+            "تعذر نسخ الإجابة."
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   CLEAR
+===================================================== */
+
+function clearAll() {
+
+    questionElement.value = "";
+
+
+    results.innerHTML = `
+
+        <div class="empty">
+
+            <div class="empty-title">
+                مرحبًا بك في Smart AI
+            </div>
+
+            اكتب سؤالًا واضغط على
+            «اسأل Smart AI»
+
+        </div>
+
+    `;
+
+
+    questionElement.focus();
+
+}
+
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHTML(text) {
+
+    return String(text)
+
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+
+}
+
+
+/* =====================================================
+   BUTTON EVENTS
+===================================================== */
+
+askButton.addEventListener(
+    "click",
+    askSmartAI
+);
+
+
+clearButton.addEventListener(
+    "click",
+    clearAll
+);
+
+
+/* =====================================================
+   ENTER
+===================================================== */
+
+questionElement.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (
+            event.key === "Enter" &&
+            !event.shiftKey
+        ) {
+
+            event.preventDefault();
+
+            askSmartAI();
+
+        }
+
+    }
+);
 
 </script>
 
