@@ -1041,10 +1041,10 @@ async function loadProviderStatus() {
 function displayProviderStatus(data) {
 
     const providers =
-        data?.providers ||
-        data?.provider_status ||
-        data?.status ||
-        {};
+    data?.status?.providers ||
+    data?.providers ||
+    data?.provider_status ||
+    {};
 
 
     const names = [
