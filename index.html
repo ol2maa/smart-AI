@@ -44,11 +44,6 @@ body {
     min-height: 100vh;
 }
 
-
-/* =========================================
-   CONTAINER
-========================================= */
-
 .container {
     width: 100%;
     max-width: 1200px;
@@ -59,11 +54,6 @@ body {
         25px 16px
         calc(50px + env(safe-area-inset-bottom));
 }
-
-
-/* =========================================
-   HEADER
-========================================= */
 
 .header {
     text-align: center;
@@ -195,6 +185,7 @@ body {
 .dot {
 
     width: 7px;
+
     height: 7px;
 
     border-radius: 50%;
@@ -376,6 +367,7 @@ button:active {
     display: inline-block;
 
     width: 8px;
+
     height: 8px;
 
     border-radius: 50%;
@@ -758,6 +750,7 @@ button:active {
 
         flex-direction: column;
     }
+
 }
 
 </style>
@@ -771,9 +764,7 @@ button:active {
 <div class="container">
 
 
-    <!-- =========================================
-         HEADER
-    ========================================== -->
+    <!-- HEADER -->
 
     <div class="header">
 
@@ -788,9 +779,7 @@ button:active {
     </div>
 
 
-    <!-- =========================================
-         PROVIDER STATUS
-    ========================================== -->
+    <!-- PROVIDER STATUS -->
 
     <div class="system-bar">
 
@@ -816,8 +805,11 @@ button:active {
         >
 
             <div class="provider-status">
+
                 <span class="dot"></span>
+
                 جاري الفحص...
+
             </div>
 
         </div>
@@ -825,9 +817,7 @@ button:active {
     </div>
 
 
-    <!-- =========================================
-         QUESTION
-    ========================================== -->
+    <!-- QUESTION -->
 
     <div class="question-box">
 
@@ -861,9 +851,7 @@ button:active {
     </div>
 
 
-    <!-- =========================================
-         LOADING
-    ========================================== -->
+    <!-- LOADING -->
 
     <div
         id="loading"
@@ -879,9 +867,7 @@ button:active {
     </div>
 
 
-    <!-- =========================================
-         RESULTS
-    ========================================== -->
+    <!-- RESULTS -->
 
     <div id="results">
 
@@ -904,10 +890,6 @@ button:active {
 
 <script>
 
-/* =====================================================
-   SMART AI FRONTEND
-===================================================== */
-
 
 /* =====================================================
    WORKER
@@ -924,7 +906,9 @@ const API_URL =
 function getUserId() {
 
     let userId =
-        localStorage.getItem("smartAI_userId");
+        localStorage.getItem(
+            "smartAI_userId"
+        );
 
 
     if (!userId) {
@@ -938,10 +922,12 @@ function getUserId() {
             "smartAI_userId",
             userId
         );
+
     }
 
 
     return userId;
+
 }
 
 
@@ -954,19 +940,29 @@ const USER_ID =
 ===================================================== */
 
 const questionElement =
-    document.getElementById("question");
+    document.getElementById(
+        "question"
+    );
 
 const askButton =
-    document.getElementById("askButton");
+    document.getElementById(
+        "askButton"
+    );
 
 const clearButton =
-    document.getElementById("clearButton");
+    document.getElementById(
+        "clearButton"
+    );
 
 const loading =
-    document.getElementById("loading");
+    document.getElementById(
+        "loading"
+    );
 
 const results =
-    document.getElementById("results");
+    document.getElementById(
+        "results"
+    );
 
 const providersStatus =
     document.getElementById(
@@ -985,9 +981,11 @@ const remainingElement =
 
 loadProviderStatus();
 
+loadQuota();
+
 
 /* =====================================================
-   STATUS
+   LOAD PROVIDER STATUS
 ===================================================== */
 
 async function loadProviderStatus() {
@@ -996,7 +994,8 @@ async function loadProviderStatus() {
 
         const response =
             await fetch(
-                API_URL + "status"
+                API_URL +
+                "status"
             );
 
 
@@ -1009,22 +1008,26 @@ async function loadProviderStatus() {
             throw new Error(
                 "Status request failed"
             );
+
         }
 
 
-        displayProviderStatus(data);
-
-
-        updateRemaining(data);
+        displayProviderStatus(
+            data
+        );
 
     }
+
     catch (error) {
 
         providersStatus.innerHTML = `
 
             <div class="provider-status">
+
                 <span class="dot"></span>
+
                 تعذر قراءة حالة المزودين
+
             </div>
 
         `;
@@ -1035,123 +1038,207 @@ async function loadProviderStatus() {
 
 
 /* =====================================================
+   LOAD QUOTA
+===================================================== */
+
+async function loadQuota() {
+
+    try {
+
+        const response =
+            await fetch(
+
+                API_URL +
+                "quota?userId=" +
+                encodeURIComponent(
+                    USER_ID
+                )
+
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data?.error ||
+                "Quota request failed"
+            );
+
+        }
+
+
+        updateRemaining(
+            data
+        );
+
+    }
+
+    catch (error) {
+
+        remainingElement.textContent =
+            "الأسئلة المتبقية: —";
+
+    }
+
+}
+
+
+/* =====================================================
    DISPLAY STATUS
 ===================================================== */
 
-function displayProviderStatus(data) {
+function displayProviderStatus(
+    data
+) {
 
     const providers =
-    data?.status?.providers ||
-    data?.providers ||
-    data?.provider_status ||
-    {};
+        data?.status?.providers ||
+        data?.providers ||
+        data?.provider_status ||
+        {};
 
 
     const names = [
+
         "deepseek",
         "gemini",
         "mistral"
+
     ];
 
 
-    providersStatus.innerHTML = "";
+    providersStatus.innerHTML =
+        "";
 
 
     let found = false;
 
 
-    names.forEach(function(name) {
+    names.forEach(
+        function(name) {
 
-        const info =
-            providers[name];
+            const info =
+                providers[name];
 
 
-        if (!info) {
+            if (!info) {
 
-            return;
+                return;
+
+            }
+
+
+            found = true;
+
+
+            const state =
+                typeof info ===
+                "string"
+
+                    ? info
+
+                    : (
+                        info.status ||
+                        info.state ||
+                        "unknown"
+                    );
+
+
+            const normalized =
+                String(
+                    state
+                ).toLowerCase();
+
+
+            let label =
+                "غير معروف";
+
+
+            let className =
+                "";
+
+
+            if (
+                normalized ===
+                "available"
+            ) {
+
+                label =
+                    "متاح";
+
+                className =
+                    "available";
+
+            }
+
+            else if (
+                normalized ===
+                "limited"
+            ) {
+
+                label =
+                    "محدود";
+
+                className =
+                    "limited";
+
+            }
+
+            else if (
+                normalized ===
+                    "unavailable"
+
+                ||
+
+                normalized ===
+                    "error"
+            ) {
+
+                label =
+                    "غير متاح";
+
+                className =
+                    "unavailable";
+
+            }
+
+
+            const displayName =
+
+                name ===
+                "deepseek"
+
+                    ? "DeepSeek"
+
+                    : name ===
+                      "gemini"
+
+                        ? "Gemini"
+
+                        : "Mistral";
+
+
+            providersStatus.innerHTML += `
+
+                <div
+                    class="provider-status ${className}"
+                >
+
+                    <span class="dot"></span>
+
+                    ${displayName}:
+                    ${label}
+
+                </div>
+
+            `;
+
         }
-
-
-        found = true;
-
-
-        const state =
-            typeof info === "string"
-                ? info
-                : (
-                    info.status ||
-                    info.state ||
-                    "unknown"
-                );
-
-
-        const normalized =
-            String(state).toLowerCase();
-
-
-        let label =
-            "غير معروف";
-
-        let className =
-            "";
-
-
-        if (
-            normalized === "available"
-        ) {
-
-            label = "متاح";
-
-            className =
-                "available";
-
-        }
-        else if (
-            normalized === "limited"
-        ) {
-
-            label = "محدود";
-
-            className =
-                "limited";
-
-        }
-        else if (
-            normalized === "unavailable" ||
-            normalized === "error"
-        ) {
-
-            label = "غير متاح";
-
-            className =
-                "unavailable";
-        }
-
-
-        const displayName =
-            name === "deepseek"
-                ? "DeepSeek"
-                : name === "gemini"
-                    ? "Gemini"
-                    : "Mistral";
-
-
-        providersStatus.innerHTML += `
-
-            <div
-                class="provider-status ${className}"
-            >
-
-                <span class="dot"></span>
-
-                ${displayName}:
-                ${label}
-
-            </div>
-
-        `;
-
-    });
+    );
 
 
     if (!found) {
@@ -1174,13 +1261,17 @@ function displayProviderStatus(data) {
 
 
 /* =====================================================
-   REMAINING QUESTIONS
+   UPDATE REMAINING
 ===================================================== */
 
-function updateRemaining(data) {
+function updateRemaining(
+    data
+) {
 
     const remaining =
-        findRemaining(data);
+        findRemaining(
+            data
+        );
 
 
     if (
@@ -1192,15 +1283,7 @@ function updateRemaining(data) {
             "الأسئلة المتبقية: " +
             remaining;
 
-        return;
     }
-
-
-    /*
-       إذا لم يرسل الـ Worker
-       عدد الأسئلة المتبقية،
-       نتركها كما هي.
-    */
 
 }
 
@@ -1209,7 +1292,9 @@ function updateRemaining(data) {
    FIND REMAINING
 ===================================================== */
 
-function findRemaining(data) {
+function findRemaining(
+    data
+) {
 
     const possibleValues = [
 
@@ -1233,7 +1318,8 @@ function findRemaining(data) {
 
 
     for (
-        const value of possibleValues
+        const value of
+        possibleValues
     ) {
 
         if (
@@ -1242,12 +1328,14 @@ function findRemaining(data) {
         ) {
 
             return value;
+
         }
 
     }
 
 
     return null;
+
 }
 
 
@@ -1270,10 +1358,13 @@ async function askSmartAI() {
         questionElement.focus();
 
         return;
+
     }
 
 
-    askButton.disabled = true;
+    askButton.disabled =
+        true;
+
 
     askButton.textContent =
         "جاري السؤال...";
@@ -1305,10 +1396,13 @@ async function askSmartAI() {
 
         const response =
             await fetch(
+
                 API_URL,
+
                 {
 
-                    method: "POST",
+                    method:
+                        "POST",
 
                     headers: {
 
@@ -1329,6 +1423,7 @@ async function askSmartAI() {
                         })
 
                 }
+
             );
 
 
@@ -1336,12 +1431,24 @@ async function askSmartAI() {
             await response.json();
 
 
+        /*
+           حتى إذا كان هناك خطأ 429
+           نأخذ quota من الرد إن وجد.
+        */
+
+        updateRemaining(
+            data
+        );
+
+
         if (!response.ok) {
 
             throw new Error(
+
                 data?.error ||
                 data?.message ||
                 "حدث خطأ في الاتصال."
+
             );
 
         }
@@ -1349,14 +1456,13 @@ async function askSmartAI() {
 
         const elapsed =
             (
+
                 (
                     performance.now() -
                     startTime
                 ) / 1000
+
             ).toFixed(2);
-
-
-        updateRemaining(data);
 
 
         displayResults(
@@ -1366,13 +1472,15 @@ async function askSmartAI() {
 
 
         /*
-           بعد السؤال نعيد فحص الحالة
-           لأن حالة المزود قد تتغير.
+           تحديث البيانات بعد السؤال
         */
 
         loadProviderStatus();
 
+        loadQuota();
+
     }
+
     catch (error) {
 
         results.innerHTML = `
@@ -1392,13 +1500,24 @@ async function askSmartAI() {
 
         `;
 
+        /*
+           نقرأ الحصة مرة أخرى
+           في حالة وجود خطأ.
+        */
+
+        loadQuota();
+
     }
+
     finally {
 
-        askButton.disabled = false;
+        askButton.disabled =
+            false;
+
 
         askButton.textContent =
             "اسأل Smart AI";
+
 
         loading.classList.remove(
             "show"
@@ -1448,16 +1567,9 @@ function displayResults(
         );
 
 
-    let cards = "";
+    let cards =
+        "";
 
-
-    /*
-       DeepSeek يظهر فقط إذا أرسل الـ Worker
-       نتيجة له.
-
-       إذا كان unavailable وتم استبعاده،
-       لن نعرض بطاقة فشل له.
-    */
 
     if (deepseek) {
 
@@ -1532,7 +1644,8 @@ function displayResults(
             — زمن الطلب:
 
             <strong>
-                ${elapsed} ثانية
+                ${elapsed}
+                ثانية
             </strong>
 
         </div>
@@ -1556,12 +1669,14 @@ function countSuccessful(
 
     return Object.values(
         resultData
-    ).filter(function(result) {
+    ).filter(
+        function(result) {
 
-        return result &&
-            result.ok === true;
+            return result &&
+                result.ok === true;
 
-    }).length;
+        }
+    ).length;
 
 }
 
@@ -1576,6 +1691,12 @@ function countReturned(
 
     return Object.keys(
         resultData
+    ).filter(
+        function(key) {
+
+            return resultData[key];
+
+        }
     ).length;
 
 }
@@ -1593,13 +1714,15 @@ function createProviderCard(
     if (!result) {
 
         return "";
+
     }
 
 
     if (result.ok) {
 
         const answer =
-            result.answer || "";
+            result.answer ||
+            "";
 
 
         return `
@@ -1671,7 +1794,9 @@ function createProviderCard(
 
 
     const lowerError =
-        String(error).toLowerCase();
+        String(
+            error
+        ).toLowerCase();
 
 
     if (
@@ -1836,6 +1961,7 @@ async function copyAnswer(
         );
 
     }
+
     catch (error) {
 
         alert(
@@ -1853,7 +1979,8 @@ async function copyAnswer(
 
 function clearAll() {
 
-    questionElement.value = "";
+    questionElement.value =
+        "";
 
 
     results.innerHTML = `
@@ -1881,7 +2008,9 @@ function clearAll() {
    ESCAPE HTML
 ===================================================== */
 
-function escapeHTML(text) {
+function escapeHTML(
+    text
+) {
 
     return String(text)
 
