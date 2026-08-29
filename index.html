@@ -44,24 +44,41 @@ body {
     min-height: 100vh;
 }
 
+
+/* =========================================
+   CONTAINER
+========================================= */
+
 .container {
+
     width: 100%;
+
     max-width: 1200px;
 
     margin: auto;
 
     padding:
         25px 16px
-        calc(50px + env(safe-area-inset-bottom));
+        calc(
+            50px +
+            env(safe-area-inset-bottom)
+        );
 }
 
+
+/* =========================================
+   HEADER
+========================================= */
+
 .header {
+
     text-align: center;
 
     margin-bottom: 24px;
 }
 
 .logo {
+
     font-size: 40px;
 
     font-weight: 900;
@@ -70,6 +87,7 @@ body {
 }
 
 .subtitle {
+
     margin-top: 6px;
 
     color: #6b7280;
@@ -79,21 +97,22 @@ body {
 
 
 /* =========================================
-   STATUS BAR
+   SYSTEM BAR
 ========================================= */
 
 .system-bar {
 
     background: white;
 
-    border-radius: 18px;
+    border-radius: 20px;
 
-    padding: 14px 16px;
+    padding: 17px;
 
     margin-bottom: 18px;
 
     box-shadow:
-        0 7px 25px rgba(0,0,0,0.05);
+        0 7px 25px
+        rgba(0,0,0,0.05);
 }
 
 .system-top {
@@ -106,19 +125,19 @@ body {
 
     gap: 10px;
 
-    margin-bottom: 12px;
+    margin-bottom: 13px;
 }
 
 .system-title {
 
     font-weight: 900;
 
-    font-size: 16px;
+    font-size: 18px;
 }
 
 .remaining {
 
-    font-size: 13px;
+    font-size: 14px;
 
     font-weight: 800;
 
@@ -126,9 +145,11 @@ body {
 
     background: #f3f4f6;
 
-    padding: 6px 10px;
+    padding: 7px 12px;
 
-    border-radius: 20px;
+    border-radius: 22px;
+
+    white-space: nowrap;
 }
 
 .providers-status {
@@ -148,15 +169,15 @@ body {
 
     gap: 6px;
 
-    padding: 6px 10px;
+    padding: 7px 11px;
 
-    border-radius: 20px;
+    border-radius: 22px;
 
     background: #f3f4f6;
 
     color: #6b7280;
 
-    font-size: 12px;
+    font-size: 13px;
 
     font-weight: 800;
 }
@@ -182,15 +203,24 @@ body {
     color: #92400e;
 }
 
+.provider-status.error {
+
+    background: #fee2e2;
+
+    color: #991b1b;
+}
+
 .dot {
 
-    width: 7px;
+    width: 8px;
 
-    height: 7px;
+    height: 8px;
 
     border-radius: 50%;
 
     background: currentColor;
+
+    flex-shrink: 0;
 }
 
 
@@ -207,7 +237,8 @@ body {
     padding: 18px;
 
     box-shadow:
-        0 10px 35px rgba(0,0,0,0.07);
+        0 10px 35px
+        rgba(0,0,0,0.07);
 
     margin-bottom: 20px;
 }
@@ -354,7 +385,8 @@ button:active {
     color: #6b7280;
 
     box-shadow:
-        0 5px 20px rgba(0,0,0,0.05);
+        0 5px 20px
+        rgba(0,0,0,0.05);
 }
 
 .loading.show {
@@ -436,7 +468,8 @@ button:active {
     flex-direction: column;
 
     box-shadow:
-        0 10px 30px rgba(0,0,0,0.06);
+        0 10px 30px
+        rgba(0,0,0,0.06);
 }
 
 .card-header {
@@ -618,7 +651,8 @@ button:active {
     color: #9ca3af;
 
     box-shadow:
-        0 8px 25px rgba(0,0,0,0.05);
+        0 8px 25px
+        rgba(0,0,0,0.05);
 }
 
 .empty-title {
@@ -654,7 +688,8 @@ button:active {
     font-size: 14px;
 
     box-shadow:
-        0 5px 20px rgba(0,0,0,0.04);
+        0 5px 20px
+        rgba(0,0,0,0.04);
 }
 
 .summary strong {
@@ -692,7 +727,10 @@ button:active {
 
         padding:
             16px 10px
-            calc(35px + env(safe-area-inset-bottom));
+            calc(
+                35px +
+                env(safe-area-inset-bottom)
+            );
     }
 
     .header {
@@ -708,6 +746,25 @@ button:active {
     .subtitle {
 
         font-size: 14px;
+    }
+
+    .system-bar {
+
+        border-radius: 20px;
+
+        padding: 15px;
+    }
+
+    .system-top {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .remaining {
+
+        font-size: 13px;
     }
 
     .question-box {
@@ -743,14 +800,6 @@ button:active {
 
         font-size: 21px;
     }
-
-    .system-top {
-
-        align-items: flex-start;
-
-        flex-direction: column;
-    }
-
 }
 
 </style>
@@ -764,7 +813,9 @@ button:active {
 <div class="container">
 
 
-    <!-- HEADER -->
+    <!-- =========================================
+         HEADER
+    ========================================== -->
 
     <div class="header">
 
@@ -779,7 +830,9 @@ button:active {
     </div>
 
 
-    <!-- PROVIDER STATUS -->
+    <!-- =========================================
+         PROVIDER STATUS
+    ========================================== -->
 
     <div class="system-bar">
 
@@ -817,7 +870,9 @@ button:active {
     </div>
 
 
-    <!-- QUESTION -->
+    <!-- =========================================
+         QUESTION
+    ========================================== -->
 
     <div class="question-box">
 
@@ -851,7 +906,9 @@ button:active {
     </div>
 
 
-    <!-- LOADING -->
+    <!-- =========================================
+         LOADING
+    ========================================== -->
 
     <div
         id="loading"
@@ -861,13 +918,17 @@ button:active {
         جاري الحصول على الإجابات
 
         <span class="loading-dot"></span>
+
         <span class="loading-dot"></span>
+
         <span class="loading-dot"></span>
 
     </div>
 
 
-    <!-- RESULTS -->
+    <!-- =========================================
+         RESULTS
+    ========================================== -->
 
     <div id="results">
 
@@ -889,6 +950,10 @@ button:active {
 
 
 <script>
+
+/* =====================================================
+   SMART AI FRONTEND
+===================================================== */
 
 
 /* =====================================================
@@ -1064,7 +1129,6 @@ async function loadQuota() {
         if (!response.ok) {
 
             throw new Error(
-                data?.error ||
                 "Quota request failed"
             );
 
@@ -1079,8 +1143,8 @@ async function loadQuota() {
 
     catch (error) {
 
-        remainingElement.textContent =
-            "الأسئلة المتبقية: —";
+        // لا نعرض خطأ للمستخدم.
+        // نترك العداد كما هو.
 
     }
 
@@ -1088,7 +1152,7 @@ async function loadQuota() {
 
 
 /* =====================================================
-   DISPLAY STATUS
+   DISPLAY PROVIDER STATUS
 ===================================================== */
 
 function displayProviderStatus(
@@ -1097,8 +1161,6 @@ function displayProviderStatus(
 
     const providers =
         data?.status?.providers ||
-        data?.providers ||
-        data?.provider_status ||
         {};
 
 
@@ -1115,7 +1177,8 @@ function displayProviderStatus(
         "";
 
 
-    let found = false;
+    let found =
+        false;
 
 
     names.forEach(
@@ -1132,7 +1195,8 @@ function displayProviderStatus(
             }
 
 
-            found = true;
+            found =
+                true;
 
 
             const state =
@@ -1143,7 +1207,6 @@ function displayProviderStatus(
 
                     : (
                         info.status ||
-                        info.state ||
                         "unknown"
                     );
 
@@ -1209,13 +1272,11 @@ function displayProviderStatus(
 
             const displayName =
 
-                name ===
-                "deepseek"
+                name === "deepseek"
 
                     ? "DeepSeek"
 
-                    : name ===
-                      "gemini"
+                    : name === "gemini"
 
                         ? "Gemini"
 
@@ -1412,6 +1473,7 @@ async function askSmartAI() {
                     },
 
                     body:
+
                         JSON.stringify({
 
                             userId:
@@ -1431,16 +1493,6 @@ async function askSmartAI() {
             await response.json();
 
 
-        /*
-           حتى إذا كان هناك خطأ 429
-           نأخذ quota من الرد إن وجد.
-        */
-
-        updateRemaining(
-            data
-        );
-
-
         if (!response.ok) {
 
             throw new Error(
@@ -1455,14 +1507,22 @@ async function askSmartAI() {
 
 
         const elapsed =
+
             (
 
                 (
+
                     performance.now() -
                     startTime
+
                 ) / 1000
 
             ).toFixed(2);
+
+
+        updateRemaining(
+            data
+        );
 
 
         displayResults(
@@ -1471,13 +1531,10 @@ async function askSmartAI() {
         );
 
 
-        /*
-           تحديث البيانات بعد السؤال
-        */
+        // تحديث الحالات بعد السؤال
 
-        loadProviderStatus();
+        await loadProviderStatus();
 
-        loadQuota();
 
     }
 
@@ -1488,7 +1545,9 @@ async function askSmartAI() {
             <div class="empty">
 
                 <div class="empty-title">
+
                     تعذر الحصول على الإجابة
+
                 </div>
 
                 ${escapeHTML(
@@ -1499,13 +1558,6 @@ async function askSmartAI() {
             </div>
 
         `;
-
-        /*
-           نقرأ الحصة مرة أخرى
-           في حالة وجود خطأ.
-        */
-
-        loadQuota();
 
     }
 
@@ -1538,7 +1590,8 @@ function displayResults(
 ) {
 
     const resultData =
-        data?.results || {};
+        data?.results ||
+        {};
 
 
     const deepseek =
@@ -1570,6 +1623,10 @@ function displayResults(
     let cards =
         "";
 
+
+    // -----------------------------------------------------
+    // Show only providers actually contacted
+    // -----------------------------------------------------
 
     if (deepseek) {
 
@@ -1611,7 +1668,9 @@ function displayResults(
             <div class="empty">
 
                 <div class="empty-title">
+
                     لم تصل أي إجابة
+
                 </div>
 
                 حاول مرة أخرى لاحقًا.
@@ -1645,8 +1704,9 @@ function displayResults(
 
             <strong>
                 ${elapsed}
-                ثانية
             </strong>
+
+            ثانية
 
         </div>
 
@@ -1670,12 +1730,16 @@ function countSuccessful(
     return Object.values(
         resultData
     ).filter(
+
         function(result) {
 
-            return result &&
-                result.ok === true;
+            return (
+                result &&
+                result.ok === true
+            );
 
         }
+
     ).length;
 
 }
@@ -1689,14 +1753,16 @@ function countReturned(
     resultData
 ) {
 
-    return Object.keys(
+    return Object.values(
         resultData
     ).filter(
-        function(key) {
 
-            return resultData[key];
+        function(result) {
+
+            return result !== null;
 
         }
+
     ).length;
 
 }
@@ -1718,7 +1784,13 @@ function createProviderCard(
     }
 
 
-    if (result.ok) {
+    // -----------------------------------------------------
+    // SUCCESS
+    // -----------------------------------------------------
+
+    if (
+        result.ok
+    ) {
 
         const answer =
             result.answer ||
@@ -1760,7 +1832,8 @@ function createProviderCard(
                     <div class="model">
 
                         ${escapeHTML(
-                            result.model || ""
+                            result.model ||
+                            ""
                         )}
 
                     </div>
@@ -1786,6 +1859,10 @@ function createProviderCard(
 
     }
 
+
+    // -----------------------------------------------------
+    // ERROR
+    // -----------------------------------------------------
 
     let error =
         result.error ||
@@ -1870,7 +1947,8 @@ function createProviderCard(
                 <div class="model">
 
                     ${escapeHTML(
-                        result.model || ""
+                        result.model ||
+                        ""
                     )}
 
                 </div>
@@ -1951,13 +2029,16 @@ async function copyAnswer(
 
 
         setTimeout(
+
             function() {
 
                 button.textContent =
                     oldText;
 
             },
+
             1500
+
         );
 
     }
@@ -1988,7 +2069,9 @@ function clearAll() {
         <div class="empty">
 
             <div class="empty-title">
+
                 مرحبًا بك في Smart AI
+
             </div>
 
             اكتب سؤالًا واضغط على
@@ -2012,7 +2095,9 @@ function escapeHTML(
     text
 ) {
 
-    return String(text)
+    return String(
+        text
+    )
 
         .replaceAll(
             "&",
@@ -2063,12 +2148,20 @@ clearButton.addEventListener(
 ===================================================== */
 
 questionElement.addEventListener(
+
     "keydown",
+
     function(event) {
 
         if (
-            event.key === "Enter" &&
+
+            event.key ===
+                "Enter"
+
+            &&
+
             !event.shiftKey
+
         ) {
 
             event.preventDefault();
@@ -2078,6 +2171,7 @@ questionElement.addEventListener(
         }
 
     }
+
 );
 
 </script>
