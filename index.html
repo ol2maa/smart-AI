@@ -694,6 +694,17 @@ imageInput.addEventListener("change", function(){
         return;
     }
 
+    const MAX_CLIENT_IMAGE_BYTES =
+        12 * 1024 * 1024;
+
+    if(file.size > MAX_CLIENT_IMAGE_BYTES){
+        alert(
+            "الصورة كبيرة جدًا. اختر صورة أصغر من 12 MB."
+        );
+        imageInput.value = "";
+        return;
+    }
+
     selectedImage = file;
 
     /*
@@ -722,6 +733,27 @@ imageInput.addEventListener("change", function(){
 
     reader.readAsDataURL(file);
 });
+
+
+async function fileToDataURL(file){
+
+    return new Promise(function(resolve,reject){
+
+        const reader = new FileReader();
+
+        reader.onload = function(event){
+            resolve(event.target.result);
+        };
+
+        reader.onerror = function(){
+            reject(
+                new Error("تعذر قراءة الصورة.")
+            );
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
 
 removeImageButton.addEventListener("click", removeSelectedImage);
 
@@ -797,12 +829,33 @@ async function askSmartAI(){
     const startTime = performance.now();
 
     try{
-        /*
-         * Worker الحالي يستقبل question و userId.
-         * لذلك لا نرسل الصورة إلى Worker بعد.
-         * نحتفظ بها في الواجهة حتى نضيف دعم الصور
-         * في Worker في المرحلة التالية.
-         */
+
+        let imagePayload = null;
+
+        if(selectedImage){
+
+            const imageData =
+                await fileToDataURL(selectedImage);
+
+            if(!imageData){
+                throw new Error(
+                    "تعذر تجهيز الصورة للإرسال."
+                );
+            }
+
+            /*
+             * نرسل الصورة كـ data URL إلى Worker.
+             * Worker هو الذي يقرر أي مزود يدعم الصورة
+             * وكيف يرسلها إلى Gemini / Mistral / DeepSeek.
+             */
+            imagePayload = {
+                data:imageData,
+                mimeType:
+                    selectedImage.type ||
+                    "image/jpeg"
+            };
+        }
+
         const response = await fetch(API_URL,{
             method:"POST",
             headers:{
@@ -810,7 +863,8 @@ async function askSmartAI(){
             },
             body:JSON.stringify({
                 userId:USER_ID,
-                question:question
+                question:question,
+                image:imagePayload
             })
         });
 
