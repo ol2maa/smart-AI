@@ -1,2181 +1,958 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
->
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Smart AI</title>
 
 <style>
+*{box-sizing:border-box}
 
-* {
-    box-sizing: border-box;
+html{scroll-behavior:smooth}
+
+body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    background:linear-gradient(180deg,#eef1f5 0%,#f8f9fb 100%);
+    color:#111827;
+    min-height:100vh;
 }
 
-html {
-    scroll-behavior: smooth;
+.container{
+    width:100%;
+    max-width:1200px;
+    margin:auto;
+    padding:25px 16px calc(50px + env(safe-area-inset-bottom));
 }
 
-body {
-    margin: 0;
+.header{text-align:center;margin-bottom:24px}
 
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Arial,
-        sans-serif;
+.logo{font-size:40px;font-weight:900;letter-spacing:-1.5px}
 
-    background:
-        linear-gradient(
-            180deg,
-            #eef1f5 0%,
-            #f8f9fb 100%
-        );
+.subtitle{margin-top:6px;color:#6b7280;font-size:15px}
 
-    color: #111827;
-
-    min-height: 100vh;
+.system-bar{
+    background:white;border-radius:20px;padding:17px;margin-bottom:18px;
+    box-shadow:0 7px 25px rgba(0,0,0,.05);
 }
 
-
-/* =========================================
-   CONTAINER
-========================================= */
-
-.container {
-
-    width: 100%;
-
-    max-width: 1200px;
-
-    margin: auto;
-
-    padding:
-        25px 16px
-        calc(
-            50px +
-            env(safe-area-inset-bottom)
-        );
+.system-top{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px;
 }
 
+.system-title{font-weight:900;font-size:18px}
 
-/* =========================================
-   HEADER
-========================================= */
-
-.header {
-
-    text-align: center;
-
-    margin-bottom: 24px;
+.remaining{
+    font-size:14px;font-weight:800;color:#374151;background:#f3f4f6;
+    padding:7px 12px;border-radius:22px;white-space:nowrap;
 }
 
-.logo {
+.providers-status{display:flex;flex-wrap:wrap;gap:8px}
 
-    font-size: 40px;
-
-    font-weight: 900;
-
-    letter-spacing: -1.5px;
+.provider-status{
+    display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:22px;
+    background:#f3f4f6;color:#6b7280;font-size:13px;font-weight:800;
 }
 
-.subtitle {
+.provider-status.available{background:#dcfce7;color:#166534}
+.provider-status.unavailable,.provider-status.error{background:#fee2e2;color:#991b1b}
+.provider-status.limited{background:#fef3c7;color:#92400e}
 
-    margin-top: 6px;
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
 
-    color: #6b7280;
-
-    font-size: 15px;
+.question-box{
+    background:white;border-radius:24px;padding:18px;
+    box-shadow:0 10px 35px rgba(0,0,0,.07);margin-bottom:20px;
 }
 
-
-/* =========================================
-   SYSTEM BAR
-========================================= */
-
-.system-bar {
-
-    background: white;
-
-    border-radius: 20px;
-
-    padding: 17px;
-
-    margin-bottom: 18px;
-
-    box-shadow:
-        0 7px 25px
-        rgba(0,0,0,0.05);
+textarea{
+    width:100%;
+    min-height:125px;
+    max-height:45vh;
+    resize:vertical;
+    border:2px solid #e5e7eb;
+    border-radius:17px;
+    padding:16px;
+    font-family:inherit;
+    font-size:17px;
+    line-height:1.7;
+    outline:none;
+    direction:rtl;
+    text-align:right;
+    transition:border .2s,box-shadow .2s;
+    overflow-y:auto;
+    overflow-wrap:anywhere;
+    word-break:break-word;
 }
 
-.system-top {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    gap: 10px;
-
-    margin-bottom: 13px;
+textarea:focus{
+    border-color:#111827;
+    box-shadow:0 0 0 3px rgba(17,24,39,.07);
 }
 
-.system-title {
+textarea::placeholder{color:#9ca3af}
 
-    font-weight: 900;
-
-    font-size: 18px;
+.image-preview{
+    display:none;
+    margin-top:10px;
+    padding:10px;
+    border:1px solid #e5e7eb;
+    border-radius:15px;
+    background:#f9fafb;
+    align-items:center;
+    gap:10px;
 }
 
-.remaining {
+.image-preview.show{display:flex}
 
-    font-size: 14px;
-
-    font-weight: 800;
-
-    color: #374151;
-
-    background: #f3f4f6;
-
-    padding: 7px 12px;
-
-    border-radius: 22px;
-
-    white-space: nowrap;
+.image-preview img{
+    width:58px;
+    height:58px;
+    object-fit:cover;
+    border-radius:10px;
+    border:1px solid #e5e7eb;
 }
 
-.providers-status {
-
-    display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 8px;
+.image-info{
+    flex:1;
+    min-width:0;
 }
 
-.provider-status {
-
-    display: inline-flex;
-
-    align-items: center;
-
-    gap: 6px;
-
-    padding: 7px 11px;
-
-    border-radius: 22px;
-
-    background: #f3f4f6;
-
-    color: #6b7280;
-
-    font-size: 13px;
-
-    font-weight: 800;
+.image-name{
+    font-size:13px;
+    font-weight:800;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
 }
 
-.provider-status.available {
-
-    background: #dcfce7;
-
-    color: #166534;
+.image-note{
+    font-size:11px;
+    color:#9ca3af;
+    margin-top:3px;
 }
 
-.provider-status.unavailable {
-
-    background: #fee2e2;
-
-    color: #991b1b;
+.remove-image{
+    padding:7px 10px;
+    background:#fee2e2;
+    color:#991b1b;
+    font-size:12px;
 }
 
-.provider-status.limited {
-
-    background: #fef3c7;
-
-    color: #92400e;
+.button-row{
+    display:flex;
+    gap:10px;
+    margin-top:13px;
 }
 
-.provider-status.error {
-
-    background: #fee2e2;
-
-    color: #991b1b;
+button{
+    border:none;
+    font-family:inherit;
+    font-size:16px;
+    font-weight:800;
+    cursor:pointer;
+    border-radius:14px;
+    padding:14px 20px;
+    transition:transform .15s,opacity .15s,background .15s;
 }
 
-.dot {
+button:active{transform:scale(.98)}
 
-    width: 8px;
+.ask-button{flex:1;background:#111827;color:white}
+.ask-button:hover{background:#1f2937}
+.ask-button:disabled{opacity:.55;cursor:not-allowed}
 
-    height: 8px;
+.clear-button{background:#e5e7eb;color:#111827}
+.clear-button:hover{background:#dfe2e6}
 
-    border-radius: 50%;
-
-    background: currentColor;
-
-    flex-shrink: 0;
+.image-button{
+    background:#eef2ff;
+    color:#3730a3;
+    padding-left:16px;
+    padding-right:16px;
 }
 
+.image-button:hover{background:#e0e7ff}
 
-/* =========================================
-   QUESTION BOX
-========================================= */
-
-.question-box {
-
-    background: white;
-
-    border-radius: 24px;
-
-    padding: 18px;
-
-    box-shadow:
-        0 10px 35px
-        rgba(0,0,0,0.07);
-
-    margin-bottom: 20px;
+.loading{
+    display:none;background:white;border-radius:16px;padding:14px;margin-bottom:18px;
+    text-align:center;color:#6b7280;box-shadow:0 5px 20px rgba(0,0,0,.05);
 }
 
-textarea {
+.loading.show{display:block}
 
-    width: 100%;
-
-    min-height: 125px;
-
-    resize: vertical;
-
-    border:
-        2px solid #e5e7eb;
-
-    border-radius: 17px;
-
-    padding: 16px;
-
-    font-family: inherit;
-
-    font-size: 17px;
-
-    line-height: 1.7;
-
-    outline: none;
-
-    direction: rtl;
-
-    text-align: right;
-
-    transition:
-        border 0.2s,
-        box-shadow 0.2s;
+.loading-dot{
+    display:inline-block;width:8px;height:8px;border-radius:50%;background:#6b7280;
+    margin:0 3px;animation:pulse 1s infinite;
 }
 
-textarea:focus {
+.loading-dot:nth-child(2){animation-delay:.15s}
+.loading-dot:nth-child(3){animation-delay:.30s}
 
-    border-color: #111827;
-
-    box-shadow:
-        0 0 0 3px
-        rgba(17,24,39,0.07);
+@keyframes pulse{
+    0%,100%{opacity:.3}
+    50%{opacity:1}
 }
 
-textarea::placeholder {
-
-    color: #9ca3af;
+#results{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
 }
 
-
-/* =========================================
-   BUTTONS
-========================================= */
-
-.button-row {
-
-    display: flex;
-
-    gap: 10px;
-
-    margin-top: 13px;
+.card{
+    background:white;border-radius:22px;padding:18px;min-height:300px;
+    display:flex;flex-direction:column;min-width:0;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
 }
 
-button {
-
-    border: none;
-
-    font-family: inherit;
-
-    font-size: 16px;
-
-    font-weight: 800;
-
-    cursor: pointer;
-
-    border-radius: 14px;
-
-    padding: 14px 20px;
-
-    transition:
-        transform 0.15s,
-        opacity 0.15s,
-        background 0.15s;
+.card-header{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding-bottom:14px;border-bottom:1px solid #edf0f3;
 }
 
-button:active {
+.provider{font-size:22px;font-weight:900}
 
-    transform: scale(0.98);
+.status{
+    font-size:13px;font-weight:800;padding:6px 11px;border-radius:30px;
+    background:#f3f4f6;color:#6b7280;white-space:nowrap;
 }
 
-.ask-button {
+.status.success{background:#dcfce7;color:#166534}
+.status.error{background:#fee2e2;color:#991b1b}
+.status.loading-status{background:#f3f4f6;color:#6b7280}
 
-    flex: 1;
-
-    background: #111827;
-
-    color: white;
+.answer-area{
+    flex:1;padding-top:18px;min-width:0;
 }
 
-.ask-button:hover {
-
-    background: #1f2937;
+.answer{
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+    max-width:100%;
+    line-height:1.9;
+    font-size:17px;
+    direction:rtl;
+    text-align:right;
 }
 
-.ask-button:disabled {
-
-    opacity: 0.55;
-
-    cursor: not-allowed;
+.error-message{
+    color:#991b1b;font-size:16px;line-height:1.8;
+    overflow-wrap:anywhere;word-break:break-word;
 }
 
-.clear-button {
-
-    background: #e5e7eb;
-
-    color: #111827;
+.card-footer{
+    margin-top:18px;padding-top:12px;border-top:1px solid #edf0f3;
+    display:flex;justify-content:space-between;align-items:center;gap:10px;min-width:0;
 }
 
-.clear-button:hover {
-
-    background: #dfe2e6;
+.model{
+    color:#9ca3af;font-size:11px;direction:ltr;text-align:left;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;
 }
 
-
-/* =========================================
-   LOADING
-========================================= */
-
-.loading {
-
-    display: none;
-
-    background: white;
-
-    border-radius: 16px;
-
-    padding: 14px;
-
-    margin-bottom: 18px;
-
-    text-align: center;
-
-    color: #6b7280;
-
-    box-shadow:
-        0 5px 20px
-        rgba(0,0,0,0.05);
+.copy-button{
+    padding:7px 11px;background:#f3f4f6;color:#374151;font-size:12px;white-space:nowrap;
 }
 
-.loading.show {
+.copy-button:hover{background:#e5e7eb}
 
-    display: block;
+.empty{
+    grid-column:1 / -1;background:white;border-radius:22px;padding:45px 20px;
+    text-align:center;color:#9ca3af;box-shadow:0 8px 25px rgba(0,0,0,.05);
 }
 
-.loading-dot {
+.empty-title{color:#374151;font-size:20px;font-weight:800;margin-bottom:8px}
 
-    display: inline-block;
-
-    width: 8px;
-
-    height: 8px;
-
-    border-radius: 50%;
-
-    background: #6b7280;
-
-    margin: 0 3px;
-
-    animation:
-        pulse 1s infinite;
+.summary{
+    grid-column:1 / -1;background:white;border-radius:18px;padding:13px 16px;
+    text-align:center;color:#6b7280;font-size:14px;box-shadow:0 5px 20px rgba(0,0,0,.04);
 }
 
-.loading-dot:nth-child(2) {
+.summary strong{color:#111827}
 
-    animation-delay: 0.15s;
+@media (max-width:850px){
+    #results{grid-template-columns:1fr}
+    .logo{font-size:34px}
+    .card{min-height:250px}
 }
 
-.loading-dot:nth-child(3) {
-
-    animation-delay: 0.30s;
+@media (max-width:500px){
+    .container{padding:16px 10px calc(35px + env(safe-area-inset-bottom))}
+    .header{margin-bottom:18px}
+    .logo{font-size:31px}
+    .subtitle{font-size:14px}
+    .system-bar{border-radius:20px;padding:15px}
+    .system-top{align-items:flex-start;flex-direction:column}
+    .remaining{font-size:13px}
+    .question-box{border-radius:20px;padding:13px}
+    textarea{min-height:115px;font-size:16px}
+    .button-row{flex-wrap:wrap}
+    .ask-button{min-width:calc(100% - 70px)}
+    .image-button{width:60px;padding-left:8px;padding-right:8px}
+    .clear-button{width:100%}
+    .card{border-radius:20px}
+    .provider{font-size:21px}
 }
-
-@keyframes pulse {
-
-    0%, 100% {
-        opacity: 0.3;
-    }
-
-    50% {
-        opacity: 1;
-    }
-}
-
-
-/* =========================================
-   RESULTS
-========================================= */
-
-.results {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
-
-    gap: 18px;
-}
-
-
-/* =========================================
-   CARD
-========================================= */
-
-.card {
-
-    background: white;
-
-    border-radius: 22px;
-
-    padding: 18px;
-
-    min-height: 300px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    box-shadow:
-        0 10px 30px
-        rgba(0,0,0,0.06);
-}
-
-.card-header {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    gap: 10px;
-
-    padding-bottom: 14px;
-
-    border-bottom:
-        1px solid #edf0f3;
-}
-
-.provider {
-
-    font-size: 22px;
-
-    font-weight: 900;
-}
-
-.status {
-
-    font-size: 13px;
-
-    font-weight: 800;
-
-    padding: 6px 11px;
-
-    border-radius: 30px;
-
-    background: #f3f4f6;
-
-    color: #6b7280;
-
-    white-space: nowrap;
-}
-
-.status.success {
-
-    background: #dcfce7;
-
-    color: #166534;
-}
-
-.status.error {
-
-    background: #fee2e2;
-
-    color: #991b1b;
-}
-
-.status.loading-status {
-
-    background: #f3f4f6;
-
-    color: #6b7280;
-}
-
-
-/* =========================================
-   ANSWER
-========================================= */
-
-.answer-area {
-
-    flex: 1;
-
-    padding-top: 18px;
-
-    display: flex;
-
-    flex-direction: column;
-}
-
-.answer {
-
-    white-space: pre-wrap;
-
-    word-break: break-word;
-
-    line-height: 1.9;
-
-    font-size: 17px;
-
-    direction: rtl;
-
-    text-align: right;
-}
-
-.error-message {
-
-    color: #991b1b;
-
-    font-size: 16px;
-
-    line-height: 1.8;
-}
-
-
-/* =========================================
-   FOOTER
-========================================= */
-
-.card-footer {
-
-    margin-top: 18px;
-
-    padding-top: 12px;
-
-    border-top:
-        1px solid #edf0f3;
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    gap: 10px;
-}
-
-.model {
-
-    color: #9ca3af;
-
-    font-size: 11px;
-
-    direction: ltr;
-
-    text-align: left;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-
-    white-space: nowrap;
-}
-
-.copy-button {
-
-    padding: 7px 11px;
-
-    background: #f3f4f6;
-
-    color: #374151;
-
-    font-size: 12px;
-
-    white-space: nowrap;
-}
-
-.copy-button:hover {
-
-    background: #e5e7eb;
-}
-
-
-/* =========================================
-   EMPTY
-========================================= */
-
-.empty {
-
-    grid-column: 1 / -1;
-
-    background: white;
-
-    border-radius: 22px;
-
-    padding: 45px 20px;
-
-    text-align: center;
-
-    color: #9ca3af;
-
-    box-shadow:
-        0 8px 25px
-        rgba(0,0,0,0.05);
-}
-
-.empty-title {
-
-    color: #374151;
-
-    font-size: 20px;
-
-    font-weight: 800;
-
-    margin-bottom: 8px;
-}
-
-
-/* =========================================
-   SUMMARY
-========================================= */
-
-.summary {
-
-    grid-column: 1 / -1;
-
-    background: white;
-
-    border-radius: 18px;
-
-    padding: 13px 16px;
-
-    text-align: center;
-
-    color: #6b7280;
-
-    font-size: 14px;
-
-    box-shadow:
-        0 5px 20px
-        rgba(0,0,0,0.04);
-}
-
-.summary strong {
-
-    color: #111827;
-}
-
-
-/* =========================================
-   MOBILE
-========================================= */
-
-@media (max-width: 850px) {
-
-    .results {
-
-        grid-template-columns: 1fr;
-    }
-
-    .logo {
-
-        font-size: 34px;
-    }
-
-    .card {
-
-        min-height: 250px;
-    }
-}
-
-
-@media (max-width: 500px) {
-
-    .container {
-
-        padding:
-            16px 10px
-            calc(
-                35px +
-                env(safe-area-inset-bottom)
-            );
-    }
-
-    .header {
-
-        margin-bottom: 18px;
-    }
-
-    .logo {
-
-        font-size: 31px;
-    }
-
-    .subtitle {
-
-        font-size: 14px;
-    }
-
-    .system-bar {
-
-        border-radius: 20px;
-
-        padding: 15px;
-    }
-
-    .system-top {
-
-        align-items: flex-start;
-
-        flex-direction: column;
-    }
-
-    .remaining {
-
-        font-size: 13px;
-    }
-
-    .question-box {
-
-        border-radius: 20px;
-
-        padding: 13px;
-    }
-
-    textarea {
-
-        min-height: 115px;
-
-        font-size: 16px;
-    }
-
-    .button-row {
-
-        flex-direction: column;
-    }
-
-    .clear-button {
-
-        width: 100%;
-    }
-
-    .card {
-
-        border-radius: 20px;
-    }
-
-    .provider {
-
-        font-size: 21px;
-    }
-}
-
 </style>
-
 </head>
 
-
 <body>
-
-
 <div class="container">
 
+<div class="header">
+    <div class="logo">اسأل Smart AI</div>
+    <div class="subtitle">سؤال واحد — عدة نماذج ذكاء اصطناعي</div>
+</div>
 
-    <!-- =========================================
-         HEADER
-    ========================================== -->
-
-    <div class="header">
-
-        <div class="logo">
-            اسأل Smart AI
-        </div>
-
-        <div class="subtitle">
-            سؤال واحد — عدة نماذج ذكاء اصطناعي
-        </div>
-
+<div class="system-bar">
+    <div class="system-top">
+        <div class="system-title">حالة مزودي الذكاء الاصطناعي</div>
+        <div id="remaining" class="remaining">الأسئلة المتبقية: —</div>
     </div>
 
-
-    <!-- =========================================
-         PROVIDER STATUS
-    ========================================== -->
-
-    <div class="system-bar">
-
-        <div class="system-top">
-
-            <div class="system-title">
-                حالة مزودي الذكاء الاصطناعي
-            </div>
-
-            <div
-                id="remaining"
-                class="remaining"
-            >
-                الأسئلة المتبقية: —
-            </div>
-
+    <div id="providersStatus" class="providers-status">
+        <div class="provider-status">
+            <span class="dot"></span>
+            جاري الفحص...
         </div>
+    </div>
+</div>
 
+<div class="question-box">
 
-        <div
-            id="providersStatus"
-            class="providers-status"
-        >
+    <textarea
+        id="question"
+        maxlength="10000"
+        placeholder="اكتب سؤالك هنا...&#10;اضغط Enter لسطر جديد، واضغط Ctrl+Enter أو ⌘+Enter للإرسال."
+        autocomplete="off"
+    ></textarea>
 
-            <div class="provider-status">
-
-                <span class="dot"></span>
-
-                جاري الفحص...
-
-            </div>
-
+    <div id="imagePreview" class="image-preview">
+        <img id="previewImage" alt="معاينة الصورة">
+        <div class="image-info">
+            <div id="imageName" class="image-name"></div>
+            <div class="image-note">الصورة مرفقة بالرسالة</div>
         </div>
-
+        <button id="removeImageButton" class="remove-image" type="button">إزالة</button>
     </div>
 
-
-    <!-- =========================================
-         QUESTION
-    ========================================== -->
-
-    <div class="question-box">
-
-        <textarea
-            id="question"
-            maxlength="10000"
-            placeholder="اكتب سؤالك هنا..."
-            autocomplete="off"
-        ></textarea>
-
-
-        <div class="button-row">
-
-            <button
-                id="askButton"
-                class="ask-button"
-            >
-                اسأل Smart AI
-            </button>
-
-
-            <button
-                id="clearButton"
-                class="clear-button"
-            >
-                مسح
-            </button>
-
-        </div>
-
-    </div>
-
-
-    <!-- =========================================
-         LOADING
-    ========================================== -->
-
-    <div
-        id="loading"
-        class="loading"
+    <input
+        id="imageInput"
+        type="file"
+        accept="image/*"
+        hidden
     >
 
-        جاري الحصول على الإجابات
+    <div class="button-row">
+        <button id="askButton" class="ask-button" type="button">
+            اسأل Smart AI
+        </button>
 
-        <span class="loading-dot"></span>
+        <button id="imageButton" class="image-button" type="button" title="إضافة صورة">
+            🖼️
+        </button>
 
-        <span class="loading-dot"></span>
-
-        <span class="loading-dot"></span>
-
+        <button id="clearButton" class="clear-button" type="button">
+            مسح
+        </button>
     </div>
-
-
-    <!-- =========================================
-         RESULTS
-    ========================================== -->
-
-    <div id="results">
-
-        <div class="empty">
-
-            <div class="empty-title">
-                مرحبًا بك في Smart AI
-            </div>
-
-            اكتب سؤالًا واضغط على
-            «اسأل Smart AI»
-
-        </div>
-
-    </div>
-
 
 </div>
 
+<div id="loading" class="loading">
+    جاري الحصول على الإجابات
+    <span class="loading-dot"></span>
+    <span class="loading-dot"></span>
+    <span class="loading-dot"></span>
+</div>
+
+<div id="results">
+    <div class="empty">
+        <div class="empty-title">مرحبًا بك في Smart AI</div>
+        اكتب سؤالًا واضغط على «اسأل Smart AI»
+    </div>
+</div>
+
+</div>
 
 <script>
+"use strict";
 
 /* =====================================================
    SMART AI FRONTEND
 ===================================================== */
 
+const API_URL = "https://smart-ai.kaka10906.workers.dev/";
 
-/* =====================================================
-   WORKER
-===================================================== */
+function getUserId(){
+    let userId = localStorage.getItem("smartAI_userId");
 
-const API_URL =
-    "https://smart-ai.kaka10906.workers.dev/";
-
-
-/* =====================================================
-   USER ID
-===================================================== */
-
-function getUserId() {
-
-    let userId =
-        localStorage.getItem(
-            "smartAI_userId"
-        );
-
-
-    if (!userId) {
-
-        userId =
-            "user-" +
-            crypto.randomUUID();
-
-
-        localStorage.setItem(
-            "smartAI_userId",
-            userId
-        );
-
+    if(!userId){
+        userId = "user-" + crypto.randomUUID();
+        localStorage.setItem("smartAI_userId", userId);
     }
-
 
     return userId;
-
 }
 
+const USER_ID = getUserId();
 
-const USER_ID =
-    getUserId();
+const questionElement = document.getElementById("question");
+const askButton = document.getElementById("askButton");
+const clearButton = document.getElementById("clearButton");
+const imageButton = document.getElementById("imageButton");
+const imageInput = document.getElementById("imageInput");
+const imagePreview = document.getElementById("imagePreview");
+const previewImage = document.getElementById("previewImage");
+const imageName = document.getElementById("imageName");
+const removeImageButton = document.getElementById("removeImageButton");
+const loading = document.getElementById("loading");
+const results = document.getElementById("results");
+const providersStatus = document.getElementById("providersStatus");
+const remainingElement = document.getElementById("remaining");
 
-
-/* =====================================================
-   ELEMENTS
-===================================================== */
-
-const questionElement =
-    document.getElementById(
-        "question"
-    );
-
-const askButton =
-    document.getElementById(
-        "askButton"
-    );
-
-const clearButton =
-    document.getElementById(
-        "clearButton"
-    );
-
-const loading =
-    document.getElementById(
-        "loading"
-    );
-
-const results =
-    document.getElementById(
-        "results"
-    );
-
-const providersStatus =
-    document.getElementById(
-        "providersStatus"
-    );
-
-const remainingElement =
-    document.getElementById(
-        "remaining"
-    );
-
-
-/* =====================================================
-   STARTUP
-===================================================== */
+let selectedImage = null;
 
 loadProviderStatus();
-
 loadQuota();
 
-
 /* =====================================================
-   LOAD PROVIDER STATUS
+   PROVIDER STATUS
 ===================================================== */
 
-async function loadProviderStatus() {
+async function loadProviderStatus(){
+    try{
+        const response = await fetch(API_URL + "status");
+        const data = await response.json();
 
-    try {
-
-        const response =
-            await fetch(
-                API_URL +
-                "status"
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Status request failed"
-            );
-
+        if(!response.ok){
+            throw new Error("Status request failed");
         }
 
-
-        displayProviderStatus(
-            data
-        );
-
-    }
-
-    catch (error) {
-
+        displayProviderStatus(data);
+    }catch(error){
         providersStatus.innerHTML = `
-
             <div class="provider-status">
-
                 <span class="dot"></span>
-
                 تعذر قراءة حالة المزودين
-
             </div>
-
         `;
-
     }
-
 }
 
-
 /* =====================================================
-   LOAD QUOTA
+   QUOTA
 ===================================================== */
 
-async function loadQuota() {
-
-    try {
-
-        const response =
-            await fetch(
-
-                API_URL +
-                "quota?userId=" +
-                encodeURIComponent(
-                    USER_ID
-                )
-
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Quota request failed"
-            );
-
-        }
-
-
-        updateRemaining(
-            data
+async function loadQuota(){
+    try{
+        const response = await fetch(
+            API_URL + "quota?userId=" + encodeURIComponent(USER_ID)
         );
 
-    }
+        const data = await response.json();
 
-    catch (error) {
+        if(!response.ok){
+            throw new Error("Quota request failed");
+        }
 
+        updateRemaining(data);
+    }catch(error){
         // لا نعرض خطأ للمستخدم.
-        // نترك العداد كما هو.
-
     }
-
 }
 
-
 /* =====================================================
-   DISPLAY PROVIDER STATUS
+   PROVIDER STATUS DISPLAY
 ===================================================== */
 
-function displayProviderStatus(
-    data
-) {
+function displayProviderStatus(data){
+    const providers = data?.status?.providers || {};
 
-    const providers =
-        data?.status?.providers ||
-        {};
+    const names = ["deepseek","gemini","mistral"];
 
+    providersStatus.innerHTML = "";
 
-    const names = [
+    let found = false;
 
-        "deepseek",
-        "gemini",
-        "mistral"
+    names.forEach(function(name){
+        const info = providers[name];
 
-    ];
+        if(!info) return;
 
+        found = true;
 
-    providersStatus.innerHTML =
-        "";
+        const state =
+            typeof info === "string"
+                ? info
+                : (info.status || "unknown");
 
+        const normalized = String(state).toLowerCase();
 
-    let found =
-        false;
+        let label = "غير معروف";
+        let className = "";
 
-
-    names.forEach(
-        function(name) {
-
-            const info =
-                providers[name];
-
-
-            if (!info) {
-
-                return;
-
-            }
-
-
-            found =
-                true;
-
-
-            const state =
-                typeof info ===
-                "string"
-
-                    ? info
-
-                    : (
-                        info.status ||
-                        "unknown"
-                    );
-
-
-            const normalized =
-                String(
-                    state
-                ).toLowerCase();
-
-
-            let label =
-                "غير معروف";
-
-
-            let className =
-                "";
-
-
-            if (
-                normalized ===
-                "available"
-            ) {
-
-                label =
-                    "متاح";
-
-                className =
-                    "available";
-
-            }
-
-            else if (
-                normalized ===
-                "limited"
-            ) {
-
-                label =
-                    "محدود";
-
-                className =
-                    "limited";
-
-            }
-
-            else if (
-                normalized ===
-                    "unavailable"
-
-                ||
-
-                normalized ===
-                    "error"
-            ) {
-
-                label =
-                    "غير متاح";
-
-                className =
-                    "unavailable";
-
-            }
-
-
-            const displayName =
-
-                name === "deepseek"
-
-                    ? "DeepSeek"
-
-                    : name === "gemini"
-
-                        ? "Gemini"
-
-                        : "Mistral";
-
-
-            providersStatus.innerHTML += `
-
-                <div
-                    class="provider-status ${className}"
-                >
-
-                    <span class="dot"></span>
-
-                    ${displayName}:
-                    ${label}
-
-                </div>
-
-            `;
-
+        if(normalized === "available"){
+            label = "متاح";
+            className = "available";
+        }else if(normalized === "limited"){
+            label = "محدود";
+            className = "limited";
+        }else if(
+            normalized === "unavailable" ||
+            normalized === "error"
+        ){
+            label = "غير متاح";
+            className = "unavailable";
         }
-    );
 
+        const displayName =
+            name === "deepseek"
+                ? "DeepSeek"
+                : name === "gemini"
+                    ? "Gemini"
+                    : "Mistral";
 
-    if (!found) {
-
-        providersStatus.innerHTML = `
-
-            <div class="provider-status">
-
+        providersStatus.innerHTML += `
+            <div class="provider-status ${className}">
                 <span class="dot"></span>
-
-                لم تصل حالة المزودين
-
+                ${displayName}: ${label}
             </div>
-
         `;
+    });
 
+    if(!found){
+        providersStatus.innerHTML = `
+            <div class="provider-status">
+                <span class="dot"></span>
+                لم تصل حالة المزودين
+            </div>
+        `;
     }
-
 }
 
-
 /* =====================================================
-   UPDATE REMAINING
+   REMAINING
 ===================================================== */
 
-function updateRemaining(
-    data
-) {
+function updateRemaining(data){
+    const remaining = findRemaining(data);
 
-    const remaining =
-        findRemaining(
-            data
-        );
-
-
-    if (
-        remaining !== null &&
-        remaining !== undefined
-    ) {
-
+    if(remaining !== null && remaining !== undefined){
         remainingElement.textContent =
-            "الأسئلة المتبقية: " +
-            remaining;
-
+            "الأسئلة المتبقية: " + remaining;
     }
-
 }
 
-
-/* =====================================================
-   FIND REMAINING
-===================================================== */
-
-function findRemaining(
-    data
-) {
-
+function findRemaining(data){
     const possibleValues = [
-
         data?.remaining,
-
         data?.questionsRemaining,
-
         data?.remainingQuestions,
-
         data?.quota?.remaining,
-
         data?.usage?.remaining,
-
         data?.user?.remaining,
-
         data?.user?.questionsRemaining,
-
         data?.summary?.remaining
-
     ];
 
-
-    for (
-        const value of
-        possibleValues
-    ) {
-
-        if (
-            value !== undefined &&
-            value !== null
-        ) {
-
+    for(const value of possibleValues){
+        if(value !== undefined && value !== null){
             return value;
-
         }
-
     }
-
 
     return null;
-
 }
 
-
 /* =====================================================
-   ASK SMART AI
+   IMAGE
 ===================================================== */
 
-async function askSmartAI() {
+imageButton.addEventListener("click", function(){
+    imageInput.click();
+});
 
-    const question =
-        questionElement.value.trim();
+imageInput.addEventListener("change", function(){
+    const file = imageInput.files?.[0];
 
-
-    if (!question) {
-
-        alert(
-            "اكتب السؤال أولًا."
-        );
-
-        questionElement.focus();
-
+    if(!file){
         return;
-
     }
 
+    if(!file.type.startsWith("image/")){
+        alert("الملف المختار ليس صورة.");
+        imageInput.value = "";
+        return;
+    }
 
-    askButton.disabled =
-        true;
+    selectedImage = file;
 
+    const objectURL = URL.createObjectURL(file);
 
-    askButton.textContent =
-        "جاري السؤال...";
+    previewImage.src = objectURL;
+    imageName.textContent = file.name;
+    imagePreview.classList.add("show");
+});
 
+removeImageButton.addEventListener("click", removeSelectedImage);
 
-    loading.classList.add(
-        "show"
-    );
+function removeSelectedImage(){
+    selectedImage = null;
+    imageInput.value = "";
+    previewImage.removeAttribute("src");
+    imageName.textContent = "";
+    imagePreview.classList.remove("show");
+}
 
+/* =====================================================
+   ASK
+===================================================== */
+
+async function askSmartAI(){
+
+    const question = questionElement.value.trim();
+
+    if(!question){
+        alert("اكتب السؤال أولًا.");
+        questionElement.focus();
+        return;
+    }
+
+    askButton.disabled = true;
+    imageButton.disabled = true;
+    clearButton.disabled = true;
+
+    askButton.textContent = "جاري السؤال...";
+    loading.classList.add("show");
 
     results.innerHTML = `
-
-        ${createLoadingCard(
-            "Gemini"
-        )}
-
-        ${createLoadingCard(
-            "Mistral"
-        )}
-
+        ${createLoadingCard("Gemini")}
+        ${createLoadingCard("Mistral")}
     `;
 
+    const startTime = performance.now();
 
-    const startTime =
-        performance.now();
+    try{
+        /*
+         * Worker الحالي يستقبل question و userId.
+         * لذلك لا نرسل الصورة إلى Worker بعد.
+         * نحتفظ بها في الواجهة حتى نضيف دعم الصور
+         * في Worker في المرحلة التالية.
+         */
+        const response = await fetch(API_URL,{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                userId:USER_ID,
+                question:question
+            })
+        });
 
+        const data = await response.json();
 
-    try {
-
-        const response =
-            await fetch(
-
-                API_URL,
-
-                {
-
-                    method:
-                        "POST",
-
-                    headers: {
-
-                        "Content-Type":
-                            "application/json"
-
-                    },
-
-                    body:
-
-                        JSON.stringify({
-
-                            userId:
-                                USER_ID,
-
-                            question:
-                                question
-
-                        })
-
-                }
-
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if (!response.ok) {
-
+        if(!response.ok){
             throw new Error(
-
                 data?.error ||
                 data?.message ||
                 "حدث خطأ في الاتصال."
-
             );
-
         }
 
+        const elapsed = (
+            (performance.now() - startTime) / 1000
+        ).toFixed(2);
 
-        const elapsed =
-
-            (
-
-                (
-
-                    performance.now() -
-                    startTime
-
-                ) / 1000
-
-            ).toFixed(2);
-
-
-        updateRemaining(
-            data
-        );
-
-
-        displayResults(
-            data,
-            elapsed
-        );
-
-
-        // تحديث الحالات بعد السؤال
+        updateRemaining(data);
+        displayResults(data,elapsed);
 
         await loadProviderStatus();
 
-
-    }
-
-    catch (error) {
-
+    }catch(error){
         results.innerHTML = `
-
             <div class="empty">
-
                 <div class="empty-title">
-
                     تعذر الحصول على الإجابة
-
                 </div>
-
                 ${escapeHTML(
                     error?.message ||
                     "حدث خطأ غير معروف."
                 )}
-
             </div>
-
         `;
+    }finally{
+        askButton.disabled = false;
+        imageButton.disabled = false;
+        clearButton.disabled = false;
 
+        askButton.textContent = "اسأل Smart AI";
+        loading.classList.remove("show");
     }
-
-    finally {
-
-        askButton.disabled =
-            false;
-
-
-        askButton.textContent =
-            "اسأل Smart AI";
-
-
-        loading.classList.remove(
-            "show"
-        );
-
-    }
-
 }
 
-
 /* =====================================================
-   DISPLAY RESULTS
+   RESULTS
 ===================================================== */
 
-function displayResults(
-    data,
-    elapsed
-) {
+function displayResults(data,elapsed){
 
-    const resultData =
-        data?.results ||
-        {};
+    const resultData = data?.results || {};
 
-
-    const deepseek =
-        resultData.deepseek;
-
-
-    const gemini =
-        resultData.gemini;
-
-
-    const mistral =
-        resultData.mistral;
-
+    const deepseek = resultData.deepseek;
+    const gemini = resultData.gemini;
+    const mistral = resultData.mistral;
 
     const successful =
         data?.summary?.successful ??
-        countSuccessful(
-            resultData
-        );
-
+        countSuccessful(resultData);
 
     const total =
         data?.summary?.total ??
-        countReturned(
-            resultData
-        );
+        countReturned(resultData);
 
+    let cards = "";
 
-    let cards =
-        "";
-
-
-    // -----------------------------------------------------
-    // Show only providers actually contacted
-    // -----------------------------------------------------
-
-    if (deepseek) {
-
-        cards +=
-            createProviderCard(
-                "DeepSeek",
-                deepseek
-            );
-
+    if(deepseek){
+        cards += createProviderCard("DeepSeek",deepseek);
     }
 
-
-    if (gemini) {
-
-        cards +=
-            createProviderCard(
-                "Gemini",
-                gemini
-            );
-
+    if(gemini){
+        cards += createProviderCard("Gemini",gemini);
     }
 
-
-    if (mistral) {
-
-        cards +=
-            createProviderCard(
-                "Mistral",
-                mistral
-            );
-
+    if(mistral){
+        cards += createProviderCard("Mistral",mistral);
     }
 
-
-    if (!cards) {
-
+    if(!cards){
         cards = `
-
             <div class="empty">
-
-                <div class="empty-title">
-
-                    لم تصل أي إجابة
-
-                </div>
-
+                <div class="empty-title">لم تصل أي إجابة</div>
                 حاول مرة أخرى لاحقًا.
-
             </div>
-
         `;
-
     }
-
 
     cards += `
-
         <div class="summary">
-
             تم الحصول على
-
-            <strong>
-                ${successful}
-            </strong>
-
+            <strong>${successful}</strong>
             من
-
-            <strong>
-                ${total}
-            </strong>
-
+            <strong>${total}</strong>
             إجابات
-
             — زمن الطلب:
-
-            <strong>
-                ${elapsed}
-            </strong>
-
+            <strong>${elapsed}</strong>
             ثانية
-
         </div>
-
     `;
 
-
-    results.innerHTML =
-        cards;
-
+    results.innerHTML = cards;
 }
 
-
-/* =====================================================
-   COUNT SUCCESSFUL
-===================================================== */
-
-function countSuccessful(
-    resultData
-) {
-
-    return Object.values(
-        resultData
-    ).filter(
-
-        function(result) {
-
-            return (
-                result &&
-                result.ok === true
-            );
-
-        }
-
-    ).length;
-
+function countSuccessful(resultData){
+    return Object.values(resultData).filter(function(result){
+        return result && result.ok === true;
+    }).length;
 }
 
-
-/* =====================================================
-   COUNT RETURNED
-===================================================== */
-
-function countReturned(
-    resultData
-) {
-
-    return Object.values(
-        resultData
-    ).filter(
-
-        function(result) {
-
-            return result !== null;
-
-        }
-
-    ).length;
-
+function countReturned(resultData){
+    return Object.values(resultData).filter(function(result){
+        return result !== null;
+    }).length;
 }
-
 
 /* =====================================================
    PROVIDER CARD
 ===================================================== */
 
-function createProviderCard(
-    provider,
-    result
-) {
+function createProviderCard(provider,result){
 
-    if (!result) {
-
+    if(!result){
         return "";
-
     }
 
+    if(result.ok){
 
-    // -----------------------------------------------------
-    // SUCCESS
-    // -----------------------------------------------------
-
-    if (
-        result.ok
-    ) {
-
-        const answer =
-            result.answer ||
-            "";
-
+        const answer = result.answer || "";
 
         return `
-
             <div class="card">
-
                 <div class="card-header">
-
-                    <div class="provider">
-                        ${provider}
-                    </div>
-
-                    <div class="status success">
-                        نجح
-                    </div>
-
+                    <div class="provider">${provider}</div>
+                    <div class="status success">نجح</div>
                 </div>
-
 
                 <div class="answer-area">
-
                     <div class="answer">
-
-                        ${escapeHTML(
-                            answer
-                        )}
-
+                        ${escapeHTML(answer)}
                     </div>
-
                 </div>
 
-
                 <div class="card-footer">
-
                     <div class="model">
-
-                        ${escapeHTML(
-                            result.model ||
-                            ""
-                        )}
-
+                        ${escapeHTML(result.model || "")}
                     </div>
-
 
                     <button
                         class="copy-button"
                         onclick='copyAnswer(
-                            ${JSON.stringify(
-                                answer
-                            )},
+                            ${JSON.stringify(answer)},
                             this
                         )'
                     >
                         نسخ
                     </button>
-
                 </div>
-
             </div>
-
         `;
-
     }
-
-
-    // -----------------------------------------------------
-    // ERROR
-    // -----------------------------------------------------
 
     let error =
         result.error ||
         result.message ||
         "حدث خطأ.";
 
+    const lowerError = String(error).toLowerCase();
 
-    const lowerError =
-        String(
-            error
-        ).toLowerCase();
-
-
-    if (
-        lowerError.includes(
-            "insufficient balance"
-        )
-    ) {
-
-        error =
-            "الرصيد غير كافٍ لاستخدام هذه المنصة.";
-
+    if(lowerError.includes("insufficient balance")){
+        error = "الرصيد غير كافٍ لاستخدام هذه المنصة.";
     }
 
-
-    if (
-        lowerError.includes(
-            "api key"
-        )
-    ) {
-
-        error =
-            "مفتاح API غير مضبوط.";
-
+    if(lowerError.includes("api key")){
+        error = "مفتاح API غير مضبوط.";
     }
 
-
-    if (
-        lowerError.includes(
-            "402"
-        )
-    ) {
-
-        error =
-            "الرصيد غير كافٍ حاليًا.";
-
+    if(lowerError.includes("402")){
+        error = "الرصيد غير كافٍ حاليًا.";
     }
-
 
     return `
-
         <div class="card">
-
             <div class="card-header">
-
-                <div class="provider">
-                    ${provider}
-                </div>
-
-                <div class="status error">
-                    فشل
-                </div>
-
+                <div class="provider">${provider}</div>
+                <div class="status error">فشل</div>
             </div>
-
 
             <div class="answer-area">
-
                 <div class="error-message">
-
-                    ${escapeHTML(
-                        error
-                    )}
-
+                    ${escapeHTML(error)}
                 </div>
-
             </div>
-
 
             <div class="card-footer">
-
                 <div class="model">
-
-                    ${escapeHTML(
-                        result.model ||
-                        ""
-                    )}
-
+                    ${escapeHTML(result.model || "")}
                 </div>
-
             </div>
-
         </div>
-
     `;
-
 }
-
 
 /* =====================================================
    LOADING CARD
 ===================================================== */
 
-function createLoadingCard(
-    provider
-) {
-
+function createLoadingCard(provider){
     return `
-
         <div class="card">
-
             <div class="card-header">
-
-                <div class="provider">
-                    ${provider}
-                </div>
-
-                <div class="status loading-status">
-                    جاري...
-                </div>
-
+                <div class="provider">${provider}</div>
+                <div class="status loading-status">جاري...</div>
             </div>
-
 
             <div class="answer-area">
-
                 <div class="answer">
-
                     جاري انتظار الإجابة...
-
                 </div>
-
             </div>
-
         </div>
-
     `;
-
 }
-
 
 /* =====================================================
    COPY
 ===================================================== */
 
-async function copyAnswer(
-    text,
-    button
-) {
+async function copyAnswer(text,button){
 
-    try {
+    try{
+        await navigator.clipboard.writeText(text);
 
-        await navigator.clipboard.writeText(
-            text
-        );
+        const oldText = button.textContent;
+        button.textContent = "تم النسخ ✓";
 
+        setTimeout(function(){
+            button.textContent = oldText;
+        },1500);
 
-        const oldText =
-            button.textContent;
-
-
-        button.textContent =
-            "تم النسخ ✓";
-
-
-        setTimeout(
-
-            function() {
-
-                button.textContent =
-                    oldText;
-
-            },
-
-            1500
-
-        );
-
+    }catch(error){
+        alert("تعذر نسخ الإجابة.");
     }
-
-    catch (error) {
-
-        alert(
-            "تعذر نسخ الإجابة."
-        );
-
-    }
-
 }
-
 
 /* =====================================================
    CLEAR
 ===================================================== */
 
-function clearAll() {
+function clearAll(){
 
-    questionElement.value =
-        "";
-
+    questionElement.value = "";
+    removeSelectedImage();
 
     results.innerHTML = `
-
         <div class="empty">
-
             <div class="empty-title">
-
                 مرحبًا بك في Smart AI
-
             </div>
-
-            اكتب سؤالًا واضغط على
-            «اسأل Smart AI»
-
+            اكتب سؤالًا واضغط على «اسأل Smart AI»
         </div>
-
     `;
 
-
     questionElement.focus();
-
 }
 
-
 /* =====================================================
-   ESCAPE HTML
+   ESCAPE
 ===================================================== */
 
-function escapeHTML(
-    text
-) {
-
-    return String(
-        text
-    )
-
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
-
+function escapeHTML(text){
+    return String(text)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
 }
 
-
 /* =====================================================
-   BUTTON EVENTS
+   BUTTONS
 ===================================================== */
 
-askButton.addEventListener(
-    "click",
-    askSmartAI
-);
-
-
-clearButton.addEventListener(
-    "click",
-    clearAll
-);
-
+askButton.addEventListener("click",askSmartAI);
+clearButton.addEventListener("click",clearAll);
 
 /* =====================================================
-   ENTER
+   KEYBOARD
+   Enter = سطر جديد
+   Ctrl+Enter / Cmd+Enter = إرسال
 ===================================================== */
 
-questionElement.addEventListener(
+questionElement.addEventListener("keydown",function(event){
 
-    "keydown",
-
-    function(event) {
-
-        if (
-
-            event.key ===
-                "Enter"
-
-            &&
-
-            !event.shiftKey
-
-        ) {
-
-            event.preventDefault();
-
-            askSmartAI();
-
-        }
-
+    if(
+        event.key === "Enter" &&
+        (event.ctrlKey || event.metaKey)
+    ){
+        event.preventDefault();
+        askSmartAI();
     }
 
-);
-
+});
 </script>
 
 </body>
-
 </html>
