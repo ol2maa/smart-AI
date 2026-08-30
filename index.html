@@ -377,6 +377,28 @@ button:active{transform:scale(.98)}
 
 </div>
 
+
+<!-- =========================================
+     IMAGE LIGHTBOX
+========================================== -->
+
+<div id="imageLightbox" class="image-lightbox" role="dialog" aria-modal="true" aria-label="معاينة الصورة">
+
+    <button
+        id="lightboxClose"
+        class="lightbox-close"
+        type="button"
+        aria-label="إغلاق"
+    >×</button>
+
+    <img id="lightboxImage" alt="الصورة بحجم كبير">
+
+    <div class="lightbox-hint">
+        اضغط خارج الصورة أو × للإغلاق
+    </div>
+
+</div>
+
 <script>
 "use strict";
 
@@ -408,6 +430,11 @@ const imagePreview = document.getElementById("imagePreview");
 const previewImage = document.getElementById("previewImage");
 const imageName = document.getElementById("imageName");
 const removeImageButton = document.getElementById("removeImageButton");
+
+const imageLightbox = document.getElementById("imageLightbox");
+const lightboxImage = document.getElementById("lightboxImage");
+const lightboxClose = document.getElementById("lightboxClose");
+
 const loading = document.getElementById("loading");
 const results = document.getElementById("results");
 const providersStatus = document.getElementById("providersStatus");
@@ -582,7 +609,7 @@ imageInput.addEventListener("change", function(){
         return;
     }
 
-    if(!file.type.startsWith("image/")){
+    if(!file.type || !file.type.startsWith("image/")){
         alert("الملف المختار ليس صورة.");
         imageInput.value = "";
         return;
@@ -590,11 +617,31 @@ imageInput.addEventListener("change", function(){
 
     selectedImage = file;
 
-    const objectURL = URL.createObjectURL(file);
+    /*
+     * نستخدم FileReader بدل Object URL حتى تكون
+     * المعاينة موثوقة على iPhone/iPad سواء كانت
+     * الصورة من الاستوديو أو ملتقطة بالكاميرا.
+     */
+    const reader = new FileReader();
 
-    previewImage.src = objectURL;
-    imageName.textContent = file.name;
-    imagePreview.classList.add("show");
+    reader.onload = function(event){
+        previewImage.src = event.target.result;
+        imageName.textContent =
+            file.name || "صورة مرفقة";
+
+        imagePreview.classList.add("show");
+    };
+
+    reader.onerror = function(){
+        selectedImage = null;
+        imageInput.value = "";
+        previewImage.removeAttribute("src");
+        imagePreview.classList.remove("show");
+
+        alert("تعذر معاينة الصورة.");
+    };
+
+    reader.readAsDataURL(file);
 });
 
 removeImageButton.addEventListener("click", removeSelectedImage);
@@ -605,7 +652,42 @@ function removeSelectedImage(){
     previewImage.removeAttribute("src");
     imageName.textContent = "";
     imagePreview.classList.remove("show");
+    closeImageLightbox();
 }
+
+/* =====================================================
+   IMAGE LIGHTBOX
+===================================================== */
+
+previewImage.addEventListener("click", function(){
+    if(!previewImage.src){
+        return;
+    }
+
+    lightboxImage.src = previewImage.src;
+    imageLightbox.classList.add("show");
+    document.body.style.overflow = "hidden";
+});
+
+function closeImageLightbox(){
+    imageLightbox.classList.remove("show");
+    lightboxImage.removeAttribute("src");
+    document.body.style.overflow = "";
+}
+
+lightboxClose.addEventListener("click", closeImageLightbox);
+
+imageLightbox.addEventListener("click", function(event){
+    if(event.target === imageLightbox){
+        closeImageLightbox();
+    }
+});
+
+document.addEventListener("keydown", function(event){
+    if(event.key === "Escape" && imageLightbox.classList.contains("show")){
+        closeImageLightbox();
+    }
+});
 
 /* =====================================================
    ASK
