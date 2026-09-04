@@ -1,3180 +1,1382 @@
-// =========================================================
-// Smart AI
-‎// المرحلة العاشرة + Usage Logging
-//
-// DeepSeek + Gemini + Mistral
-// D1 Users
-// 20 Questions / 24 Hours
-// Provider Status
-// Automatic Provider Selection
-// Persistent Provider Status
-// Image Input Support
-// Conversation Memory
-// Usage Logging
-// =========================================================
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Smart AI</title>
 
-const DEEPSEEK_API_URL =
-  "https://api.deepseek.com/chat/completions";
+<style>
+*{box-sizing:border-box}
 
-const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent";
+html{scroll-behavior:smooth}
 
-const MISTRAL_API_URL =
-  "https://api.mistral.ai/v1/chat/completions";
+body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    background:linear-gradient(180deg,#eef1f5 0%,#f8f9fb 100%);
+    color:#111827;
+    min-height:100vh;
+}
 
-const DEEPSEEK_MODEL =
-  "deepseek-v4-flash";
+.container{
+    width:100%;
+    max-width:1200px;
+    margin:auto;
+    padding:25px 16px calc(50px + env(safe-area-inset-bottom));
+}
 
-const DEEPSEEK_VISION_MODEL =
-  "deepseek-v4-flash-vision-exp";
+.header{text-align:center;margin-bottom:24px}
 
-const GEMINI_MODEL =
-  "gemini-3.6-flash";
+.logo{font-size:40px;font-weight:900;letter-spacing:-1.5px}
 
-const MISTRAL_MODEL =
-  "mistral-small-latest";
+.subtitle{margin-top:6px;color:#6b7280;font-size:15px}
 
-const DEFAULT_QUESTIONS_LIMIT = 20;
+.system-bar{
+    background:white;border-radius:20px;padding:17px;margin-bottom:18px;
+    box-shadow:0 7px 25px rgba(0,0,0,.05);
+}
 
-const WINDOW_MS =
-  24 * 60 * 60 * 1000;
+.system-top{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px;
+}
 
-const STATUS_MAX_AGE_MS =
-  30 * 60 * 1000;
+.system-title{font-weight:900;font-size:18px}
 
-const MAX_QUESTION_LENGTH =
-  50000;
+.remaining{
+    font-size:14px;font-weight:800;color:#374151;background:#f3f4f6;
+    padding:7px 12px;border-radius:22px;white-space:nowrap;
+}
 
-const MAX_IMAGE_DATA_URL_LENGTH =
-  16 * 1024 * 1024;
+.providers-status{display:flex;flex-wrap:wrap;gap:8px}
 
-// ---------------------------------------------------------
-// Conversation memory
-// ---------------------------------------------------------
+.provider-status{
+    display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:22px;
+    background:#f3f4f6;color:#6b7280;font-size:13px;font-weight:800;
+}
 
-const MAX_MEMORY_TURNS = 3;
+.provider-status.available{background:#dcfce7;color:#166534}
+.provider-status.unavailable,.provider-status.error{background:#fee2e2;color:#991b1b}
+.provider-status.limited{background:#fef3c7;color:#92400e}
 
-const MAX_MEMORY_TEXT_LENGTH =
-  12000;
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
 
-// ---------------------------------------------------------
-// Providers
-// ---------------------------------------------------------
+/* =========================================
+   PROVIDER SELECTION
+========================================= */
 
-const AVAILABLE_PROVIDERS = [
-  "deepseek",
-  "gemini",
-  "mistral",
-];
+.provider-selector{
+    background:white;
+    border-radius:20px;
+    padding:17px;
+    margin-bottom:18px;
+    box-shadow:0 7px 25px rgba(0,0,0,.05);
+}
 
-// ---------------------------------------------------------
-// CORS
-// ---------------------------------------------------------
+.provider-selector-title{
+    font-size:18px;
+    font-weight:900;
+    margin-bottom:6px;
+}
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
+.provider-selector-note{
+    color:#6b7280;
+    font-size:13px;
+    line-height:1.7;
+    margin-bottom:12px;
+}
+
+.provider-options{
+    display:flex;
+    flex-wrap:wrap;
+    gap:9px;
+}
+
+.provider-option{
+    position:relative;
+}
+
+.provider-option input{
+    position:absolute;
+    opacity:0;
+    pointer-events:none;
+}
+
+.provider-label{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    min-height:48px;
+    padding:8px 13px;
+    border:2px solid #e5e7eb;
+    border-radius:15px;
+    background:#f9fafb;
+    cursor:pointer;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
+    transition:border .15s,background .15s,transform .15s;
+}
+
+.provider-label:active{
+    transform:scale(.98);
+}
+
+.provider-option input:checked + .provider-label{
+    border-color:#111827;
+    background:#f3f4f6;
+}
+
+.provider-option input:focus-visible + .provider-label{
+    outline:3px solid rgba(17,24,39,.12);
+}
+
+.provider-name{
+    font-weight:900;
+    font-size:14px;
+}
+
+.provider-state{
+    font-size:11px;
+    font-weight:800;
+    color:#6b7280;
+}
+
+.provider-state.available{
+    color:#166534;
+}
+
+.provider-selection-info{
+    width:100%;
+    color:#92400e;
+    background:#fffbeb;
+    border-radius:13px;
+    padding:10px 12px;
+    font-size:13px;
+    font-weight:800;
+    line-height:1.7;
+}
+
+.provider-selection-count{
+    margin-top:12px;
+    font-size:13px;
+    font-weight:800;
+    color:#374151;
+}
+
+.provider-selection-count.error{
+    color:#991b1b;
+}
+
+.question-box{
+    background:white;border-radius:24px;padding:18px;
+    box-shadow:0 10px 35px rgba(0,0,0,.07);margin-bottom:20px;
+}
+
+textarea{
+    width:100%;
+    min-height:125px;
+    max-height:45vh;
+    resize:vertical;
+    border:2px solid #e5e7eb;
+    border-radius:17px;
+    padding:16px;
+    font-family:inherit;
+    font-size:17px;
+    line-height:1.7;
+    outline:none;
+    direction:rtl;
+    text-align:right;
+    transition:border .2s,box-shadow .2s;
+    overflow-y:auto;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+}
+
+textarea:focus{
+    border-color:#111827;
+    box-shadow:0 0 0 3px rgba(17,24,39,.07);
+}
+
+textarea::placeholder{color:#9ca3af}
+
+.image-preview{
+    display:none;
+    margin-top:10px;
+    padding:10px;
+    border:1px solid #e5e7eb;
+    border-radius:15px;
+    background:#f9fafb;
+    align-items:center;
+    gap:10px;
+}
+
+.image-preview.show{display:flex}
+
+.image-preview img{
+    width:58px;
+    height:58px;
+    object-fit:cover;
+    border-radius:10px;
+    border:1px solid #e5e7eb;
+}
+
+.image-info{
+    flex:1;
+    min-width:0;
+}
+
+.image-name{
+    font-size:13px;
+    font-weight:800;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.image-note{
+    font-size:11px;
+    color:#9ca3af;
+    margin-top:3px;
+}
+
+.remove-image{
+    padding:7px 10px;
+    background:#fee2e2;
+    color:#991b1b;
+    font-size:12px;
+}
+
+.button-row{
+    display:flex;
+    gap:10px;
+    margin-top:13px;
+}
+
+button{
+    border:none;
+    font-family:inherit;
+    font-size:16px;
+    font-weight:800;
+    cursor:pointer;
+    border-radius:14px;
+    padding:14px 20px;
+    transition:transform .15s,opacity .15s,background .15s;
+}
+
+button:active{transform:scale(.98)}
+
+.ask-button{flex:1;background:#111827;color:white}
+.ask-button:hover{background:#1f2937}
+.ask-button:disabled{opacity:.55;cursor:not-allowed}
+
+.clear-button{background:#e5e7eb;color:#111827}
+.clear-button:hover{background:#dfe2e6}
+
+.image-button{
+    background:#eef2ff;
+    color:#3730a3;
+    padding-left:16px;
+    padding-right:16px;
+}
+
+.image-button:hover{background:#e0e7ff}
+
+.loading{
+    display:none;background:white;border-radius:16px;padding:14px;margin-bottom:18px;
+    text-align:center;color:#6b7280;box-shadow:0 5px 20px rgba(0,0,0,.05);
+}
+
+.loading.show{display:block}
+
+.loading-dot{
+    display:inline-block;width:8px;height:8px;border-radius:50%;background:#6b7280;
+    margin:0 3px;animation:pulse 1s infinite;
+}
+
+.loading-dot:nth-child(2){animation-delay:.15s}
+.loading-dot:nth-child(3){animation-delay:.30s}
+
+@keyframes pulse{
+    0%,100%{opacity:.3}
+    50%{opacity:1}
+}
+
+#results{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+}
+
+.card{
+    background:white;border-radius:22px;padding:18px;min-height:300px;
+    display:flex;flex-direction:column;min-width:0;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+}
+
+.card-header{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding-bottom:14px;border-bottom:1px solid #edf0f3;
+}
+
+.provider{font-size:22px;font-weight:900}
+
+.status{
+    font-size:13px;font-weight:800;padding:6px 11px;border-radius:30px;
+    background:#f3f4f6;color:#6b7280;white-space:nowrap;
+}
+
+.status.success{background:#dcfce7;color:#166534}
+.status.error{background:#fee2e2;color:#991b1b}
+.status.loading-status{background:#f3f4f6;color:#6b7280}
+
+.answer-area{
+    flex:1;padding-top:18px;min-width:0;
+}
+
+.answer{
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+    max-width:100%;
+    line-height:1.9;
+    font-size:17px;
+    direction:rtl;
+    text-align:right;
+}
+
+.error-message{
+    color:#991b1b;font-size:16px;line-height:1.8;
+    overflow-wrap:anywhere;word-break:break-word;
+}
+
+.card-footer{
+    margin-top:18px;padding-top:12px;border-top:1px solid #edf0f3;
+    display:flex;justify-content:space-between;align-items:center;gap:10px;min-width:0;
+}
+
+.model{
+    color:#9ca3af;font-size:11px;direction:ltr;text-align:left;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;
+}
+
+.copy-button{
+    padding:7px 11px;background:#f3f4f6;color:#374151;font-size:12px;white-space:nowrap;
+}
+
+.copy-button:hover{background:#e5e7eb}
+
+.empty{
+    grid-column:1 / -1;background:white;border-radius:22px;padding:45px 20px;
+    text-align:center;color:#9ca3af;box-shadow:0 8px 25px rgba(0,0,0,.05);
+}
+
+.empty-title{color:#374151;font-size:20px;font-weight:800;margin-bottom:8px}
+
+.summary{
+    grid-column:1 / -1;background:white;border-radius:18px;padding:13px 16px;
+    text-align:center;color:#6b7280;font-size:14px;box-shadow:0 5px 20px rgba(0,0,0,.04);
+}
+
+.summary strong{color:#111827}
+
+
+/* =========================================
+   IMAGE PREVIEW / LIGHTBOX
+========================================= */
+
+.image-preview img{
+    width:78px;
+    height:78px;
+    object-fit:cover;
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    cursor:zoom-in;
+    -webkit-tap-highlight-color:transparent;
+}
+
+.image-preview img:active{
+    transform:scale(.97);
+}
+
+.image-lightbox{
+    position:fixed;
+    inset:0;
+    z-index:99999;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));
+    background:rgba(0,0,0,.86);
+    touch-action:manipulation;
+}
+
+.image-lightbox.show{
+    display:flex;
+}
+
+.image-lightbox img{
+    display:block;
+    width:auto;
+    height:auto;
+    max-width:94vw;
+    max-height:84vh;
+    object-fit:contain;
+    border-radius:14px;
+    box-shadow:0 20px 60px rgba(0,0,0,.45);
+    user-select:none;
+    -webkit-user-select:none;
+}
+
+.lightbox-close{
+    position:absolute;
+    top:calc(14px + env(safe-area-inset-top));
+    left:16px;
+    z-index:100000;
+    width:46px;
+    height:46px;
+    padding:0;
+    border-radius:50%;
+    background:rgba(255,255,255,.95);
+    color:#111827;
+    font-size:30px;
+    line-height:46px;
+    text-align:center;
+    font-weight:900;
+    box-shadow:0 5px 20px rgba(0,0,0,.25);
+}
+
+.lightbox-hint{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:calc(14px + env(safe-area-inset-bottom));
+    text-align:center;
+    color:white;
+    font-size:13px;
+    font-weight:700;
+    opacity:.9;
+    pointer-events:none;
+}
+
+@media (max-width:850px){
+    #results{grid-template-columns:1fr}
+    .logo{font-size:34px}
+    .card{min-height:250px}
+}
+
+@media (max-width:500px){
+    .container{padding:16px 10px calc(35px + env(safe-area-inset-bottom))}
+    .header{margin-bottom:18px}
+    .logo{font-size:31px}
+    .subtitle{font-size:14px}
+    .system-bar{border-radius:20px;padding:15px}
+    .provider-selector{border-radius:20px;padding:15px}
+    .provider-options{display:grid;grid-template-columns:1fr 1fr}
+    .provider-label{justify-content:center;padding:8px 9px}
+    .system-top{align-items:flex-start;flex-direction:column}
+    .remaining{font-size:13px}
+    .question-box{border-radius:20px;padding:13px}
+    textarea{min-height:115px;font-size:16px}
+    .button-row{flex-wrap:wrap}
+    .ask-button{min-width:calc(100% - 70px)}
+    .image-button{width:60px;padding-left:8px;padding-right:8px}
+    .clear-button{width:100%}
+    .card{border-radius:20px}
+    .provider{font-size:21px}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<div class="header">
+    <div class="logo">اسأل Smart AI</div>
+    <div class="subtitle">سؤال واحد — عدة نماذج ذكاء اصطناعي</div>
+</div>
+
+<div class="system-bar">
+    <div class="system-top">
+        <div class="system-title">حالة مزودي الذكاء الاصطناعي</div>
+        <div id="remaining" class="remaining">الأسئلة المتبقية: —</div>
+    </div>
+
+    <div id="providersStatus" class="providers-status">
+        <div class="provider-status">
+            <span class="dot"></span>
+            جاري الفحص...
+        </div>
+    </div>
+</div>
+
+<div class="provider-selector">
+    <div class="provider-selector-title">اختيار المنصات</div>
+    <div class="provider-selector-note">
+        اختر من المنصات المتاحة فقط. يمكنك اختيار من 2 إلى 4 منصات، أو استخدام الاختيار التلقائي.
+    </div>
+
+    <div id="providerOptions" class="provider-options"></div>
+
+    <div id="providerSelectionCount" class="provider-selection-count">
+        جاري تجهيز قائمة المنصات...
+    </div>
+</div>
+
+<div class="question-box">
+
+    <textarea
+        id="question"
+        maxlength="50000"
+        placeholder="اكتب سؤالك هنا...&#10;اضغط Enter لسطر جديد، واضغط Ctrl+Enter أو ⌘+Enter للإرسال."
+        autocomplete="off"
+    ></textarea>
+
+    <div id="imagePreview" class="image-preview">
+        <img id="previewImage" alt="معاينة الصورة">
+        <div class="image-info">
+            <div id="imageName" class="image-name"></div>
+            <div class="image-note">الصورة مرفقة بالرسالة</div>
+        </div>
+        <button id="removeImageButton" class="remove-image" type="button">إزالة</button>
+    </div>
+
+    <input
+        id="imageInput"
+        type="file"
+        accept="image/*"
+        hidden
+    >
+
+    <div class="button-row">
+        <button id="askButton" class="ask-button" type="button">
+            اسأل Smart AI
+        </button>
+
+        <button id="imageButton" class="image-button" type="button" title="إضافة صورة">
+            🖼️
+        </button>
+
+        <button id="clearButton" class="clear-button" type="button">
+            مسح
+        </button>
+    </div>
+
+</div>
+
+<div id="loading" class="loading">
+    جاري الحصول على الإجابات
+    <span class="loading-dot"></span>
+    <span class="loading-dot"></span>
+    <span class="loading-dot"></span>
+</div>
+
+<div id="results">
+    <div class="empty">
+        <div class="empty-title">مرحبًا بك في Smart AI</div>
+        اكتب سؤالًا واضغط على «اسأل Smart AI»
+    </div>
+</div>
+
+</div>
+
+
+<!-- =========================================
+     IMAGE LIGHTBOX
+========================================== -->
+
+<div id="imageLightbox" class="image-lightbox" role="dialog" aria-modal="true" aria-label="معاينة الصورة">
+
+    <button
+        id="lightboxClose"
+        class="lightbox-close"
+        type="button"
+        aria-label="إغلاق"
+    >×</button>
+
+    <img id="lightboxImage" alt="الصورة بحجم كبير">
+
+    <div class="lightbox-hint">
+        اضغط خارج الصورة أو × للإغلاق
+    </div>
+
+</div>
+
+<script>
+"use strict";
+
+/* =====================================================
+   SMART AI FRONTEND
+===================================================== */
+
+const API_URL = "https://smart-ai.kaka10906.workers.dev/";
+
+function getUserId(){
+    let userId = localStorage.getItem("smartAI_userId");
+
+    if(!userId){
+        userId = "user-" + crypto.randomUUID();
+        localStorage.setItem("smartAI_userId", userId);
+    }
+
+    return userId;
+}
+
+const USER_ID = getUserId();
+
+const questionElement = document.getElementById("question");
+const askButton = document.getElementById("askButton");
+const clearButton = document.getElementById("clearButton");
+const imageButton = document.getElementById("imageButton");
+const imageInput = document.getElementById("imageInput");
+const imagePreview = document.getElementById("imagePreview");
+const previewImage = document.getElementById("previewImage");
+const imageName = document.getElementById("imageName");
+const removeImageButton = document.getElementById("removeImageButton");
+
+const imageLightbox = document.getElementById("imageLightbox");
+const lightboxImage = document.getElementById("lightboxImage");
+const lightboxClose = document.getElementById("lightboxClose");
+
+const loading = document.getElementById("loading");
+const results = document.getElementById("results");
+const providersStatus = document.getElementById("providersStatus");
+const remainingElement = document.getElementById("remaining");
+const providerOptions = document.getElementById("providerOptions");
+const providerSelectionCount = document.getElementById("providerSelectionCount");
+
+const PROVIDERS = ["deepseek","gemini","mistral"];
+
+const PROVIDER_NAMES = {
+    deepseek:"DeepSeek",
+    gemini:"Gemini",
+    mistral:"Mistral"
 };
 
-// =========================================================
-// JSON
-// =========================================================
+let providerStates = {};
+let providerSelectionMode = "automatic";
 
-function json(data, status = 200) {
+let selectedImage = null;
 
-  return new Response(
-    JSON.stringify(data),
-    {
-      status,
+loadProviderStatus();
+loadQuota();
 
-      headers: {
-        "Content-Type":
-          "application/json; charset=UTF-8",
+/* =====================================================
+   PROVIDER STATUS
+===================================================== */
 
-        ...CORS_HEADERS,
-      },
-    }
-  );
-}
+async function loadProviderStatus(){
+    try{
+        const response = await fetch(API_URL + "status");
+        const data = await response.json();
 
-// =========================================================
-// PROVIDER STATUS
-// =========================================================
-
-async function ensureProviderStatusRows(DB) {
-
-  const now =
-    Date.now();
-
-  const statements =
-    AVAILABLE_PROVIDERS.map(
-      providerId =>
-        DB.prepare(
-          `INSERT OR IGNORE INTO provider_status
-          (
-            provider_id,
-            status,
-            last_checked,
-            last_success,
-            last_error,
-            updated_at
-          )
-          VALUES
-          (?, 'unknown', NULL, NULL, NULL, ?)`
-        ).bind(
-          providerId,
-          now
-        )
-    );
-
-  await DB.batch(
-    statements
-  );
-}
-
-function classifyProviderStatus(
-  result
-) {
-
-  if (
-    result?.ok === true
-  ) {
-
-    return "available";
-  }
-
-  const status =
-    Number(
-      result?.http_status
-    ) || 0;
-
-  if (
-    status === 401 ||
-    status === 402 ||
-    status === 403
-  ) {
-
-    return "unavailable";
-  }
-
-  if (
-    status === 429 ||
-    status >= 500
-  ) {
-
-    return "limited";
-  }
-
-  if (
-    status === 400 ||
-    status === 404 ||
-    status === 422
-  ) {
-
-    return "error";
-  }
-
-  return "limited";
-}
-
-async function updateProviderStatus(
-  DB,
-  providerId,
-  result
-) {
-
-  const now =
-    Date.now();
-
-  const status =
-    classifyProviderStatus(
-      result
-    );
-
-  const lastError =
-    result?.ok
-      ? null
-      : (
-          result?.error ||
-          "Unknown provider error."
-        );
-
-  await DB.prepare(
-    `UPDATE provider_status
-     SET
-       status = ?,
-       last_checked = ?,
-       last_success =
-         CASE
-           WHEN ? = 'available'
-           THEN ?
-           ELSE last_success
-         END,
-       last_error = ?,
-       updated_at = ?
-     WHERE provider_id = ?`
-  ).bind(
-    status,
-    now,
-    status,
-    now,
-    lastError,
-    now,
-    providerId
-  ).run();
-
-  return {
-    status,
-    checked_at: now,
-  };
-}
-
-async function getProviderStatus(
-  DB
-) {
-
-  await ensureProviderStatusRows(
-    DB
-  );
-
-  const result =
-    await DB.prepare(
-      `SELECT
-        provider_id,
-        status,
-        last_checked,
-        last_success,
-        last_error,
-        updated_at
-       FROM provider_status
-       ORDER BY provider_id`
-    ).all();
-
-  const now =
-    Date.now();
-
-  const providers = {};
-
-  for (
-    const row of
-      result.results || []
-  ) {
-
-    const lastChecked =
-      row.last_checked !== null &&
-      row.last_checked !== undefined
-        ? Number(
-            row.last_checked
-          )
-        : null;
-
-    const age =
-      lastChecked !== null
-        ? Math.max(
-            0,
-            now - lastChecked
-          )
-        : null;
-
-    if (
-      lastChecked === null
-    ) {
-
-      providers[
-        row.provider_id
-      ] = {
-
-        status:
-          "unknown",
-
-        last_checked:
-          null,
-
-        last_success:
-          row.last_success !== null
-            ? Number(
-                row.last_success
-              )
-            : null,
-
-        last_error:
-          null,
-
-        stale:
-          false,
-      };
-
-      continue;
-    }
-
-    providers[
-      row.provider_id
-    ] = {
-
-      status:
-        row.status ||
-        "unknown",
-
-      last_checked:
-        lastChecked,
-
-      last_success:
-        row.last_success !== null
-          ? Number(
-              row.last_success
-            )
-          : null,
-
-      last_error:
-        row.status ===
-        "available"
-          ? null
-          : (
-              row.last_error ||
-              null
-            ),
-
-      stale:
-        age >
-        STATUS_MAX_AGE_MS,
-
-      age_seconds:
-        Math.floor(
-          age / 1000
-        ),
-    };
-  }
-
-  return {
-
-    checked_at:
-      now,
-
-    max_age_seconds:
-      STATUS_MAX_AGE_MS / 1000,
-
-    providers,
-  };
-}
-
-// =========================================================
-// AUTOMATIC PROVIDER SELECTION
-// =========================================================
-
-async function selectProvidersAutomatically(
-  DB
-) {
-
-  const statusData =
-    await getProviderStatus(
-      DB
-    );
-
-  const providers =
-    statusData.providers ||
-    {};
-
-  const priority = {
-
-    available: 1,
-
-    limited: 2,
-
-    unknown: 3,
-
-    unavailable: 99,
-
-    error: 99,
-  };
-
-  const candidates =
-    AVAILABLE_PROVIDERS
-      .map(
-        providerId => {
-
-          const provider =
-            providers[
-              providerId
-            ];
-
-          const status =
-            provider?.status ||
-            "unknown";
-
-          return {
-
-            id:
-              providerId,
-
-            status,
-
-            priority:
-              priority[status] ??
-              99,
-          };
+        if(!response.ok){
+            throw new Error("Status request failed");
         }
-      )
-      .filter(
-        provider =>
-          provider.status ===
-            "available" ||
 
-          provider.status ===
-            "limited" ||
+        providerStates = {};
 
-          provider.status ===
-            "unknown"
-      );
+        const providers = data?.status?.providers || {};
 
-  candidates.sort(
-    (a, b) => {
+        PROVIDERS.forEach(function(name){
+            const info = providers[name];
+            providerStates[name] =
+                String(info?.status || "unknown").toLowerCase();
+        });
 
-      if (
-        a.priority !==
-        b.priority
-      ) {
+        displayProviderStatus(data);
+        renderProviderOptions();
 
-        return (
-          a.priority -
-          b.priority
-        );
-      }
+    }catch(error){
 
-      return (
-        AVAILABLE_PROVIDERS.indexOf(
-          a.id
-        ) -
-        AVAILABLE_PROVIDERS.indexOf(
-          b.id
-        )
-      );
+        providerStates = {};
+
+        PROVIDERS.forEach(function(name){
+            providerStates[name] = "unknown";
+        });
+
+        providersStatus.innerHTML = `
+            <div class="provider-status">
+                <span class="dot"></span>
+                تعذر قراءة حالة المزودين
+            </div>
+        `;
+
+        renderProviderOptions();
     }
-  );
-
-  const available =
-    candidates.filter(
-      provider =>
-        provider.status ===
-        "available"
-    );
-
-  if (
-    available.length > 0
-  ) {
-
-    return {
-
-      providers:
-        available.map(
-          provider =>
-            provider.id
-        ),
-
-      selection_mode:
-        "automatic",
-
-      reason:
-        "Selected currently available AI providers.",
-
-      status:
-        statusData,
-    };
-  }
-
-  const limited =
-    candidates.filter(
-      provider =>
-        provider.status ===
-        "limited"
-    );
-
-  if (
-    limited.length > 0
-  ) {
-
-    return {
-
-      providers:
-        limited.map(
-          provider =>
-            provider.id
-        ),
-
-      selection_mode:
-        "automatic",
-
-      reason:
-        "No fully available provider. Selected limited providers.",
-
-      status:
-        statusData,
-    };
-  }
-
-  const unknown =
-    candidates.filter(
-      provider =>
-        provider.status ===
-        "unknown"
-    );
-
-  return {
-
-    providers:
-      unknown.map(
-        provider =>
-          provider.id
-      ),
-
-    selection_mode:
-      "automatic",
-
-    reason:
-      "No known available provider. Selected unknown providers.",
-
-    status:
-      statusData,
-  };
 }
 
-// =========================================================
-// IMAGE VALIDATION
-// =========================================================
+/* =====================================================
+   PROVIDER SELECTION
+===================================================== */
 
-function validateImage(
-  image
-) {
-
-  if (
-    image === null ||
-    image === undefined
-  ) {
-
-    return {
-
-      ok:
-        true,
-
-      image:
-        null,
-    };
-  }
-
-  if (
-    typeof image !==
-    "object"
-  ) {
-
-    return {
-
-      ok:
-        false,
-
-      error:
-        "Invalid image object.",
-    };
-  }
-
-  const data =
-    typeof image.data ===
-    "string"
-
-      ? image.data.trim()
-
-      : "";
-
-  const mimeType =
-    typeof image.mimeType ===
-    "string"
-
-      ? image.mimeType
-          .trim()
-          .toLowerCase()
-
-      : "";
-
-  if (
-    !data
-  ) {
-
-    return {
-
-      ok:
-        false,
-
-      error:
-        "Image data is missing.",
-    };
-  }
-
-  if (
-    !data.startsWith(
-      "data:image/"
-    )
-  ) {
-
-    return {
-
-      ok:
-        false,
-
-      error:
-        "Image must be sent as a data URL.",
-    };
-  }
-
-  if (
-    !mimeType ||
-    !mimeType.startsWith(
-      "image/"
-    )
-  ) {
-
-    return {
-
-      ok:
-        false,
-
-      error:
-        "Invalid image MIME type.",
-    };
-  }
-
-  if (
-    data.length >
-    MAX_IMAGE_DATA_URL_LENGTH
-  ) {
-
-    return {
-
-      ok:
-        false,
-
-      error:
-        "Image is too large. Please choose a smaller image.",
-    };
-  }
-
-  return {
-
-    ok:
-      true,
-
-    image: {
-
-      data,
-
-      mimeType,
-    },
-  };
+function getProviderDisplayName(name){
+    return PROVIDER_NAMES[name] || name;
 }
 
-// =========================================================
-// CONVERSATION MEMORY
-// =========================================================
-
-async function getConversationHistory(
-  DB,
-  userId
-) {
-
-  const row =
-    await DB.prepare(
-      `SELECT
-        history,
-        updated_at
-       FROM conversation_memory
-       WHERE user_id = ?`
-    ).bind(
-      userId
-    ).first();
-
-  if (
-    !row ||
-    !row.history
-  ) {
-
-    return [];
-  }
-
-  try {
-
-    const history =
-      JSON.parse(
-        row.history
-      );
-
-    if (
-      !Array.isArray(
-        history
-      )
-    ) {
-
-      return [];
-    }
-
-    return history
-      .slice(
-        -MAX_MEMORY_TURNS
-      )
-      .filter(
-        item =>
-          item &&
-          typeof item ===
-            "object"
-      );
-
-  } catch (
-    error
-  ) {
-
-    return [];
-  }
-}
-
-function cleanMemoryText(
-  text
-) {
-
-  if (
-    typeof text !==
-    "string"
-  ) {
-
-    return "";
-  }
-
-  if (
-    text.length <=
-    MAX_MEMORY_TEXT_LENGTH
-  ) {
-
-    return text;
-  }
-
-  return (
-
-    text.slice(
-      0,
-      MAX_MEMORY_TEXT_LENGTH
-    ) +
-
-    "\n[تم اختصار هذه الإجابة في الذاكرة]"
-  );
-}
-
-async function saveConversationTurn(
-  DB,
-  userId,
-  question,
-  providerResponses
-) {
-
-  try {
-
-    const oldHistory =
-      await getConversationHistory(
-        DB,
-        userId
-      );
-
-    const answers = {};
-
-    for (
-      const result of
-        providerResponses
-    ) {
-
-      if (
-        result?.ok === true &&
-        result?.answer
-      ) {
-
-        const provider =
-          String(
-            result.provider ||
-            ""
-          ).toLowerCase();
-
-        answers[
-          provider
-        ] =
-          cleanMemoryText(
-            result.answer
-          );
-      }
-    }
-
-    if (
-      Object.keys(
-        answers
-      ).length === 0
-    ) {
-
-      return;
-    }
-
-    const newTurn = {
-
-      question:
-        cleanMemoryText(
-          question
-        ),
-
-      answers,
-
-      created_at:
-        Date.now(),
-    };
-
-    const newHistory =
-      [
-        ...oldHistory,
-
-        newTurn,
-      ].slice(
-        -MAX_MEMORY_TURNS
-      );
-
-    await DB.prepare(
-      `INSERT INTO conversation_memory
-       (
-         user_id,
-         history,
-         updated_at
-       )
-       VALUES
-       (?, ?, ?)
-       ON CONFLICT(user_id)
-       DO UPDATE SET
-         history = excluded.history,
-         updated_at = excluded.updated_at`
-    ).bind(
-
-      userId,
-
-      JSON.stringify(
-        newHistory
-      ),
-
-      Date.now()
-
-    ).run();
-
-  } catch (
-    error
-  ) {
-
-‎    // الذاكرة ميزة إضافية.
-‎    // إذا فشلت، لا نفشل السؤال نفسه.
-
-    console.error(
-      "Conversation memory error:",
-      error?.message
-    );
-  }
-}
-
-function buildConversationContext(
-  history
-) {
-
-  if (
-    !Array.isArray(
-      history
-    ) ||
-    history.length === 0
-  ) {
-
-    return "";
-  }
-
-  let context =
-    "\n\n--- بداية سياق المحادثة السابقة ---\n";
-
-  history.forEach(
-    (
-      turn,
-      index
-    ) => {
-
-      context +=
-        `\nالمحادثة السابقة ${index + 1}:\n`;
-
-      context +=
-‎        `سؤال المستخدم:\n${turn.question || ""}\n`;
-
-      const answers =
-        turn.answers ||
-        {};
-
-      for (
-        const provider of
-          Object.keys(
-            answers
-          )
-      ) {
-
-        context +=
-‎          `إجابة ${provider}:\n${answers[provider]}\n`;
-      }
-    }
-  );
-
-  context +=
-    "\n--- نهاية سياق المحادثة السابقة ---\n";
-
-  context +=
-    "\nاستخدم هذا السياق لفهم الإشارات مثل: هذا، هذه، هو، هي، ذلك، السابق، وغيرها. إذا كان السؤال الجديد يعتمد على السؤال السابق، اربط بينهما بشكل صحيح. إذا كان السؤال الجديد موضوعًا مختلفًا، تجاهل السياق غير المرتبط.";
-
-  return context;
-}
-
-// =========================================================
-// DEEPSEEK
-// =========================================================
-
-async function askDeepSeek(
-  question,
-  apiKey,
-  image = null,
-  conversationContext = ""
-) {
-
-  if (
-    !apiKey
-  ) {
-
-    return {
-
-      ok:
-        false,
-
-      provider:
-        "DeepSeek",
-
-      model:
-        image
-          ? DEEPSEEK_VISION_MODEL
-          : DEEPSEEK_MODEL,
-
-      http_status:
-        401,
-
-      error:
-        "DEEPSEEK_API_KEY is not configured.",
-    };
-  }
-
-  const model =
-    image
-      ? DEEPSEEK_VISION_MODEL
-      : DEEPSEEK_MODEL;
-
-  const fullQuestion =
-    conversationContext +
-
-    "\n\nالسؤال الحالي:\n" +
-
-    question;
-
-  const userContent =
-    image
-
-      ? [
-
-          {
-            type:
-              "text",
-
-            text:
-              fullQuestion,
-          },
-
-          {
-            type:
-              "image_url",
-
-            image_url: {
-
-              url:
-                image.data,
-
-              detail:
-                "low",
-            },
-          },
-
-        ]
-
-      : fullQuestion;
-
-  try {
-
-    const response =
-      await fetch(
-        DEEPSEEK_API_URL,
-        {
-
-          method:
-            "POST",
-
-          headers: {
-
-            "Content-Type":
-              "application/json",
-
-            "Authorization":
-              `Bearer ${apiKey}`,
-          },
-
-          body:
-            JSON.stringify({
-
-              model,
-
-              messages: [
-
-                {
-                  role:
-                    "system",
-
-                  content:
-                    "You are Smart AI. Answer the user's question accurately, clearly, and directly. Use previous conversation context when relevant. Do not assume unrelated context. If an image is provided, analyze it carefully and use it as part of your answer. If the question is mathematical, calculate carefully and provide the final answer.",
-                },
-
-                {
-                  role:
-                    "user",
-
-                  content:
-                    userContent,
-                },
-
-              ],
-
-              thinking: {
-
-                type:
-                  "disabled",
-              },
-
-              stream:
-                false,
-            }),
-        }
-      );
-
-    const data =
-      await response.json();
-
-    if (
-      !response.ok
-    ) {
-
-      return {
-
-        ok:
-          false,
-
-        provider:
-          "DeepSeek",
-
-        model,
-
-        http_status:
-          response.status,
-
-        error:
-          data?.error?.message ||
-          "DeepSeek API request failed.",
-      };
-    }
-
-    const answer =
-      data?.choices?.[0]
-        ?.message?.content ||
-      "";
-
-    if (
-      !answer
-    ) {
-
-      return {
-
-        ok:
-          false,
-
-        provider:
-          "DeepSeek",
-
-        model,
-
-        http_status:
-          200,
-
-        error:
-          "DeepSeek returned an empty answer.",
-      };
-    }
-
-    return {
-
-      ok:
-        true,
-
-      provider:
-        "DeepSeek",
-
-      model:
-        data.model ||
-        model,
-
-      answer,
-
-      usage:
-        data.usage ||
-        null,
-    };
-
-  } catch (
-    error
-  ) {
-
-    return {
-
-      ok:
-        false,
-
-      provider:
-        "DeepSeek",
-
-      model,
-
-      http_status:
-        0,
-
-      error:
-        error?.message ||
-        "Unexpected DeepSeek error.",
-    };
-  }
-}
-
-// =========================================================
-// GEMINI
-// =========================================================
-
-async function askGemini(
-  question,
-  apiKey,
-  image = null,
-  conversationContext = ""
-) {
-
-  if (
-    !apiKey
-  ) {
-
-    return {
-
-      ok:
-        false,
-
-      provider:
-        "Gemini",
-
-      model:
-        GEMINI_MODEL,
-
-      http_status:
-        401,
-
-      error:
-        "GEMINI_API_KEY is not configured.",
-    };
-  }
-
-  const parts = [];
-
-  if (
-    image
-  ) {
-
-    parts.push({
-
-      inline_data: {
-
-        mime_type:
-          image.mimeType,
-
-        data:
-          image.data.split(",")[1] ||
-          "",
-      },
+function getAvailableProviders(){
+    return PROVIDERS.filter(function(name){
+        return providerStates[name] === "available";
     });
-  }
+}
 
-  parts.push({
+function getSelectedProviders(){
 
-    text:
-      `You are Smart AI.
+    if(providerSelectionMode === "automatic"){
+        return null;
+    }
 
-Answer the user's question accurately, clearly, and directly.
+    return PROVIDERS.filter(function(name){
 
-Use previous conversation context when relevant.
+        const checkbox =
+            document.getElementById(
+                "provider-" + name
+            );
 
-Do not assume unrelated context.
+        return checkbox && checkbox.checked;
+    });
+}
 
-If an image is provided, analyze it carefully and use it as part of your answer.
+function updateProviderSelectionInfo(){
 
-If the question is mathematical, calculate carefully and provide the final answer.
+    if(!providerSelectionCount){
+        return;
+    }
 
-${conversationContext}
+    if(providerSelectionMode === "automatic"){
 
-User question:
+        providerSelectionCount.className =
+            "provider-selection-count";
 
-${question}`,
-  });
+        providerSelectionCount.textContent =
+            "الوضع الحالي: تلقائي — Smart AI ستختار المنصات المتاحة.";
 
-  try {
+        return;
+    }
 
-    const response =
-      await fetch(
-        GEMINI_API_URL,
-        {
+    const selected =
+        getSelectedProviders() || [];
 
-          method:
-            "POST",
+    providerSelectionCount.className =
+        "provider-selection-count" +
+        (selected.length < 2 || selected.length > 4
+            ? " error"
+            : "");
 
-          headers: {
+    if(selected.length === 0){
+        providerSelectionCount.textContent =
+            "اختر من 2 إلى 4 منصات.";
+        return;
+    }
 
-            "Content-Type":
-              "application/json",
+    providerSelectionCount.textContent =
+        "تم اختيار " +
+        selected.length +
+        " من 4 منصات.";
+}
 
-            "x-goog-api-key":
-              apiKey,
-          },
+function renderProviderOptions(){
 
-          body:
-            JSON.stringify({
+    providerOptions.innerHTML = "";
 
-              contents: [
+    /* تلقائي */
+    const automaticWrapper =
+        document.createElement("div");
 
-                {
+    automaticWrapper.className =
+        "provider-option";
 
-                  role:
-                    "user",
+    automaticWrapper.innerHTML = `
+        <input
+            type="radio"
+            name="providerSelection"
+            id="providerAutomatic"
+            value="automatic"
+            ${providerSelectionMode === "automatic" ? "checked" : ""}
+        >
+        <label
+            class="provider-label"
+            for="providerAutomatic"
+        >
+            <div class="provider-name">تلقائي</div>
+            <div class="provider-state">Smart AI تختار</div>
+        </label>
+    `;
 
-                  parts,
-                },
+    providerOptions.appendChild(automaticWrapper);
 
-              ],
-            }),
+    const automatic =
+        automaticWrapper.querySelector(
+            "input"
+        );
+
+    automatic.addEventListener("change",function(){
+
+        if(!automatic.checked){
+            return;
         }
-      );
 
-    const data =
-      await response.json();
+        providerSelectionMode = "automatic";
 
-    if (
-      !response.ok
-    ) {
+        PROVIDERS.forEach(function(name){
+            const checkbox =
+                document.getElementById(
+                    "provider-" + name
+                );
 
-      return {
+            if(checkbox){
+                checkbox.checked = false;
+            }
+        });
 
-        ok:
-          false,
+        updateProviderSelectionInfo();
+    });
 
-        provider:
-          "Gemini",
+    /* المنصات المتاحة فقط */
+    const availableProviders =
+        getAvailableProviders();
 
-        model:
-          GEMINI_MODEL,
+    availableProviders.forEach(function(name){
 
-        http_status:
-          response.status,
+        const wrapper =
+            document.createElement("div");
 
-        error:
-          data?.error?.message ||
-          "Gemini API request failed.",
-      };
+        wrapper.className =
+            "provider-option";
+
+        const id =
+            "provider-" + name;
+
+        wrapper.innerHTML = `
+            <input
+                type="checkbox"
+                id="${id}"
+                value="${name}"
+            >
+            <label
+                class="provider-label"
+                for="${id}"
+            >
+                <div class="provider-name">
+                    ${getProviderDisplayName(name)}
+                </div>
+                <div class="provider-state available">
+                    متاح
+                </div>
+            </label>
+        `;
+
+        providerOptions.appendChild(wrapper);
+
+        const checkbox =
+            wrapper.querySelector("input");
+
+        checkbox.addEventListener("change",function(){
+
+            if(checkbox.checked){
+
+                providerSelectionMode = "manual";
+
+                const selected =
+                    getSelectedProviders() || [];
+
+                if(selected.length > 4){
+                    checkbox.checked = false;
+                    alert("يمكنك اختيار 4 منصات كحد أقصى.");
+                    return;
+                }
+
+                automatic.checked = false;
+            }
+
+            updateProviderSelectionInfo();
+        });
+    });
+
+    if(availableProviders.length === 0){
+
+        const message =
+            document.createElement("div");
+
+        message.className =
+            "provider-selection-info";
+
+        message.textContent =
+            "لا توجد منصة متاحة حاليًا للاختيار اليدوي. يمكنك استخدام «تلقائي» عندما تتوفر منصة.";
+
+        providerOptions.appendChild(message);
     }
 
-    const answer =
-      data?.candidates?.[0]
-        ?.content?.parts
-        ?.map(
-          part =>
-            part.text ||
-            ""
-        )
-        ?.join("") ||
-      "";
-
-    if (
-      !answer
-    ) {
-
-      return {
-
-        ok:
-          false,
-
-        provider:
-          "Gemini",
-
-        model:
-          GEMINI_MODEL,
-
-        http_status:
-          200,
-
-        error:
-          "Gemini returned an empty answer.",
-      };
-    }
-
-    return {
-
-      ok:
-        true,
-
-      provider:
-        "Gemini",
-
-      model:
-        GEMINI_MODEL,
-
-      answer,
-
-      usage:
-        data?.usageMetadata ||
-        null,
-    };
-
-  } catch (
-    error
-  ) {
-
-    return {
-
-      ok:
-        false,
-
-      provider:
-        "Gemini",
-
-      model:
-        GEMINI_MODEL,
-
-      http_status:
-        0,
-
-      error:
-        error?.message ||
-        "Unexpected Gemini error.",
-    };
-  }
+    updateProviderSelectionInfo();
 }
 
-// =========================================================
-// MISTRAL
-// =========================================================
+/* =====================================================
+   QUOTA
+===================================================== */
 
-async function askMistral(
-  question,
-  apiKey,
-  image = null,
-  conversationContext = ""
-) {
+async function loadQuota(){
+    try{
+        const response = await fetch(
+            API_URL + "quota?userId=" + encodeURIComponent(USER_ID)
+        );
 
-  if (
-    !apiKey
-  ) {
+        const data = await response.json();
 
-    return {
-
-      ok:
-        false,
-
-      provider:
-        "Mistral",
-
-      model:
-        MISTRAL_MODEL,
-
-      http_status:
-        401,
-
-      error:
-        "MISTRAL_API_KEY is not configured.",
-    };
-  }
-
-  const fullQuestion =
-    conversationContext +
-
-    "\n\nالسؤال الحالي:\n" +
-
-    question;
-
-  const userContent =
-    image
-
-      ? [
-
-          {
-            type:
-              "text",
-
-            text:
-              fullQuestion,
-          },
-
-          {
-            type:
-              "image_url",
-
-            image_url:
-              image.data,
-          },
-
-        ]
-
-      : fullQuestion;
-
-  try {
-
-    const response =
-      await fetch(
-        MISTRAL_API_URL,
-        {
-
-          method:
-            "POST",
-
-          headers: {
-
-            "Content-Type":
-              "application/json",
-
-            "Authorization":
-              `Bearer ${apiKey}`,
-          },
-
-          body:
-            JSON.stringify({
-
-              model:
-                MISTRAL_MODEL,
-
-              messages: [
-
-                {
-
-                  role:
-                    "system",
-
-                  content:
-                    "You are Smart AI. Answer the user's question accurately, clearly, and directly. Use previous conversation context when relevant. Do not assume unrelated context. If an image is provided, analyze it carefully and use it as part of your answer. If the question is mathematical, calculate carefully and provide the final answer.",
-                },
-
-                {
-
-                  role:
-                    "user",
-
-                  content:
-                    userContent,
-                },
-
-              ],
-            }),
+        if(!response.ok){
+            throw new Error("Quota request failed");
         }
-      );
 
-    const data =
-      await response.json();
-
-    if (
-      !response.ok
-    ) {
-
-      return {
-
-        ok:
-          false,
-
-        provider:
-          "Mistral",
-
-        model:
-          MISTRAL_MODEL,
-
-        http_status:
-          response.status,
-
-        error:
-          data?.error?.message ||
-          "Mistral API request failed.",
-      };
+        updateRemaining(data);
+    }catch(error){
+        // لا نعرض خطأ للمستخدم.
     }
+}
 
-    const answer =
-      data?.choices?.[0]
-        ?.message?.content ||
-      "";
+/* =====================================================
+   PROVIDER STATUS DISPLAY
+===================================================== */
 
-    if (
-      !answer
-    ) {
+function displayProviderStatus(data){
+    const providers = data?.status?.providers || {};
 
-      return {
+    const names = ["deepseek","gemini","mistral"];
 
-        ok:
-          false,
+    providersStatus.innerHTML = "";
 
-        provider:
-          "Mistral",
+    let found = false;
 
-        model:
-          MISTRAL_MODEL,
+    names.forEach(function(name){
+        const info = providers[name];
 
-        http_status:
-          200,
+        if(!info) return;
 
-        error:
-          "Mistral returned an empty answer.",
-      };
+        found = true;
+
+        const state =
+            typeof info === "string"
+                ? info
+                : (info.status || "unknown");
+
+        const normalized = String(state).toLowerCase();
+
+        let label = "غير معروف";
+        let className = "";
+
+        if(normalized === "available"){
+            label = "متاح";
+            className = "available";
+        }else if(normalized === "limited"){
+            label = "محدود";
+            className = "limited";
+        }else if(
+            normalized === "unavailable" ||
+            normalized === "error"
+        ){
+            label = "غير متاح";
+            className = "unavailable";
+        }
+
+        const displayName =
+            name === "deepseek"
+                ? "DeepSeek"
+                : name === "gemini"
+                    ? "Gemini"
+                    : "Mistral";
+
+        providersStatus.innerHTML += `
+            <div class="provider-status ${className}">
+                <span class="dot"></span>
+                ${displayName}: ${label}
+            </div>
+        `;
+    });
+
+    if(!found){
+        providersStatus.innerHTML = `
+            <div class="provider-status">
+                <span class="dot"></span>
+                لم تصل حالة المزودين
+            </div>
+        `;
     }
-
-    return {
-
-      ok:
-        true,
-
-      provider:
-        "Mistral",
-
-      model:
-        data.model ||
-        MISTRAL_MODEL,
-
-      answer,
-
-      usage:
-        data.usage ||
-        null,
-    };
-
-  } catch (
-    error
-  ) {
-
-    return {
-
-      ok:
-        false,
-
-      provider:
-        "Mistral",
-
-      model:
-        MISTRAL_MODEL,
-
-      http_status:
-        0,
-
-      error:
-        error?.message ||
-        "Unexpected Mistral error.",
-    };
-  }
 }
 
-// =========================================================
-// USER / D1
-// =========================================================
+/* =====================================================
+   REMAINING
+===================================================== */
 
-async function getUser(
-  DB,
-  userId
-) {
+function updateRemaining(data){
+    const remaining = findRemaining(data);
 
-  const now =
-    Date.now();
-
-  await DB.prepare(
-    `INSERT OR IGNORE INTO users
-      (
-        id,
-        created_at,
-        questions_used,
-        questions_limit
-      )
-     VALUES
-      (?, ?, 0, ?)`
-  ).bind(
-
-    userId,
-
-    now,
-
-    DEFAULT_QUESTIONS_LIMIT
-
-  ).run();
-
-  let result =
-    await DB.prepare(
-      `SELECT
-        id,
-        created_at,
-        questions_used,
-        questions_limit
-       FROM users
-       WHERE id = ?`
-    ).bind(
-      userId
-    ).first();
-
-  if (
-    !result
-  ) {
-
-    throw new Error(
-      "Unable to create or retrieve user."
-    );
-  }
-
-  if (
-    now -
-    Number(
-      result.created_at
-    ) >=
-    WINDOW_MS
-  ) {
-
-    await DB.prepare(
-      `UPDATE users
-       SET
-         created_at = ?,
-         questions_used = 0
-       WHERE id = ?`
-    ).bind(
-
-      now,
-
-      userId
-
-    ).run();
-
-    result =
-      await DB.prepare(
-        `SELECT
-          id,
-          created_at,
-          questions_used,
-          questions_limit
-         FROM users
-         WHERE id = ?`
-      ).bind(
-        userId
-      ).first();
-  }
-
-  return result;
+    if(remaining !== null && remaining !== undefined){
+        remainingElement.textContent =
+            "الأسئلة المتبقية: " + remaining;
+    }
 }
 
-async function reserveQuestion(
-  DB,
-  userId
-) {
+function findRemaining(data){
+    const possibleValues = [
+        data?.remaining,
+        data?.questionsRemaining,
+        data?.remainingQuestions,
+        data?.quota?.remaining,
+        data?.usage?.remaining,
+        data?.user?.remaining,
+        data?.user?.questionsRemaining,
+        data?.summary?.remaining
+    ];
 
-  const result =
-    await DB.prepare(
-      `UPDATE users
-       SET
-         questions_used =
-           questions_used + 1
-       WHERE id = ?
-         AND questions_used <
-             questions_limit`
-    ).bind(
-      userId
-    ).run();
-
-  const changed =
-    Number(
-      result?.meta?.changes
-    ) || 0;
-
-  return (
-    changed === 1
-  );
-}
-
-async function returnQuestion(
-  DB,
-  userId
-) {
-
-  await DB.prepare(
-    `UPDATE users
-     SET questions_used =
-       CASE
-         WHEN questions_used > 0
-         THEN questions_used - 1
-         ELSE 0
-       END
-     WHERE id = ?`
-  ).bind(
-    userId
-  ).run();
-}
-
-async function getQuota(
-  DB,
-  userId
-) {
-
-  const user =
-    await DB.prepare(
-      `SELECT
-        id,
-        created_at,
-        questions_used,
-        questions_limit
-       FROM users
-       WHERE id = ?`
-    ).bind(
-      userId
-    ).first();
-
-  if (
-    !user
-  ) {
+    for(const value of possibleValues){
+        if(value !== undefined && value !== null){
+            return value;
+        }
+    }
 
     return null;
-  }
-
-  const used =
-    Number(
-      user.questions_used
-    ) || 0;
-
-  const limit =
-    Number(
-      user.questions_limit
-    ) ||
-    DEFAULT_QUESTIONS_LIMIT;
-
-  return {
-
-    used,
-
-    limit,
-
-    remaining:
-      Math.max(
-        0,
-        limit - used
-      ),
-
-    created_at:
-      Number(
-        user.created_at
-      ),
-  };
 }
 
-// =========================================================
-// USAGE LOGGING
-// =========================================================
+/* =====================================================
+   IMAGE
+===================================================== */
 
-function normalizeUsage(
-  provider,
-  usage
-) {
+imageButton.addEventListener("click", function(){
+    imageInput.click();
+});
 
-  if (
-    !usage ||
-    typeof usage !==
-      "object"
-  ) {
+imageInput.addEventListener("change", function(){
+    const file = imageInput.files?.[0];
 
-    return {
+    if(!file){
+        return;
+    }
 
-      input_tokens:
-        null,
+    if(!file.type || !file.type.startsWith("image/")){
+        alert("الملف المختار ليس صورة.");
+        imageInput.value = "";
+        return;
+    }
 
-      output_tokens:
-        null,
+    const MAX_CLIENT_IMAGE_BYTES =
+        12 * 1024 * 1024;
 
-      total_tokens:
-        null,
+    if(file.size > MAX_CLIENT_IMAGE_BYTES){
+        alert(
+            "الصورة كبيرة جدًا. اختر صورة أصغر من 12 MB."
+        );
+        imageInput.value = "";
+        return;
+    }
+
+    selectedImage = file;
+
+    /*
+     * نستخدم FileReader بدل Object URL حتى تكون
+     * المعاينة موثوقة على iPhone/iPad سواء كانت
+     * الصورة من الاستوديو أو ملتقطة بالكاميرا.
+     */
+    const reader = new FileReader();
+
+    reader.onload = function(event){
+        previewImage.src = event.target.result;
+        imageName.textContent =
+            file.name || "صورة مرفقة";
+
+        imagePreview.classList.add("show");
     };
-  }
 
-  const providerId =
-    String(
-      provider ||
-      ""
-    ).toLowerCase();
+    reader.onerror = function(){
+        selectedImage = null;
+        imageInput.value = "";
+        previewImage.removeAttribute("src");
+        imagePreview.classList.remove("show");
 
-  let inputTokens =
-    null;
+        alert("تعذر معاينة الصورة.");
+    };
 
-  let outputTokens =
-    null;
+    reader.readAsDataURL(file);
+});
 
-  let totalTokens =
-    null;
 
-  // -------------------------------------------------------
-  // Gemini
-  // -------------------------------------------------------
+async function fileToDataURL(file){
 
-  if (
-    providerId ===
-    "gemini"
-  ) {
+    return new Promise(function(resolve,reject){
 
-    inputTokens =
-      Number(
-        usage.promptTokenCount
-      );
+        const reader = new FileReader();
 
-    outputTokens =
-      Number(
-        usage.candidatesTokenCount
-      );
+        reader.onload = function(event){
+            resolve(event.target.result);
+        };
 
-    totalTokens =
-      Number(
-        usage.totalTokenCount
-      );
+        reader.onerror = function(){
+            reject(
+                new Error("تعذر قراءة الصورة.")
+            );
+        };
 
-  }
-
-  // -------------------------------------------------------
-  // DeepSeek / Mistral
-  // -------------------------------------------------------
-
-  else {
-
-    inputTokens =
-      Number(
-        usage.prompt_tokens
-      );
-
-    outputTokens =
-      Number(
-        usage.completion_tokens
-      );
-
-    totalTokens =
-      Number(
-        usage.total_tokens
-      );
-  }
-
-  return {
-
-    input_tokens:
-      Number.isFinite(
-        inputTokens
-      )
-        ? inputTokens
-        : null,
-
-    output_tokens:
-      Number.isFinite(
-        outputTokens
-      )
-        ? outputTokens
-        : null,
-
-    total_tokens:
-      Number.isFinite(
-        totalTokens
-      )
-        ? totalTokens
-        : null,
-  };
+        reader.readAsDataURL(file);
+    });
 }
 
-async function logUsage(
-  DB,
-  userId,
-  question,
-  image,
-  providerResult
-) {
+removeImageButton.addEventListener("click", removeSelectedImage);
 
-  try {
-
-    const provider =
-      String(
-        providerResult?.provider ||
-        ""
-      ).toLowerCase();
-
-    const usage =
-      normalizeUsage(
-        provider,
-        providerResult?.usage
-      );
-
-    await DB.prepare(
-      `INSERT INTO usage_logs
-      (
-        user_id,
-        provider,
-        model,
-        created_at,
-        image_attached,
-        question_length,
-        input_tokens,
-        output_tokens,
-        total_tokens,
-        success
-      )
-      VALUES
-      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).bind(
-
-      userId,
-
-      provider,
-
-      providerResult?.model ||
-        null,
-
-      Date.now(),
-
-      image
-        ? 1
-        : 0,
-
-      question.length,
-
-      usage.input_tokens,
-
-      usage.output_tokens,
-
-      usage.total_tokens,
-
-      providerResult?.ok === true
-        ? 1
-        : 0
-
-    ).run();
-
-  } catch (
-    error
-  ) {
-
-‎    // تسجيل الاستهلاك ميزة إضافية.
-‎    // إذا فشل التسجيل، لا نفشل طلب المستخدم.
-
-    console.error(
-      "Usage logging error:",
-      error?.message
-    );
-  }
+function removeSelectedImage(){
+    selectedImage = null;
+    imageInput.value = "";
+    previewImage.removeAttribute("src");
+    imageName.textContent = "";
+    imagePreview.classList.remove("show");
+    closeImageLightbox();
 }
 
-// =========================================================
-// WORKER
-// =========================================================
+/* =====================================================
+   IMAGE LIGHTBOX
+===================================================== */
 
-export default {
+previewImage.addEventListener("click", function(){
+    if(!previewImage.src){
+        return;
+    }
 
-  async fetch(
-    request,
-    env
-  ) {
+    lightboxImage.src = previewImage.src;
+    imageLightbox.classList.add("show");
+    document.body.style.overflow = "hidden";
+});
 
-    // =====================================================
-    // OPTIONS
-    // =====================================================
+function closeImageLightbox(){
+    imageLightbox.classList.remove("show");
+    lightboxImage.removeAttribute("src");
+    document.body.style.overflow = "";
+}
 
-    if (
-      request.method ===
-      "OPTIONS"
-    ) {
+lightboxClose.addEventListener("click", closeImageLightbox);
 
-      return new Response(
-        null,
-        {
+imageLightbox.addEventListener("click", function(event){
+    if(event.target === imageLightbox){
+        closeImageLightbox();
+    }
+});
 
-          status:
-            204,
+document.addEventListener("keydown", function(event){
+    if(event.key === "Escape" && imageLightbox.classList.contains("show")){
+        closeImageLightbox();
+    }
+});
 
-          headers:
-            CORS_HEADERS,
+/* =====================================================
+   ASK
+===================================================== */
+
+async function askSmartAI(){
+
+    const question = questionElement.value.trim();
+
+    if(!question){
+        alert("اكتب السؤال أولًا.");
+        questionElement.focus();
+        return;
+    }
+
+    const selectedProviders =
+        getSelectedProviders();
+
+    if(providerSelectionMode === "manual" &&
+       (!selectedProviders || selectedProviders.length < 2)){
+
+        alert("اختر منصتين على الأقل، أو اختر «تلقائي».");
+        return;
+    }
+
+    if(providerSelectionMode === "manual" &&
+       selectedProviders.length > 4){
+
+        alert("يمكنك اختيار 4 منصات كحد أقصى.");
+        return;
+    }
+
+    askButton.disabled = true;
+    imageButton.disabled = true;
+    clearButton.disabled = true;
+
+    askButton.textContent = "جاري السؤال...";
+    loading.classList.add("show");
+
+    const loadingProviders =
+        providerSelectionMode === "manual"
+            ? selectedProviders
+            : getAvailableProviders();
+
+    results.innerHTML =
+        loadingProviders.length
+            ? loadingProviders
+                .map(function(name){
+                    return createLoadingCard(
+                        getProviderDisplayName(name)
+                    );
+                })
+                .join("")
+            : createLoadingCard("Smart AI");
+
+    const startTime = performance.now();
+
+    try{
+
+        let imagePayload = null;
+
+        if(selectedImage){
+
+            const imageData =
+                await fileToDataURL(selectedImage);
+
+            if(!imageData){
+                throw new Error(
+                    "تعذر تجهيز الصورة للإرسال."
+                );
+            }
+
+            imagePayload = {
+                data:imageData,
+                mimeType:
+                    selectedImage.type ||
+                    "image/jpeg"
+            };
         }
-      );
-    }
 
-    const url =
-      new URL(
-        request.url
-      );
+        const requestBody = {
+            userId:USER_ID,
+            question:question,
+            image:imagePayload
+        };
 
-    // =====================================================
-    // GET /status
-    // =====================================================
+        /*
+         * عند الاختيار اليدوي نرسل قائمة المزودين.
+         * عند التلقائي لا نرسل providers إطلاقًا،
+         * فيستمر Worker في استخدام الاختيار التلقائي.
+         */
+        if(providerSelectionMode === "manual"){
+            requestBody.providers =
+                selectedProviders;
+        }
 
-    if (
-      request.method === "GET" &&
-      url.pathname === "/status"
-    ) {
-
-      try {
-
-        const status =
-          await getProviderStatus(
-            env.DB
-          );
-
-        return json({
-
-          ok:
-            true,
-
-          service:
-            "Smart AI",
-
-          status,
+        const response = await fetch(API_URL,{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify(requestBody)
         });
 
-      } catch (
-        error
-      ) {
+        const data = await response.json();
 
-        return json(
+        if(!response.ok){
+            throw new Error(
+                data?.error ||
+                data?.message ||
+                "حدث خطأ في الاتصال."
+            );
+        }
 
-          {
+        const elapsed = (
+            (performance.now() - startTime) / 1000
+        ).toFixed(2);
 
-            ok:
-              false,
+        updateRemaining(data);
+        displayResults(data,elapsed);
 
-            error:
-              "Unable to read provider status.",
+        await loadProviderStatus();
 
-            details:
-              error?.message ||
-              "Unknown database error.",
-          },
+    }catch(error){
+        results.innerHTML = `
+            <div class="empty">
+                <div class="empty-title">
+                    تعذر الحصول على الإجابة
+                </div>
+                ${escapeHTML(
+                    error?.message ||
+                    "حدث خطأ غير معروف."
+                )}
+            </div>
+        `;
+    }finally{
+        askButton.disabled = false;
+        imageButton.disabled = false;
+        clearButton.disabled = false;
 
-          500
-
-        );
-      }
+        askButton.textContent = "اسأل Smart AI";
+        loading.classList.remove("show");
     }
+}
 
-    // =====================================================
-    // GET /quota
-    // =====================================================
+/* =====================================================
+   RESULTS
+===================================================== */
 
-    if (
-      request.method === "GET" &&
-      url.pathname === "/quota"
-    ) {
+function displayResults(data,elapsed){
 
-      const userId =
-        (
-          url.searchParams
-            .get("userId") ||
-          ""
-        ).trim();
+    const resultData = data?.results || {};
 
-      if (
-        !userId
-      ) {
-
-        return json(
-
-          {
-
-            ok:
-              false,
-
-            error:
-              "Missing userId.",
-          },
-
-          400
-
-        );
-      }
-
-      if (
-        userId.length >
-        100
-      ) {
-
-        return json(
-
-          {
-
-            ok:
-              false,
-
-            error:
-              "userId is too long.",
-          },
-
-          400
-
-        );
-      }
-
-      try {
-
-        const user =
-          await getUser(
-            env.DB,
-            userId
-          );
-
-        const quota =
-          await getQuota(
-            env.DB,
-            userId
-          );
-
-        return json({
-
-          ok:
-            true,
-
-          userId:
-            user.id,
-
-          quota,
-        });
-
-      } catch (
-        error
-      ) {
-
-        return json(
-
-          {
-
-            ok:
-              false,
-
-            error:
-              "Unable to read quota.",
-
-            details:
-              error?.message ||
-              "Unknown database error.",
-          },
-
-          500
-
-        );
-      }
-    }
-
-    // =====================================================
-    // GET
-    // =====================================================
-
-    if (
-      request.method ===
-      "GET"
-    ) {
-
-      return json({
-
-        ok:
-          true,
-
-        service:
-          "Smart AI",
-
-        providers: [
-
-          {
-
-            id:
-              "deepseek",
-
-            name:
-              "DeepSeek",
-
-            model:
-              DEEPSEEK_MODEL,
-
-            vision_model:
-              DEEPSEEK_VISION_MODEL,
-          },
-
-          {
-
-            id:
-              "gemini",
-
-            name:
-              "Gemini",
-
-            model:
-              GEMINI_MODEL,
-
-            vision:
-              true,
-          },
-
-          {
-
-            id:
-              "mistral",
-
-            name:
-              "Mistral",
-
-            model:
-              MISTRAL_MODEL,
-
-            vision:
-              true,
-          },
-
-        ],
-
-        quota: {
-
-          questions:
-            DEFAULT_QUESTIONS_LIMIT,
-
-          period:
-            "24 hours",
-        },
-
-        memory: {
-
-          enabled:
-            true,
-
-          turns:
-            MAX_MEMORY_TURNS,
-        },
-
-        usage_logging: {
-
-          enabled:
-            true,
-
-          table:
-            "usage_logs",
-        },
-
-        message:
-          "Smart AI Worker is running",
-      });
-    }
-
-    // =====================================================
-    // POST ONLY
-    // =====================================================
-
-    if (
-      request.method !==
-      "POST"
-    ) {
-
-      return json(
-
-        {
-
-          ok:
-            false,
-
-          error:
-            "Method not allowed. Use POST.",
-        },
-
-        405
-
-      );
-    }
-
-    // =====================================================
-    // READ JSON
-    // =====================================================
-
-    let body;
-
-    try {
-
-      body =
-        await request.json();
-
-    } catch (
-      error
-    ) {
-
-      return json(
-
-        {
-
-          ok:
-            false,
-
-          error:
-            "Invalid JSON body.",
-        },
-
-        400
-
-      );
-    }
-
-    // =====================================================
-    // USER ID
-    // =====================================================
-
-    const userId =
-      typeof body.userId ===
-      "string"
-
-        ? body.userId.trim()
-
-        : "";
-
-    if (
-      !userId
-    ) {
-
-      return json(
-
-        {
-
-          ok:
-            false,
-
-          error:
-            "Missing userId.",
-        },
-
-        400
-
-      );
-    }
-
-    if (
-      userId.length >
-      100
-    ) {
-
-      return json(
-
-        {
-
-          ok:
-            false,
-
-          error:
-            "userId is too long.",
-        },
-
-        400
-
-      );
-    }
-
-    // =====================================================
-    // QUESTION
-    // =====================================================
-
-    const question =
-      typeof body.question ===
-      "string"
-
-        ? body.question.trim()
-
-        : "";
-
-    if (
-      !question
-    ) {
-
-      return json(
-
-        {
-
-          ok:
-            false,
-
-          error:
-            "Missing question.",
-        },
-
-        400
-
-      );
-    }
-
-    if (
-      question.length >
-      MAX_QUESTION_LENGTH
-    ) {
-
-      return json(
-
-        {
-
-          ok:
-            false,
-
-          error:
-            `Question is too long. Maximum allowed length is ${MAX_QUESTION_LENGTH} characters.`,
-
-          max_question_length:
-            MAX_QUESTION_LENGTH,
-
-          received_length:
-            question.length,
-        },
-
-        400
-
-      );
-    }
-
-    // =====================================================
-    // IMAGE
-    // =====================================================
-
-    const imageValidation =
-      validateImage(
-        body.image
-      );
-
-    if (
-      !imageValidation.ok
-    ) {
-
-      return json(
-
-        {
-
-          ok:
-            false,
-
-          error:
-            imageValidation.error,
-        },
-
-        400
-
-      );
-    }
-
-    const image =
-      imageValidation.image;
-
-    // =====================================================
-    // LOAD CONVERSATION MEMORY
-    // =====================================================
-
-    let conversationHistory =
-      [];
-
-    try {
-
-      conversationHistory =
-        await getConversationHistory(
-          env.DB,
-          userId
-        );
-
-    } catch (
-      error
-    ) {
-
-      conversationHistory =
-        [];
-    }
-
-    const conversationContext =
-      buildConversationContext(
-        conversationHistory
-      );
-
-    // =====================================================
-    // PROVIDER SELECTION
-    // =====================================================
-
-    let selectedProviders;
-
-    let selectionMode =
-      "user";
-
-    let selectionReason =
-      "Providers selected by user.";
-
-    let automaticStatus =
-      null;
-
-    if (
-      body.providers ===
-      undefined
-    ) {
-
-      try {
-
-        const automaticSelection =
-          await selectProvidersAutomatically(
-            env.DB
-          );
-
-        selectedProviders =
-          automaticSelection.providers;
-
-        selectionMode =
-          automaticSelection.selection_mode;
-
-        selectionReason =
-          automaticSelection.reason;
-
-        automaticStatus =
-          automaticSelection.status;
-
-      } catch (
-        error
-      ) {
-
-        return json(
-
-          {
-
-            ok:
-              false,
-
-            error:
-              "Unable to select an AI provider automatically.",
-
-            details:
-              error?.message ||
-              "Unknown provider status error.",
-          },
-
-          500
-
-        );
-      }
-
-    } else {
-
-      if (
-        !Array.isArray(
-          body.providers
-        )
-      ) {
-
-        return json(
-
-          {
-
-            ok:
-              false,
-
-            error:
-              "providers must be an array.",
-
-            available_providers:
-              AVAILABLE_PROVIDERS,
-          },
-
-          400
-
-        );
-      }
-
-      selectedProviders =
-        [
-
-          ...new Set(
-
-            body.providers
-
-              .filter(
-                provider =>
-                  typeof provider ===
-                  "string"
-              )
-
-              .map(
-                provider =>
-                  provider
-                    .trim()
-                    .toLowerCase()
-              )
-
-          ),
-
-        ].filter(
-
-          provider =>
-            AVAILABLE_PROVIDERS
-              .includes(
-                provider
-              )
-        );
-    }
-
-    if (
-      selectedProviders.length ===
-      0
-    ) {
-
-      return json(
-
-        {
-
-          ok:
-            false,
-
-          error:
-            "No AI provider is currently available.",
-
-          available_providers:
-            AVAILABLE_PROVIDERS,
-
-          selection_mode:
-            selectionMode,
-
-          selection_reason:
-            selectionReason,
-
-          provider_status:
-            automaticStatus,
-        },
-
-        503
-
-      );
-    }
-
-    // =====================================================
-    // GET / CREATE USER
-    // =====================================================
-
-    let user;
-
-    try {
-
-      user =
-        await getUser(
-          env.DB,
-          userId
-        );
-
-    } catch (
-      error
-    ) {
-
-      return json(
-
-        {
-
-          ok:
-            false,
-
-          error:
-            "Database error.",
-
-          details:
-            error?.message ||
-            "Unknown database error.",
-        },
-
-        500
-
-      );
-    }
-
-    // =====================================================
-    // CHECK QUOTA
-    // =====================================================
-
-    const currentUsed =
-      Number(
-        user.questions_used
-      ) || 0;
-
-    const currentLimit =
-      Number(
-        user.questions_limit
-      ) ||
-      DEFAULT_QUESTIONS_LIMIT;
-
-    if (
-      currentUsed >=
-      currentLimit
-    ) {
-
-      return json(
-
-        {
-
-          ok:
-            false,
-
-          error:
-            "Question limit reached.",
-
-          quota: {
-
-            used:
-              currentUsed,
-
-            limit:
-              currentLimit,
-
-            remaining:
-              0,
-          },
-        },
-
-        429
-
-      );
-    }
-
-    // =====================================================
-    // RESERVE
-    // =====================================================
-
-    const reserved =
-      await reserveQuestion(
-        env.DB,
-        userId
-      );
-
-    if (
-      !reserved
-    ) {
-
-      return json(
-
-        {
-
-          ok:
-            false,
-
-          error:
-            "Question limit reached.",
-        },
-
-        429
-
-      );
-    }
-
-    // =====================================================
-    // PROVIDER TASKS
-    // =====================================================
-
-    const providerTasks =
-      [];
-
-    if (
-      selectedProviders.includes(
-        "deepseek"
-      )
-    ) {
-
-      providerTasks.push({
-
-        id:
-          "deepseek",
-
-        promise:
-          askDeepSeek(
-
-            question,
-
-            env.DEEPSEEK_API_KEY,
-
-            image,
-
-            conversationContext
-
-          ),
-      });
-    }
-
-    if (
-      selectedProviders.includes(
-        "gemini"
-      )
-    ) {
-
-      providerTasks.push({
-
-        id:
-          "gemini",
-
-        promise:
-          askGemini(
-
-            question,
-
-            env.GEMINI_API_KEY,
-
-            image,
-
-            conversationContext
-
-          ),
-      });
-    }
-
-    if (
-      selectedProviders.includes(
-        "mistral"
-      )
-    ) {
-
-      providerTasks.push({
-
-        id:
-          "mistral",
-
-        promise:
-          askMistral(
-
-            question,
-
-            env.MISTRAL_API_KEY,
-
-            image,
-
-            conversationContext
-
-          ),
-      });
-    }
-
-    // =====================================================
-    // WAIT
-    // =====================================================
-
-    const providerResponses =
-      await Promise.all(
-
-        providerTasks.map(
-          item =>
-            item.promise
-        )
-
-      );
-
-    // =====================================================
-    // LOG USAGE
-    // =====================================================
-
-    await Promise.all(
-
-      providerTasks.map(
-
-        (
-          item,
-          index
-        ) =>
-
-          logUsage(
-
-            env.DB,
-
-            userId,
-
-            question,
-
-            image,
-
-            providerResponses[index]
-
-          )
-
-      )
-
-    );
-
-    // =====================================================
-    // UPDATE STATUS
-    // =====================================================
-
-    await Promise.all(
-
-      providerTasks.map(
-
-        (
-          item,
-          index
-        ) =>
-
-          updateProviderStatus(
-
-            env.DB,
-
-            item.id,
-
-            providerResponses[index]
-
-          )
-
-      )
-
-    );
-
-    // =====================================================
-    // BUILD RESULTS
-    // =====================================================
-
-    const results = {
-
-      deepseek:
-        null,
-
-      gemini:
-        null,
-
-      mistral:
-        null,
-    };
-
-    providerTasks.forEach(
-
-      (
-        item,
-        index
-      ) => {
-
-        results[
-          item.id
-        ] =
-          providerResponses[
-            index
-          ];
-      }
-
-    );
-
-    // =====================================================
-    // SUCCESS / FAILED
-    // =====================================================
+    const deepseek = resultData.deepseek;
+    const gemini = resultData.gemini;
+    const mistral = resultData.mistral;
 
     const successful =
-      providerResponses.filter(
+        data?.summary?.successful ??
+        countSuccessful(resultData);
 
-        result =>
-          result.ok === true
+    const total =
+        data?.summary?.total ??
+        countReturned(resultData);
 
-      ).length;
+    let cards = "";
 
-    const failed =
-      providerResponses.length -
-      successful;
-
-    // =====================================================
-    // ALL FAILED
-    // =====================================================
-
-    if (
-      successful === 0
-    ) {
-
-      await returnQuestion(
-        env.DB,
-        userId
-      );
-
-      return json(
-
-        {
-
-          ok:
-            false,
-
-          service:
-            "Smart AI",
-
-          userId,
-
-          question,
-
-          image_attached:
-            Boolean(
-              image
-            ),
-
-          selected_providers:
-            selectedProviders,
-
-          selection_mode:
-            selectionMode,
-
-          selection_reason:
-            selectionReason,
-
-          provider_status:
-            automaticStatus,
-
-          memory_used:
-            conversationHistory.length >
-            0,
-
-          memory_turns:
-            conversationHistory.length,
-
-          results,
-
-          summary: {
-
-            total:
-              providerResponses.length,
-
-            successful:
-              0,
-
-            failed,
-          },
-
-          quota:
-            await getQuota(
-              env.DB,
-              userId
-            ),
-
-          error:
-            "All selected AI providers failed. Your question was not counted.",
-        },
-
-        502
-
-      );
+    if(deepseek){
+        cards += createProviderCard("DeepSeek",deepseek);
     }
 
-    // =====================================================
-    // SAVE CONVERSATION MEMORY
-    // =====================================================
+    if(gemini){
+        cards += createProviderCard("Gemini",gemini);
+    }
 
-    await saveConversationTurn(
+    if(mistral){
+        cards += createProviderCard("Mistral",mistral);
+    }
 
-      env.DB,
+    if(!cards){
+        cards = `
+            <div class="empty">
+                <div class="empty-title">لم تصل أي إجابة</div>
+                حاول مرة أخرى لاحقًا.
+            </div>
+        `;
+    }
 
-      userId,
+    cards += `
+        <div class="summary">
+            تم الحصول على
+            <strong>${successful}</strong>
+            من
+            <strong>${total}</strong>
+            إجابات
+            — زمن الطلب:
+            <strong>${elapsed}</strong>
+            ثانية
+        </div>
+    `;
 
-      question,
+    results.innerHTML = cards;
+}
 
-      providerResponses
+function countSuccessful(resultData){
+    return Object.values(resultData).filter(function(result){
+        return result && result.ok === true;
+    }).length;
+}
 
-    );
+function countReturned(resultData){
+    return Object.values(resultData).filter(function(result){
+        return result !== null;
+    }).length;
+}
 
-    // =====================================================
-    // FINAL QUOTA
-    // =====================================================
+/* =====================================================
+   PROVIDER CARD
+===================================================== */
 
-    const quota =
-      await getQuota(
-        env.DB,
-        userId
-      );
-
-    // =====================================================
-    // FINAL RESPONSE
-    // =====================================================
-
-    return json({
-
-      ok:
-        true,
-
-      service:
-        "Smart AI",
-
-      userId,
-
-      question,
-
-      image_attached:
-        Boolean(
-          image
-        ),
-
-      selected_providers:
-        selectedProviders,
-
-      selection_mode:
-        selectionMode,
-
-      selection_reason:
-        selectionReason,
-
-      provider_status:
-        automaticStatus,
-
-      memory_used:
-        conversationHistory.length >
-        0,
-
-      memory_turns:
-        conversationHistory.length,
-
-      results,
-
-      summary: {
-
-        total:
-          providerResponses.length,
-
-        successful,
-
-        failed,
-      },
-
-      quota,
-
-      memory: {
-
-        enabled:
-          true,
-
-        saved:
-          successful > 0,
-
-        turns:
-          Math.min(
-
-            conversationHistory.length +
-              1,
-
-            MAX_MEMORY_TURNS
-
-          ),
-      },
-
-      usage_logging: {
-
-        enabled:
-          true,
-
-        recorded:
-          true,
-
-        providers:
-          providerResponses.length,
-      },
-    });
-  },
-};
+function createProviderCard(provider,result){
