@@ -1,2596 +1,3180 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Smart AI</title>
+// =========================================================
+// Smart AI
+‎// المرحلة العاشرة + Usage Logging
+//
+// DeepSeek + Gemini + Mistral
+// D1 Users
+// 20 Questions / 24 Hours
+// Provider Status
+// Automatic Provider Selection
+// Persistent Provider Status
+// Image Input Support
+// Conversation Memory
+// Usage Logging
+// =========================================================
 
-<style>
-*{box-sizing:border-box}
+const DEEPSEEK_API_URL =
+  "https://api.deepseek.com/chat/completions";
 
-html{scroll-behavior:smooth}
+const GEMINI_API_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent";
 
-body{
-    margin:0;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
-    background:linear-gradient(180deg,#eef1f5 0%,#f8f9fb 100%);
-    color:#111827;
-    min-height:100vh;
-}
+const MISTRAL_API_URL =
+  "https://api.mistral.ai/v1/chat/completions";
 
-.container{
-    width:100%;
-    max-width:1200px;
-    margin:auto;
-    padding:25px 16px calc(50px + env(safe-area-inset-bottom))
-}
+const DEEPSEEK_MODEL =
+  "deepseek-v4-flash";
 
-.header{
-    text-align:center;
-    margin-bottom:24px
-}
+const DEEPSEEK_VISION_MODEL =
+  "deepseek-v4-flash-vision-exp";
 
-.logo{
-    font-size:40px;
-    font-weight:900;
-    letter-spacing:-1.5px
-}
+const GEMINI_MODEL =
+  "gemini-3.6-flash";
 
-.subtitle{
-    margin-top:6px;
-    color:#6b7280;
-    font-size:15px
-}
+const MISTRAL_MODEL =
+  "mistral-small-latest";
 
-/* =====================================================
-   SYSTEM BAR
-   ===================================================== */
+const DEFAULT_QUESTIONS_LIMIT = 20;
 
-.system-bar{
-    background:white;
-    border-radius:20px;
-    padding:17px;
-    margin-bottom:18px;
-    box-shadow:0 7px 25px rgba(0,0,0,.05)
-}
+const WINDOW_MS =
+  24 * 60 * 60 * 1000;
 
-.system-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    margin-bottom:13px
-}
+const STATUS_MAX_AGE_MS =
+  30 * 60 * 1000;
 
-.system-title{
-    font-weight:900;
-    font-size:18px
-}
+const MAX_QUESTION_LENGTH =
+  50000;
 
-.remaining{
-    font-size:14px;
-    font-weight:800;
-    color:#374151;
-    background:#f3f4f6;
-    padding:7px 12px;
-    border-radius:22px;
-    white-space:nowrap
-}
+const MAX_IMAGE_DATA_URL_LENGTH =
+  16 * 1024 * 1024;
 
-.providers-status{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px
-}
+// ---------------------------------------------------------
+// Conversation memory
+// ---------------------------------------------------------
 
-.provider-status{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    padding:7px 11px;
-    border-radius:22px;
-    background:#f3f4f6;
-    color:#6b7280;
-    font-size:13px;
-    font-weight:800
-}
+const MAX_MEMORY_TURNS = 3;
 
-.provider-status.available{
-    background:#dcfce7;
-    color:#166534
-}
+const MAX_MEMORY_TEXT_LENGTH =
+  12000;
 
-.provider-status.unavailable,
-.provider-status.error{
-    background:#fee2e2;
-    color:#991b1b
-}
+// ---------------------------------------------------------
+// Providers
+// ---------------------------------------------------------
 
-.provider-status.limited{
-    background:#fef3c7;
-    color:#92400e
-}
-
-.dot{
-    width:8px;
-    height:8px;
-    border-radius:50%;
-    background:currentColor;
-    flex-shrink:0
-}
-
-/* =====================================================
-   PROVIDER SELECTOR
-   ===================================================== */
-
-.provider-selector{
-    background:white;
-    border-radius:20px;
-    padding:17px;
-    margin-bottom:18px;
-    box-shadow:0 7px 25px rgba(0,0,0,.05)
-}
-
-.provider-selector-title{
-    font-size:16px;
-    font-weight:900;
-    margin-bottom:5px
-}
-
-.provider-selector-note{
-    font-size:12px;
-    color:#9ca3af;
-    margin-bottom:13px
-}
-
-.provider-options{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:9px
-}
-
-.provider-option{
-    position:relative;
-    min-width:0
-}
-
-.provider-option input{
-    position:absolute;
-    opacity:0;
-    pointer-events:none
-}
-
-.provider-label{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:5px;
-    min-height:76px;
-    padding:10px 8px;
-    border:2px solid #e5e7eb;
-    border-radius:16px;
-    background:#f9fafb;
-    color:#374151;
-    cursor:pointer;
-    text-align:center;
-    transition:border .15s,background .15s,transform .15s,opacity .15s
-}
-
-.provider-label:active{
-    transform:scale(.98)
-}
-
-.provider-option input:checked + .provider-label{
-    border-color:#111827;
-    background:#f3f4f6;
-    color:#111827;
-    box-shadow:0 0 0 2px rgba(17,24,39,.05)
-}
-
-.provider-option.disabled .provider-label{
-    opacity:.48;
-    cursor:not-allowed;
-    background:#f3f4f6
-}
-
-.provider-name{
-    font-size:15px;
-    font-weight:900
-}
-
-.provider-state{
-    font-size:11px;
-    font-weight:800;
-    color:#9ca3af
-}
-
-.provider-state.available{
-    color:#166534
-}
-
-.provider-state.limited{
-    color:#92400e
-}
-
-.provider-state.unavailable,
-.provider-state.error{
-    color:#991b1b
-}
-
-.provider-selection-info{
-    margin-top:11px;
-    padding:9px 12px;
-    border-radius:13px;
-    background:#f3f4f6;
-    color:#6b7280;
-    font-size:12px;
-    font-weight:700;
-    text-align:center
-}
-
-/* =====================================================
-   QUESTION
-   ===================================================== */
-
-.question-box{
-    background:white;
-    border-radius:24px;
-    padding:18px;
-    box-shadow:0 10px 35px rgba(0,0,0,.07);
-    margin-bottom:20px
-}
-
-textarea{
-    width:100%;
-    min-height:125px;
-    max-height:45vh;
-    resize:vertical;
-    border:2px solid #e5e7eb;
-    border-radius:17px;
-    padding:16px;
-    font-family:inherit;
-    font-size:17px;
-    line-height:1.7;
-    outline:none;
-    direction:rtl;
-    text-align:right;
-    transition:border .2s,box-shadow .2s;
-    overflow-y:auto;
-    overflow-wrap:anywhere;
-    word-break:break-word
-}
-
-textarea:focus{
-    border-color:#111827;
-    box-shadow:0 0 0 3px rgba(17,24,39,.07)
-}
-
-textarea::placeholder{
-    color:#9ca3af
-}
-
-/* =====================================================
-   IMAGE
-   ===================================================== */
-
-.image-preview{
-    display:none;
-    margin-top:10px;
-    padding:10px;
-    border:1px solid #e5e7eb;
-    border-radius:15px;
-    background:#f9fafb;
-    align-items:center;
-    gap:10px
-}
-
-.image-preview.show{
-    display:flex
-}
-
-.image-preview img{
-    width:78px;
-    height:78px;
-    object-fit:cover;
-    border-radius:12px;
-    border:1px solid #e5e7eb;
-    cursor:zoom-in;
-    -webkit-tap-highlight-color:transparent
-}
-
-.image-preview img:active{
-    transform:scale(.97)
-}
-
-.image-info{
-    flex:1;
-    min-width:0
-}
-
-.image-name{
-    font-size:13px;
-    font-weight:800;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap
-}
-
-.image-note{
-    font-size:11px;
-    color:#9ca3af;
-    margin-top:3px
-}
-
-.remove-image{
-    padding:7px 10px;
-    background:#fee2e2;
-    color:#991b1b;
-    font-size:12px
-}
-
-/* =====================================================
-   BUTTONS
-   ===================================================== */
-
-.button-row{
-    display:flex;
-    gap:10px;
-    margin-top:13px
-}
-
-button{
-    border:none;
-    font-family:inherit;
-    font-size:16px;
-    font-weight:800;
-    cursor:pointer;
-    border-radius:14px;
-    padding:14px 20px;
-    transition:transform .15s,opacity .15s,background .15s
-}
-
-button:active{
-    transform:scale(.98)
-}
-
-.ask-button{
-    flex:1;
-    background:#111827;
-    color:white
-}
-
-.ask-button:hover{
-    background:#1f2937
-}
-
-.ask-button:disabled{
-    opacity:.55;
-    cursor:not-allowed
-}
-
-.clear-button{
-    background:#e5e7eb;
-    color:#111827
-}
-
-.clear-button:hover{
-    background:#dfe2e6
-}
-
-.image-button{
-    background:#eef2ff;
-    color:#3730a3;
-    padding-left:16px;
-    padding-right:16px
-}
-
-.image-button:hover{
-    background:#e0e7ff
-}
-
-/* =====================================================
-   LOADING
-   ===================================================== */
-
-.loading{
-    display:none;
-    background:white;
-    border-radius:16px;
-    padding:14px;
-    margin-bottom:18px;
-    text-align:center;
-    color:#6b7280;
-    box-shadow:0 5px 20px rgba(0,0,0,.05)
-}
-
-.loading.show{
-    display:block
-}
-
-.loading-dot{
-    display:inline-block;
-    width:8px;
-    height:8px;
-    border-radius:50%;
-    background:#6b7280;
-    margin:0 3px;
-    animation:pulse 1s infinite
-}
-
-.loading-dot:nth-child(2){
-    animation-delay:.15s
-}
-
-.loading-dot:nth-child(3){
-    animation-delay:.30s
-}
-
-@keyframes pulse{
-    0%,100%{opacity:.3}
-    50%{opacity:1}
-}
-
-/* =====================================================
-   RESULTS
-   ===================================================== */
-
-#results{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:18px
-}
-
-.card{
-    background:white;
-    border-radius:22px;
-    padding:18px;
-    min-height:300px;
-    display:flex;
-    flex-direction:column;
-    min-width:0;
-    box-shadow:0 10px 30px rgba(0,0,0,.06)
-}
-
-.card-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    padding-bottom:14px;
-    border-bottom:1px solid #edf0f3
-}
-
-.provider{
-    font-size:22px;
-    font-weight:900
-}
-
-.status{
-    font-size:13px;
-    font-weight:800;
-    padding:6px 11px;
-    border-radius:30px;
-    background:#f3f4f6;
-    color:#6b7280;
-    white-space:nowrap
-}
-
-.status.success{
-    background:#dcfce7;
-    color:#166534
-}
-
-.status.error{
-    background:#fee2e2;
-    color:#991b1b
-}
-
-.status.loading-status{
-    background:#f3f4f6;
-    color:#6b7280
-}
-
-.answer-area{
-    flex:1;
-    padding-top:18px;
-    min-width:0
-}
-
-.answer{
-    white-space:pre-wrap;
-    overflow-wrap:anywhere;
-    word-break:break-word;
-    max-width:100%;
-    line-height:1.9;
-    font-size:17px;
-    direction:rtl;
-    text-align:right
-}
-
-.error-message{
-    color:#991b1b;
-    font-size:16px;
-    line-height:1.8;
-    overflow-wrap:anywhere;
-    word-break:break-word
-}
-
-.card-footer{
-    margin-top:18px;
-    padding-top:12px;
-    border-top:1px solid #edf0f3;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    min-width:0
-}
-
-.model{
-    color:#9ca3af;
-    font-size:11px;
-    direction:ltr;
-    text-align:left;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-    min-width:0
-}
-
-.copy-button{
-    padding:7px 11px;
-    background:#f3f4f6;
-    color:#374151;
-    font-size:12px;
-    white-space:nowrap
-}
-
-.copy-button:hover{
-    background:#e5e7eb
-}
-
-.empty{
-    grid-column:1 / -1;
-    background:white;
-    border-radius:22px;
-    padding:45px 20px;
-    text-align:center;
-    color:#9ca3af;
-    box-shadow:0 8px 25px rgba(0,0,0,.05)
-}
-
-.empty-title{
-    color:#374151;
-    font-size:20px;
-    font-weight:800;
-    margin-bottom:8px
-}
-
-.summary{
-    grid-column:1 / -1;
-    background:white;
-    border-radius:18px;
-    padding:13px 16px;
-    text-align:center;
-    color:#6b7280;
-    font-size:14px;
-    box-shadow:0 5px 20px rgba(0,0,0,.04)
-}
-
-.summary strong{
-    color:#111827
-}
-
-/* =====================================================
-   LIGHTBOX
-   ===================================================== */
-
-.image-lightbox{
-    position:fixed;
-    inset:0;
-    z-index:99999;
-    display:none;
-    align-items:center;
-    justify-content:center;
-    padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));
-    background:rgba(0,0,0,.86);
-    touch-action:manipulation
-}
-
-.image-lightbox.show{
-    display:flex
-}
-
-.image-lightbox img{
-    display:block;
-    width:auto;
-    height:auto;
-    max-width:94vw;
-    max-height:84vh;
-    object-fit:contain;
-    border-radius:14px;
-    box-shadow:0 20px 60px rgba(0,0,0,.45);
-    user-select:none;
-    -webkit-user-select:none
-}
-
-.lightbox-close{
-    position:absolute;
-    top:calc(14px + env(safe-area-inset-top));
-    left:16px;
-    z-index:100000;
-    width:46px;
-    height:46px;
-    padding:0;
-    border-radius:50%;
-    background:rgba(255,255,255,.95);
-    color:#111827;
-    font-size:30px;
-    line-height:46px;
-    text-align:center;
-    font-weight:900;
-    box-shadow:0 5px 20px rgba(0,0,0,.25)
-}
-
-.lightbox-hint{
-    position:absolute;
-    left:0;
-    right:0;
-    bottom:calc(14px + env(safe-area-inset-bottom));
-    text-align:center;
-    color:white;
-    font-size:13px;
-    font-weight:700;
-    opacity:.9;
-    pointer-events:none
-}
-
-/* =====================================================
-   RESPONSIVE
-   ===================================================== */
-
-@media (max-width:850px){
-
-    #results{
-        grid-template-columns:1fr
-    }
-
-    .provider-options{
-        grid-template-columns:repeat(2,1fr)
-    }
-
-    .logo{
-        font-size:34px
-    }
-
-    .card{
-        min-height:250px
-    }
-}
-
-@media (max-width:500px){
-
-    .container{
-        padding:16px 10px calc(35px + env(safe-area-inset-bottom))
-    }
-
-    .header{
-        margin-bottom:18px
-    }
-
-    .logo{
-        font-size:31px
-    }
-
-    .subtitle{
-        font-size:14px
-    }
-
-    .system-bar,
-    .provider-selector{
-        border-radius:20px;
-        padding:15px
-    }
-
-    .system-top{
-        align-items:flex-start;
-        flex-direction:column
-    }
-
-    .remaining{
-        font-size:13px
-    }
-
-    .question-box{
-        border-radius:20px;
-        padding:13px
-    }
-
-    textarea{
-        min-height:115px;
-        font-size:16px
-    }
-
-    .button-row{
-        flex-wrap:wrap
-    }
-
-    .ask-button{
-        min-width:calc(100% - 70px)
-    }
-
-    .image-button{
-        width:60px;
-        padding-left:8px;
-        padding-right:8px
-    }
-
-    .clear-button{
-        width:100%
-    }
-
-    .card{
-        border-radius:20px
-    }
-
-    .provider{
-        font-size:21px
-    }
-}
-</style>
-</head>
-
-<body>
-
-<div class="container">
-
-<div class="header">
-    <div class="logo">اسأل Smart AI</div>
-    <div class="subtitle">سؤال واحد — عدة نماذج ذكاء اصطناعي</div>
-</div>
-
-<!-- =====================================================
-     PROVIDER STATUS
-     ===================================================== -->
-
-<div class="system-bar">
-
-    <div class="system-top">
-
-        <div class="system-title">
-            حالة مزودي الذكاء الاصطناعي
-        </div>
-
-        <div id="remaining" class="remaining">
-            الأسئلة المتبقية: —
-        </div>
-
-    </div>
-
-    <div id="providersStatus" class="providers-status">
-
-        <div class="provider-status">
-            <span class="dot"></span>
-            جاري الفحص...
-        </div>
-
-    </div>
-
-</div>
-
-<!-- =====================================================
-     PROVIDER SELECTOR
-     ===================================================== -->
-
-<div class="provider-selector">
-
-    <div class="provider-selector-title">
-        اختر المنصات
-    </div>
-
-    <div class="provider-selector-note">
-        يمكنك استخدام الاختيار التلقائي أو تحديد المنصات بنفسك.
-    </div>
-
-    <div id="providerOptions" class="provider-options">
-
-        <!-- يتم بناؤها تلقائيًا من /status -->
-
-    </div>
-
-    <div id="providerSelectionInfo" class="provider-selection-info">
-        الوضع الحالي: تلقائي
-    </div>
-
-</div>
-
-<!-- =====================================================
-     QUESTION
-     ===================================================== -->
-
-<div class="question-box">
-
-    <textarea
-        id="question"
-        maxlength="50000"
-        placeholder="اكتب سؤالك هنا...&#10;اضغط Enter لسطر جديد، واضغط Ctrl+Enter أو ⌘+Enter للإرسال."
-        autocomplete="off"
-    ></textarea>
-
-    <div id="imagePreview" class="image-preview">
-
-        <img
-            id="previewImage"
-            alt="معاينة الصورة"
-        >
-
-        <div class="image-info">
-
-            <div
-                id="imageName"
-                class="image-name"
-            ></div>
-
-            <div class="image-note">
-                الصورة مرفقة بالرسالة
-            </div>
-
-        </div>
-
-        <button
-            id="removeImageButton"
-            class="remove-image"
-            type="button"
-        >
-            إزالة
-        </button>
-
-    </div>
-
-    <input
-        id="imageInput"
-        type="file"
-        accept="image/*"
-        hidden
-    >
-
-    <div class="button-row">
-
-        <button
-            id="askButton"
-            class="ask-button"
-            type="button"
-        >
-            اسأل Smart AI
-        </button>
-
-        <button
-            id="imageButton"
-            class="image-button"
-            type="button"
-            title="إضافة صورة"
-        >
-            🖼️
-        </button>
-
-        <button
-            id="clearButton"
-            class="clear-button"
-            type="button"
-        >
-            مسح
-        </button>
-
-    </div>
-
-</div>
-
-<!-- =====================================================
-     LOADING
-     ===================================================== -->
-
-<div id="loading" class="loading">
-
-    جاري الحصول على الإجابات
-
-    <span class="loading-dot"></span>
-    <span class="loading-dot"></span>
-    <span class="loading-dot"></span>
-
-</div>
-
-<!-- =====================================================
-     RESULTS
-     ===================================================== -->
-
-<div id="results">
-
-    <div class="empty">
-
-        <div class="empty-title">
-            مرحبًا بك في Smart AI
-        </div>
-
-        اكتب سؤالًا واضغط على «اسأل Smart AI»
-
-    </div>
-
-</div>
-
-</div>
-
-<!-- =====================================================
-     IMAGE LIGHTBOX
-     ===================================================== -->
-
-<div
-    id="imageLightbox"
-    class="image-lightbox"
-    role="dialog"
-    aria-modal="true"
-    aria-label="معاينة الصورة"
->
-
-    <button
-        id="lightboxClose"
-        class="lightbox-close"
-        type="button"
-        aria-label="إغلاق"
-    >
-        ×
-    </button>
-
-    <img
-        id="lightboxImage"
-        alt="الصورة بحجم كبير"
-    >
-
-    <div class="lightbox-hint">
-        اضغط خارج الصورة أو × للإغلاق
-    </div>
-
-</div>
-
-<script>
-"use strict";
-
-/* =====================================================
-   CONFIG
-   ===================================================== */
-
-const API_URL =
-    "https://smart-ai.kaka10906.workers.dev/";
-
-const PROVIDERS = [
-    "deepseek",
-    "gemini",
-    "mistral"
+const AVAILABLE_PROVIDERS = [
+  "deepseek",
+  "gemini",
+  "mistral",
 ];
 
-/* =====================================================
-   USER
-   ===================================================== */
+// ---------------------------------------------------------
+// CORS
+// ---------------------------------------------------------
 
-function getUserId(){
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
 
-    let userId =
-        localStorage.getItem(
-            "smartAI_userId"
-        );
+// =========================================================
+// JSON
+// =========================================================
 
-    if(!userId){
+function json(data, status = 200) {
 
-        userId =
-            "user-" +
-            crypto.randomUUID();
+  return new Response(
+    JSON.stringify(data),
+    {
+      status,
 
-        localStorage.setItem(
-            "smartAI_userId",
-            userId
-        );
+      headers: {
+        "Content-Type":
+          "application/json; charset=UTF-8",
+
+        ...CORS_HEADERS,
+      },
     }
-
-    return userId;
+  );
 }
 
-const USER_ID =
-    getUserId();
+// =========================================================
+// PROVIDER STATUS
+// =========================================================
 
-/* =====================================================
-   ELEMENTS
-   ===================================================== */
+async function ensureProviderStatusRows(DB) {
 
-const questionElement =
-    document.getElementById("question");
+  const now =
+    Date.now();
 
-const askButton =
-    document.getElementById("askButton");
-
-const clearButton =
-    document.getElementById("clearButton");
-
-const imageButton =
-    document.getElementById("imageButton");
-
-const imageInput =
-    document.getElementById("imageInput");
-
-const imagePreview =
-    document.getElementById("imagePreview");
-
-const previewImage =
-    document.getElementById("previewImage");
-
-const imageName =
-    document.getElementById("imageName");
-
-const removeImageButton =
-    document.getElementById("removeImageButton");
-
-const imageLightbox =
-    document.getElementById("imageLightbox");
-
-const lightboxImage =
-    document.getElementById("lightboxImage");
-
-const lightboxClose =
-    document.getElementById("lightboxClose");
-
-const loading =
-    document.getElementById("loading");
-
-const results =
-    document.getElementById("results");
-
-const providersStatus =
-    document.getElementById("providersStatus");
-
-const remainingElement =
-    document.getElementById("remaining");
-
-const providerOptions =
-    document.getElementById("providerOptions");
-
-const providerSelectionInfo =
-    document.getElementById(
-        "providerSelectionInfo"
+  const statements =
+    AVAILABLE_PROVIDERS.map(
+      providerId =>
+        DB.prepare(
+          `INSERT OR IGNORE INTO provider_status
+          (
+            provider_id,
+            status,
+            last_checked,
+            last_success,
+            last_error,
+            updated_at
+          )
+          VALUES
+          (?, 'unknown', NULL, NULL, NULL, ?)`
+        ).bind(
+          providerId,
+          now
+        )
     );
 
-/* =====================================================
-   STATE
-   ===================================================== */
-
-let selectedImage =
-    null;
-
-let providerStatusData =
-    {};
-
-let providerStates =
-    {};
-
-let providerSelectionMode =
-    "automatic";
-
-/* =====================================================
-   INITIAL LOAD
-   ===================================================== */
-
-loadProviderStatus();
-loadQuota();
-
-/* =====================================================
-   PROVIDER HELPERS
-   ===================================================== */
-
-function getProviderDisplayName(name){
-
-    if(name === "deepseek"){
-        return "DeepSeek";
-    }
-
-    if(name === "gemini"){
-        return "Gemini";
-    }
-
-    if(name === "mistral"){
-        return "Mistral";
-    }
-
-    return name;
+  await DB.batch(
+    statements
+  );
 }
 
-function getStateLabel(state){
+function classifyProviderStatus(
+  result
+) {
 
-    const normalized =
-        String(state || "")
-            .toLowerCase();
+  if (
+    result?.ok === true
+  ) {
 
-    if(normalized === "available"){
-        return "متاح";
-    }
+    return "available";
+  }
 
-    if(normalized === "limited"){
-        return "محدود";
-    }
+  const status =
+    Number(
+      result?.http_status
+    ) || 0;
 
-    if(
-        normalized === "unavailable" ||
-        normalized === "error"
-    ){
-        return "غير متاح";
-    }
+  if (
+    status === 401 ||
+    status === 402 ||
+    status === 403
+  ) {
 
-    return "غير معروف";
+    return "unavailable";
+  }
+
+  if (
+    status === 429 ||
+    status >= 500
+  ) {
+
+    return "limited";
+  }
+
+  if (
+    status === 400 ||
+    status === 404 ||
+    status === 422
+  ) {
+
+    return "error";
+  }
+
+  return "limited";
 }
 
-function isProviderAvailable(name){
+async function updateProviderStatus(
+  DB,
+  providerId,
+  result
+) {
 
-    const state =
-        String(
-            providerStates[name] ||
-            "unknown"
-        ).toLowerCase();
+  const now =
+    Date.now();
 
-    return (
-        state === "available" ||
-        state === "limited" ||
-        state === "unknown"
+  const status =
+    classifyProviderStatus(
+      result
     );
+
+  const lastError =
+    result?.ok
+      ? null
+      : (
+          result?.error ||
+          "Unknown provider error."
+        );
+
+  await DB.prepare(
+    `UPDATE provider_status
+     SET
+       status = ?,
+       last_checked = ?,
+       last_success =
+         CASE
+           WHEN ? = 'available'
+           THEN ?
+           ELSE last_success
+         END,
+       last_error = ?,
+       updated_at = ?
+     WHERE provider_id = ?`
+  ).bind(
+    status,
+    now,
+    status,
+    now,
+    lastError,
+    now,
+    providerId
+  ).run();
+
+  return {
+    status,
+    checked_at: now,
+  };
 }
 
-/* =====================================================
-   PROVIDER STATUS
-   ===================================================== */
+async function getProviderStatus(
+  DB
+) {
 
-async function loadProviderStatus(){
+  await ensureProviderStatusRows(
+    DB
+  );
 
-    try{
+  const result =
+    await DB.prepare(
+      `SELECT
+        provider_id,
+        status,
+        last_checked,
+        last_success,
+        last_error,
+        updated_at
+       FROM provider_status
+       ORDER BY provider_id`
+    ).all();
 
-        const response =
-            await fetch(
-                API_URL + "status"
-            );
+  const now =
+    Date.now();
 
-        const data =
-            await response.json();
+  const providers = {};
 
-        if(!response.ok){
+  for (
+    const row of
+      result.results || []
+  ) {
 
-            throw new Error(
-                "Status request failed"
-            );
+    const lastChecked =
+      row.last_checked !== null &&
+      row.last_checked !== undefined
+        ? Number(
+            row.last_checked
+          )
+        : null;
+
+    const age =
+      lastChecked !== null
+        ? Math.max(
+            0,
+            now - lastChecked
+          )
+        : null;
+
+    if (
+      lastChecked === null
+    ) {
+
+      providers[
+        row.provider_id
+      ] = {
+
+        status:
+          "unknown",
+
+        last_checked:
+          null,
+
+        last_success:
+          row.last_success !== null
+            ? Number(
+                row.last_success
+              )
+            : null,
+
+        last_error:
+          null,
+
+        stale:
+          false,
+      };
+
+      continue;
+    }
+
+    providers[
+      row.provider_id
+    ] = {
+
+      status:
+        row.status ||
+        "unknown",
+
+      last_checked:
+        lastChecked,
+
+      last_success:
+        row.last_success !== null
+          ? Number(
+              row.last_success
+            )
+          : null,
+
+      last_error:
+        row.status ===
+        "available"
+          ? null
+          : (
+              row.last_error ||
+              null
+            ),
+
+      stale:
+        age >
+        STATUS_MAX_AGE_MS,
+
+      age_seconds:
+        Math.floor(
+          age / 1000
+        ),
+    };
+  }
+
+  return {
+
+    checked_at:
+      now,
+
+    max_age_seconds:
+      STATUS_MAX_AGE_MS / 1000,
+
+    providers,
+  };
+}
+
+// =========================================================
+// AUTOMATIC PROVIDER SELECTION
+// =========================================================
+
+async function selectProvidersAutomatically(
+  DB
+) {
+
+  const statusData =
+    await getProviderStatus(
+      DB
+    );
+
+  const providers =
+    statusData.providers ||
+    {};
+
+  const priority = {
+
+    available: 1,
+
+    limited: 2,
+
+    unknown: 3,
+
+    unavailable: 99,
+
+    error: 99,
+  };
+
+  const candidates =
+    AVAILABLE_PROVIDERS
+      .map(
+        providerId => {
+
+          const provider =
+            providers[
+              providerId
+            ];
+
+          const status =
+            provider?.status ||
+            "unknown";
+
+          return {
+
+            id:
+              providerId,
+
+            status,
+
+            priority:
+              priority[status] ??
+              99,
+          };
         }
+      )
+      .filter(
+        provider =>
+          provider.status ===
+            "available" ||
 
-        displayProviderStatus(data);
+          provider.status ===
+            "limited" ||
 
-    }catch(error){
+          provider.status ===
+            "unknown"
+      );
 
-        providersStatus.innerHTML = `
-            <div class="provider-status">
-                <span class="dot"></span>
-                تعذر قراءة حالة المزودين
-            </div>
-        `;
+  candidates.sort(
+    (a, b) => {
 
-        providerStates = {};
+      if (
+        a.priority !==
+        b.priority
+      ) {
 
-        renderProviderOptions();
+        return (
+          a.priority -
+          b.priority
+        );
+      }
+
+      return (
+        AVAILABLE_PROVIDERS.indexOf(
+          a.id
+        ) -
+        AVAILABLE_PROVIDERS.indexOf(
+          b.id
+        )
+      );
     }
+  );
+
+  const available =
+    candidates.filter(
+      provider =>
+        provider.status ===
+        "available"
+    );
+
+  if (
+    available.length > 0
+  ) {
+
+    return {
+
+      providers:
+        available.map(
+          provider =>
+            provider.id
+        ),
+
+      selection_mode:
+        "automatic",
+
+      reason:
+        "Selected currently available AI providers.",
+
+      status:
+        statusData,
+    };
+  }
+
+  const limited =
+    candidates.filter(
+      provider =>
+        provider.status ===
+        "limited"
+    );
+
+  if (
+    limited.length > 0
+  ) {
+
+    return {
+
+      providers:
+        limited.map(
+          provider =>
+            provider.id
+        ),
+
+      selection_mode:
+        "automatic",
+
+      reason:
+        "No fully available provider. Selected limited providers.",
+
+      status:
+        statusData,
+    };
+  }
+
+  const unknown =
+    candidates.filter(
+      provider =>
+        provider.status ===
+        "unknown"
+    );
+
+  return {
+
+    providers:
+      unknown.map(
+        provider =>
+          provider.id
+      ),
+
+    selection_mode:
+      "automatic",
+
+    reason:
+      "No known available provider. Selected unknown providers.",
+
+    status:
+      statusData,
+  };
 }
 
-function displayProviderStatus(data){
+// =========================================================
+// IMAGE VALIDATION
+// =========================================================
 
-    const providers =
-        data?.status?.providers ||
+function validateImage(
+  image
+) {
+
+  if (
+    image === null ||
+    image === undefined
+  ) {
+
+    return {
+
+      ok:
+        true,
+
+      image:
+        null,
+    };
+  }
+
+  if (
+    typeof image !==
+    "object"
+  ) {
+
+    return {
+
+      ok:
+        false,
+
+      error:
+        "Invalid image object.",
+    };
+  }
+
+  const data =
+    typeof image.data ===
+    "string"
+
+      ? image.data.trim()
+
+      : "";
+
+  const mimeType =
+    typeof image.mimeType ===
+    "string"
+
+      ? image.mimeType
+          .trim()
+          .toLowerCase()
+
+      : "";
+
+  if (
+    !data
+  ) {
+
+    return {
+
+      ok:
+        false,
+
+      error:
+        "Image data is missing.",
+    };
+  }
+
+  if (
+    !data.startsWith(
+      "data:image/"
+    )
+  ) {
+
+    return {
+
+      ok:
+        false,
+
+      error:
+        "Image must be sent as a data URL.",
+    };
+  }
+
+  if (
+    !mimeType ||
+    !mimeType.startsWith(
+      "image/"
+    )
+  ) {
+
+    return {
+
+      ok:
+        false,
+
+      error:
+        "Invalid image MIME type.",
+    };
+  }
+
+  if (
+    data.length >
+    MAX_IMAGE_DATA_URL_LENGTH
+  ) {
+
+    return {
+
+      ok:
+        false,
+
+      error:
+        "Image is too large. Please choose a smaller image.",
+    };
+  }
+
+  return {
+
+    ok:
+      true,
+
+    image: {
+
+      data,
+
+      mimeType,
+    },
+  };
+}
+
+// =========================================================
+// CONVERSATION MEMORY
+// =========================================================
+
+async function getConversationHistory(
+  DB,
+  userId
+) {
+
+  const row =
+    await DB.prepare(
+      `SELECT
+        history,
+        updated_at
+       FROM conversation_memory
+       WHERE user_id = ?`
+    ).bind(
+      userId
+    ).first();
+
+  if (
+    !row ||
+    !row.history
+  ) {
+
+    return [];
+  }
+
+  try {
+
+    const history =
+      JSON.parse(
+        row.history
+      );
+
+    if (
+      !Array.isArray(
+        history
+      )
+    ) {
+
+      return [];
+    }
+
+    return history
+      .slice(
+        -MAX_MEMORY_TURNS
+      )
+      .filter(
+        item =>
+          item &&
+          typeof item ===
+            "object"
+      );
+
+  } catch (
+    error
+  ) {
+
+    return [];
+  }
+}
+
+function cleanMemoryText(
+  text
+) {
+
+  if (
+    typeof text !==
+    "string"
+  ) {
+
+    return "";
+  }
+
+  if (
+    text.length <=
+    MAX_MEMORY_TEXT_LENGTH
+  ) {
+
+    return text;
+  }
+
+  return (
+
+    text.slice(
+      0,
+      MAX_MEMORY_TEXT_LENGTH
+    ) +
+
+    "\n[تم اختصار هذه الإجابة في الذاكرة]"
+  );
+}
+
+async function saveConversationTurn(
+  DB,
+  userId,
+  question,
+  providerResponses
+) {
+
+  try {
+
+    const oldHistory =
+      await getConversationHistory(
+        DB,
+        userId
+      );
+
+    const answers = {};
+
+    for (
+      const result of
+        providerResponses
+    ) {
+
+      if (
+        result?.ok === true &&
+        result?.answer
+      ) {
+
+        const provider =
+          String(
+            result.provider ||
+            ""
+          ).toLowerCase();
+
+        answers[
+          provider
+        ] =
+          cleanMemoryText(
+            result.answer
+          );
+      }
+    }
+
+    if (
+      Object.keys(
+        answers
+      ).length === 0
+    ) {
+
+      return;
+    }
+
+    const newTurn = {
+
+      question:
+        cleanMemoryText(
+          question
+        ),
+
+      answers,
+
+      created_at:
+        Date.now(),
+    };
+
+    const newHistory =
+      [
+        ...oldHistory,
+
+        newTurn,
+      ].slice(
+        -MAX_MEMORY_TURNS
+      );
+
+    await DB.prepare(
+      `INSERT INTO conversation_memory
+       (
+         user_id,
+         history,
+         updated_at
+       )
+       VALUES
+       (?, ?, ?)
+       ON CONFLICT(user_id)
+       DO UPDATE SET
+         history = excluded.history,
+         updated_at = excluded.updated_at`
+    ).bind(
+
+      userId,
+
+      JSON.stringify(
+        newHistory
+      ),
+
+      Date.now()
+
+    ).run();
+
+  } catch (
+    error
+  ) {
+
+‎    // الذاكرة ميزة إضافية.
+‎    // إذا فشلت، لا نفشل السؤال نفسه.
+
+    console.error(
+      "Conversation memory error:",
+      error?.message
+    );
+  }
+}
+
+function buildConversationContext(
+  history
+) {
+
+  if (
+    !Array.isArray(
+      history
+    ) ||
+    history.length === 0
+  ) {
+
+    return "";
+  }
+
+  let context =
+    "\n\n--- بداية سياق المحادثة السابقة ---\n";
+
+  history.forEach(
+    (
+      turn,
+      index
+    ) => {
+
+      context +=
+        `\nالمحادثة السابقة ${index + 1}:\n`;
+
+      context +=
+‎        `سؤال المستخدم:\n${turn.question || ""}\n`;
+
+      const answers =
+        turn.answers ||
         {};
 
-    providerStatusData =
-        providers;
+      for (
+        const provider of
+          Object.keys(
+            answers
+          )
+      ) {
 
-    providerStates = {};
-
-    providersStatus.innerHTML = "";
-
-    let found = false;
-
-    PROVIDERS.forEach(
-        function(name){
-
-            const info =
-                providers[name];
-
-            if(!info){
-                return;
-            }
-
-            found = true;
-
-            const state =
-                typeof info === "string"
-                    ? info
-                    : (
-                        info.status ||
-                        "unknown"
-                    );
-
-            providerStates[name] =
-                String(state).toLowerCase();
-
-            const normalized =
-                String(state)
-                    .toLowerCase();
-
-            let className = "";
-
-            if(
-                normalized ===
-                "available"
-            ){
-                className =
-                    "available";
-            }
-
-            else if(
-                normalized ===
-                "limited"
-            ){
-                className =
-                    "limited";
-            }
-
-            else if(
-                normalized ===
-                    "unavailable" ||
-                normalized ===
-                    "error"
-            ){
-                className =
-                    "unavailable";
-            }
-
-            const displayName =
-                getProviderDisplayName(
-                    name
-                );
-
-            const label =
-                getStateLabel(
-                    normalized
-                );
-
-            providersStatus.innerHTML += `
-                <div class="provider-status ${className}">
-                    <span class="dot"></span>
-                    ${displayName}: ${label}
-                </div>
-            `;
-        }
-    );
-
-    if(!found){
-
-        providersStatus.innerHTML = `
-            <div class="provider-status">
-                <span class="dot"></span>
-                لم تصل حالة المزودين
-            </div>
-        `;
+        context +=
+‎          `إجابة ${provider}:\n${answers[provider]}\n`;
+      }
     }
+  );
 
-    renderProviderOptions();
+  context +=
+    "\n--- نهاية سياق المحادثة السابقة ---\n";
+
+  context +=
+    "\nاستخدم هذا السياق لفهم الإشارات مثل: هذا، هذه، هو، هي، ذلك، السابق، وغيرها. إذا كان السؤال الجديد يعتمد على السؤال السابق، اربط بينهما بشكل صحيح. إذا كان السؤال الجديد موضوعًا مختلفًا، تجاهل السياق غير المرتبط.";
+
+  return context;
 }
 
-/* =====================================================
-   PROVIDER SELECTOR UI
-   ===================================================== */
+// =========================================================
+// DEEPSEEK
+// =========================================================
 
-function renderProviderOptions(){
+async function askDeepSeek(
+  question,
+  apiKey,
+  image = null,
+  conversationContext = ""
+) {
 
-    providerOptions.innerHTML = "";
+  if (
+    !apiKey
+  ) {
 
-    /* -----------------------------------------------
-       AUTOMATIC
-       ----------------------------------------------- */
+    return {
 
-    const automaticWrapper =
-        document.createElement("div");
+      ok:
+        false,
 
-    automaticWrapper.className =
-        "provider-option";
+      provider:
+        "DeepSeek",
 
-    automaticWrapper.innerHTML = `
-        <input
-            type="radio"
-            name="providerSelection"
-            id="providerAutomatic"
-            value="automatic"
-        >
+      model:
+        image
+          ? DEEPSEEK_VISION_MODEL
+          : DEEPSEEK_MODEL,
 
-        <label
-            class="provider-label"
-            for="providerAutomatic"
-        >
-            <div class="provider-name">
-                تلقائي
-            </div>
+      http_status:
+        401,
 
-            <div class="provider-state">
-                Smart AI يختار تلقائيًا
-            </div>
-        </label>
-    `;
+      error:
+        "DEEPSEEK_API_KEY is not configured.",
+    };
+  }
 
-    providerOptions.appendChild(
-        automaticWrapper
-    );
+  const model =
+    image
+      ? DEEPSEEK_VISION_MODEL
+      : DEEPSEEK_MODEL;
 
-    /* -----------------------------------------------
-       PROVIDERS
-       ----------------------------------------------- */
+  const fullQuestion =
+    conversationContext +
 
-    PROVIDERS.forEach(
-        function(name){
+    "\n\nالسؤال الحالي:\n" +
 
-            const state =
-                String(
-                    providerStates[name] ||
-                    "unknown"
-                ).toLowerCase();
+    question;
 
-            const disabled =
-                state === "unavailable" ||
-                state === "error";
+  const userContent =
+    image
 
-            const wrapper =
-                document.createElement("div");
+      ? [
 
-            wrapper.className =
-                "provider-option" +
-                (
-                    disabled
-                        ? " disabled"
-                        : ""
-                );
+          {
+            type:
+              "text",
 
-            const inputType =
-                "checkbox";
+            text:
+              fullQuestion,
+          },
 
-            const id =
-                "provider-" +
-                name;
+          {
+            type:
+              "image_url",
 
-            const stateClass =
-                (
-                    state === "available" ||
-                    state === "limited" ||
-                    state === "unavailable" ||
-                    state === "error"
-                )
-                    ? state
-                    : "";
+            image_url: {
 
-            wrapper.innerHTML = `
-                <input
-                    type="${inputType}"
-                    id="${id}"
-                    value="${name}"
-                    ${disabled ? "disabled" : ""}
-                >
+              url:
+                image.data,
 
-                <label
-                    class="provider-label"
-                    for="${id}"
-                >
+              detail:
+                "low",
+            },
+          },
 
-                    <div class="provider-name">
-                        ${getProviderDisplayName(name)}
-                    </div>
+        ]
 
-                    <div class="provider-state ${stateClass}">
-                        ${getStateLabel(state)}
-                    </div>
+      : fullQuestion;
 
-                </label>
-            `;
+  try {
 
-            providerOptions.appendChild(
-                wrapper
-            );
+    const response =
+      await fetch(
+        DEEPSEEK_API_URL,
+        {
 
-            const input =
-                wrapper.querySelector(
-                    "input"
-                );
+          method:
+            "POST",
 
-            input.addEventListener(
-                "change",
-                function(){
+          headers: {
 
-                    if(
-                        input.checked
-                    ){
+            "Content-Type":
+              "application/json",
 
-                        providerSelectionMode =
-                            "manual";
+            "Authorization":
+              `Bearer ${apiKey}`,
+          },
 
-                        const automatic =
-                            document.getElementById(
-                                "providerAutomatic"
-                            );
+          body:
+            JSON.stringify({
 
-                        automatic.checked =
-                            false;
+              model,
 
-                    }
+              messages: [
 
-                    updateProviderSelectionInfo();
-                }
-            );
+                {
+                  role:
+                    "system",
+
+                  content:
+                    "You are Smart AI. Answer the user's question accurately, clearly, and directly. Use previous conversation context when relevant. Do not assume unrelated context. If an image is provided, analyze it carefully and use it as part of your answer. If the question is mathematical, calculate carefully and provide the final answer.",
+                },
+
+                {
+                  role:
+                    "user",
+
+                  content:
+                    userContent,
+                },
+
+              ],
+
+              thinking: {
+
+                type:
+                  "disabled",
+              },
+
+              stream:
+                false,
+            }),
         }
-    );
+      );
 
-    const automatic =
-        document.getElementById(
-            "providerAutomatic"
-        );
+    const data =
+      await response.json();
 
-    automatic.checked =
-        providerSelectionMode ===
-        "automatic";
+    if (
+      !response.ok
+    ) {
 
-    automatic.addEventListener(
-        "change",
-        function(){
+      return {
 
-            if(
-                automatic.checked
-            ){
+        ok:
+          false,
 
-                providerSelectionMode =
-                    "automatic";
+        provider:
+          "DeepSeek",
 
-                PROVIDERS.forEach(
-                    function(name){
+        model,
 
-                        const checkbox =
-                            document.getElementById(
-                                "provider-" +
-                                name
-                            );
+        http_status:
+          response.status,
 
-                        if(checkbox){
-                            checkbox.checked =
-                                false;
-                        }
-                    }
-                );
+        error:
+          data?.error?.message ||
+          "DeepSeek API request failed.",
+      };
+    }
 
-                updateProviderSelectionInfo();
-            }
-        }
-    );
+    const answer =
+      data?.choices?.[0]
+        ?.message?.content ||
+      "";
 
-    updateProviderSelectionInfo();
+    if (
+      !answer
+    ) {
+
+      return {
+
+        ok:
+          false,
+
+        provider:
+          "DeepSeek",
+
+        model,
+
+        http_status:
+          200,
+
+        error:
+          "DeepSeek returned an empty answer.",
+      };
+    }
+
+    return {
+
+      ok:
+        true,
+
+      provider:
+        "DeepSeek",
+
+      model:
+        data.model ||
+        model,
+
+      answer,
+
+      usage:
+        data.usage ||
+        null,
+    };
+
+  } catch (
+    error
+  ) {
+
+    return {
+
+      ok:
+        false,
+
+      provider:
+        "DeepSeek",
+
+      model,
+
+      http_status:
+        0,
+
+      error:
+        error?.message ||
+        "Unexpected DeepSeek error.",
+    };
+  }
 }
 
-function getSelectedProviders(){
+// =========================================================
+// GEMINI
+// =========================================================
 
-    if(
-        providerSelectionMode ===
-        "automatic"
-    ){
+async function askGemini(
+  question,
+  apiKey,
+  image = null,
+  conversationContext = ""
+) {
 
-        return null;
-    }
+  if (
+    !apiKey
+  ) {
 
-    return PROVIDERS.filter(
-        function(name){
+    return {
 
-            const checkbox =
-                document.getElementById(
-                    "provider-" +
-                    name
-                );
+      ok:
+        false,
 
-            return (
-                checkbox &&
-                checkbox.checked
-            );
-        }
-    );
-}
+      provider:
+        "Gemini",
 
-function updateProviderSelectionInfo(){
+      model:
+        GEMINI_MODEL,
 
-    if(
-        providerSelectionMode ===
-        "automatic"
-    ){
+      http_status:
+        401,
 
-        providerSelectionInfo.textContent =
-            "الوضع الحالي: تلقائي — Smart AI يختار المنصات المناسبة.";
+      error:
+        "GEMINI_API_KEY is not configured.",
+    };
+  }
 
-        return;
-    }
+  const parts = [];
 
-    const selected =
-        getSelectedProviders() ||
-        [];
+  if (
+    image
+  ) {
 
-    if(
-        selected.length === 0
-    ){
+    parts.push({
 
-        providerSelectionInfo.textContent =
-            "لم يتم اختيار منصة. اختر منصة واحدة على الأقل أو استخدم «تلقائي».";
+      inline_data: {
 
-        return;
-    }
+        mime_type:
+          image.mimeType,
 
-    const names =
-        selected.map(
-            getProviderDisplayName
-        );
+        data:
+          image.data.split(",")[1] ||
+          "",
+      },
+    });
+  }
 
-    providerSelectionInfo.textContent =
-        "المنصات المختارة: " +
-        names.join(" + ");
-}
+  parts.push({
 
-/* =====================================================
-   QUOTA
-   ===================================================== */
+    text:
+      `You are Smart AI.
 
-async function loadQuota(){
+Answer the user's question accurately, clearly, and directly.
 
-    try{
+Use previous conversation context when relevant.
 
-        const response =
-            await fetch(
-                API_URL +
-                "quota?userId=" +
-                encodeURIComponent(
-                    USER_ID
-                )
-            );
+Do not assume unrelated context.
 
-        const data =
-            await response.json();
+If an image is provided, analyze it carefully and use it as part of your answer.
 
-        if(!response.ok){
+If the question is mathematical, calculate carefully and provide the final answer.
 
-            throw new Error(
-                "Quota request failed"
-            );
-        }
+${conversationContext}
 
-        updateRemaining(data);
+User question:
 
-    }catch(error){
+${question}`,
+  });
 
-        // لا نعرض خطأ للمستخدم.
-    }
-}
+  try {
 
-function updateRemaining(data){
+    const response =
+      await fetch(
+        GEMINI_API_URL,
+        {
 
-    const remaining =
-        findRemaining(data);
+          method:
+            "POST",
 
-    if(
-        remaining !== null &&
-        remaining !== undefined
-    ){
+          headers: {
 
-        remainingElement.textContent =
-            "الأسئلة المتبقية: " +
-            remaining;
-    }
-}
+            "Content-Type":
+              "application/json",
 
-function findRemaining(data){
+            "x-goog-api-key":
+              apiKey,
+          },
 
-    const possibleValues = [
+          body:
+            JSON.stringify({
 
-        data?.remaining,
+              contents: [
 
-        data?.questionsRemaining,
-
-        data?.remainingQuestions,
-
-        data?.quota?.remaining,
-
-        data?.usage?.remaining,
-
-        data?.user?.remaining,
-
-        data?.user?.questionsRemaining,
-
-        data?.summary?.remaining
-    ];
-
-    for(
-        const value of
-        possibleValues
-    ){
-
-        if(
-            value !== undefined &&
-            value !== null
-        ){
-
-            return value;
-        }
-    }
-
-    return null;
-}
-
-/* =====================================================
-   IMAGE
-   ===================================================== */
-
-imageButton.addEventListener(
-    "click",
-    function(){
-
-        imageInput.click();
-    }
-);
-
-imageInput.addEventListener(
-    "change",
-    function(){
-
-        const file =
-            imageInput.files?.[0];
-
-        if(!file){
-            return;
-        }
-
-        if(
-            !file.type ||
-            !file.type.startsWith(
-                "image/"
-            )
-        ){
-
-            alert(
-                "الملف المختار ليس صورة."
-            );
-
-            imageInput.value = "";
-
-            return;
-        }
-
-        const MAX_CLIENT_IMAGE_BYTES =
-            12 * 1024 * 1024;
-
-        if(
-            file.size >
-            MAX_CLIENT_IMAGE_BYTES
-        ){
-
-            alert(
-                "الصورة كبيرة جدًا. اختر صورة أصغر من 12 MB."
-            );
-
-            imageInput.value = "";
-
-            return;
-        }
-
-        selectedImage =
-            file;
-
-        const reader =
-            new FileReader();
-
-        reader.onload =
-            function(event){
-
-                previewImage.src =
-                    event.target.result;
-
-                imageName.textContent =
-                    file.name ||
-                    "صورة مرفقة";
-
-                imagePreview.classList.add(
-                    "show"
-                );
-            };
-
-        reader.onerror =
-            function(){
-
-                selectedImage =
-                    null;
-
-                imageInput.value =
-                    "";
-
-                previewImage.removeAttribute(
-                    "src"
-                );
-
-                imagePreview.classList.remove(
-                    "show"
-                );
-
-                alert(
-                    "تعذر معاينة الصورة."
-                );
-            };
-
-        reader.readAsDataURL(file);
-    }
-);
-
-async function fileToDataURL(file){
-
-    return new Promise(
-        function(resolve,reject){
-
-            const reader =
-                new FileReader();
-
-            reader.onload =
-                function(event){
-
-                    resolve(
-                        event.target.result
-                    );
-                };
-
-            reader.onerror =
-                function(){
-
-                    reject(
-                        new Error(
-                            "تعذر قراءة الصورة."
-                        )
-                    );
-                };
-
-            reader.readAsDataURL(file);
-        }
-    );
-}
-
-removeImageButton.addEventListener(
-    "click",
-    removeSelectedImage
-);
-
-function removeSelectedImage(){
-
-    selectedImage =
-        null;
-
-    imageInput.value =
-        "";
-
-    previewImage.removeAttribute(
-        "src"
-    );
-
-    imageName.textContent =
-        "";
-
-    imagePreview.classList.remove(
-        "show"
-    );
-
-    closeImageLightbox();
-}
-
-previewImage.addEventListener(
-    "click",
-    function(){
-
-        if(
-            !previewImage.src
-        ){
-            return;
-        }
-
-        lightboxImage.src =
-            previewImage.src;
-
-        imageLightbox.classList.add(
-            "show"
-        );
-
-        document.body.style.overflow =
-            "hidden";
-    }
-);
-
-function closeImageLightbox(){
-
-    imageLightbox.classList.remove(
-        "show"
-    );
-
-    lightboxImage.removeAttribute(
-        "src"
-    );
-
-    document.body.style.overflow =
-        "";
-}
-
-lightboxClose.addEventListener(
-    "click",
-    closeImageLightbox
-);
-
-imageLightbox.addEventListener(
-    "click",
-    function(event){
-
-        if(
-            event.target ===
-            imageLightbox
-        ){
-
-            closeImageLightbox();
-        }
-    }
-);
-
-document.addEventListener(
-    "keydown",
-    function(event){
-
-        if(
-            event.key === "Escape" &&
-            imageLightbox.classList.contains(
-                "show"
-            )
-        ){
-
-            closeImageLightbox();
-        }
-    }
-);
-
-/* =====================================================
-   ASK
-   ===================================================== */
-
-async function askSmartAI(){
-
-    const question =
-        questionElement.value.trim();
-
-    if(!question){
-
-        alert(
-            "اكتب السؤال أولًا."
-        );
-
-        questionElement.focus();
-
-        return;
-    }
-
-    /* -----------------------------------------------
-       GET PROVIDER SELECTION
-       ----------------------------------------------- */
-
-    const selectedProviders =
-        getSelectedProviders();
-
-    if(
-        providerSelectionMode ===
-            "manual" &&
-        (
-            !selectedProviders ||
-            selectedProviders.length === 0
-        )
-    ){
-
-        alert(
-            "اختر منصة واحدة على الأقل أو اختر «تلقائي»."
-        );
-
-        return;
-    }
-
-    /* -----------------------------------------------
-       UI LOCK
-       ----------------------------------------------- */
-
-    askButton.disabled =
-        true;
-
-    imageButton.disabled =
-        true;
-
-    clearButton.disabled =
-        true;
-
-    askButton.textContent =
-        "جاري السؤال...";
-
-    loading.classList.add(
-        "show"
-    );
-
-    /* -----------------------------------------------
-       LOADING CARDS
-       ----------------------------------------------- */
-
-    const loadingProviders =
-        providerSelectionMode ===
-            "automatic"
-
-            ? getAutomaticLoadingProviders()
-
-            : selectedProviders;
-
-    results.innerHTML =
-        loadingProviders
-            .map(
-                function(name){
-
-                    return createLoadingCard(
-                        getProviderDisplayName(
-                            name
-                        )
-                    );
-                }
-            )
-            .join("");
-
-    const startTime =
-        performance.now();
-
-    try{
-
-        let imagePayload =
-            null;
-
-        if(
-            selectedImage
-        ){
-
-            const imageData =
-                await fileToDataURL(
-                    selectedImage
-                );
-
-            if(!imageData){
-
-                throw new Error(
-                    "تعذر تجهيز الصورة للإرسال."
-                );
-            }
-
-            imagePayload = {
-
-                data:
-                    imageData,
-
-                mimeType:
-                    selectedImage.type ||
-                    "image/jpeg"
-            };
-        }
-
-        const requestBody = {
-
-            userId:
-                USER_ID,
-
-            question:
-                question,
-
-            image:
-                imagePayload
-        };
-
-        /*
-         * مهم:
-         *
-         * automatic:
-         * لا نرسل providers.
-         *
-         * manual:
-         * نرسل قائمة المنصات المختارة.
-         */
-
-        if(
-            providerSelectionMode ===
-            "manual"
-        ){
-
-            requestBody.providers =
-                selectedProviders;
-        }
-
-        const response =
-            await fetch(
-                API_URL,
                 {
 
-                    method:
-                        "POST",
+                  role:
+                    "user",
 
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
+                  parts,
+                },
 
-                    body:
-                        JSON.stringify(
-                            requestBody
-                        )
-                }
-            );
-
-        const data =
-            await response.json();
-
-        if(!response.ok){
-
-            throw new Error(
-                data?.error ||
-                data?.message ||
-                "حدث خطأ في الاتصال."
-            );
+              ],
+            }),
         }
+      );
 
-        const elapsed =
-            (
-                (
-                    performance.now() -
-                    startTime
-                ) /
-                1000
-            ).toFixed(2);
+    const data =
+      await response.json();
 
-        updateRemaining(
-            data
-        );
+    if (
+      !response.ok
+    ) {
 
-        displayResults(
-            data,
-            elapsed
-        );
+      return {
 
-        await loadProviderStatus();
+        ok:
+          false,
 
-    }catch(error){
+        provider:
+          "Gemini",
 
-        results.innerHTML = `
-            <div class="empty">
+        model:
+          GEMINI_MODEL,
 
-                <div class="empty-title">
-                    تعذر الحصول على الإجابة
-                </div>
+        http_status:
+          response.status,
 
-                ${escapeHTML(
-                    error?.message ||
-                    "حدث خطأ غير معروف."
-                )}
-
-            </div>
-        `;
-
-    }finally{
-
-        askButton.disabled =
-            false;
-
-        imageButton.disabled =
-            false;
-
-        clearButton.disabled =
-            false;
-
-        askButton.textContent =
-            "اسأل Smart AI";
-
-        loading.classList.remove(
-            "show"
-        );
+        error:
+          data?.error?.message ||
+          "Gemini API request failed.",
+      };
     }
+
+    const answer =
+      data?.candidates?.[0]
+        ?.content?.parts
+        ?.map(
+          part =>
+            part.text ||
+            ""
+        )
+        ?.join("") ||
+      "";
+
+    if (
+      !answer
+    ) {
+
+      return {
+
+        ok:
+          false,
+
+        provider:
+          "Gemini",
+
+        model:
+          GEMINI_MODEL,
+
+        http_status:
+          200,
+
+        error:
+          "Gemini returned an empty answer.",
+      };
+    }
+
+    return {
+
+      ok:
+        true,
+
+      provider:
+        "Gemini",
+
+      model:
+        GEMINI_MODEL,
+
+      answer,
+
+      usage:
+        data?.usageMetadata ||
+        null,
+    };
+
+  } catch (
+    error
+  ) {
+
+    return {
+
+      ok:
+        false,
+
+      provider:
+        "Gemini",
+
+      model:
+        GEMINI_MODEL,
+
+      http_status:
+        0,
+
+      error:
+        error?.message ||
+        "Unexpected Gemini error.",
+    };
+  }
 }
 
-/* =====================================================
-   AUTOMATIC LOADING
-   ===================================================== */
+// =========================================================
+// MISTRAL
+// =========================================================
 
-function getAutomaticLoadingProviders(){
+async function askMistral(
+  question,
+  apiKey,
+  image = null,
+  conversationContext = ""
+) {
 
-    const available =
-        PROVIDERS.filter(
-            function(name){
+  if (
+    !apiKey
+  ) {
 
-                return (
-                    providerStates[name] ===
-                    "available"
-                );
-            }
-        );
+    return {
 
-    if(
-        available.length > 0
-    ){
+      ok:
+        false,
 
-        return available;
+      provider:
+        "Mistral",
+
+      model:
+        MISTRAL_MODEL,
+
+      http_status:
+        401,
+
+      error:
+        "MISTRAL_API_KEY is not configured.",
+    };
+  }
+
+  const fullQuestion =
+    conversationContext +
+
+    "\n\nالسؤال الحالي:\n" +
+
+    question;
+
+  const userContent =
+    image
+
+      ? [
+
+          {
+            type:
+              "text",
+
+            text:
+              fullQuestion,
+          },
+
+          {
+            type:
+              "image_url",
+
+            image_url:
+              image.data,
+          },
+
+        ]
+
+      : fullQuestion;
+
+  try {
+
+    const response =
+      await fetch(
+        MISTRAL_API_URL,
+        {
+
+          method:
+            "POST",
+
+          headers: {
+
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              `Bearer ${apiKey}`,
+          },
+
+          body:
+            JSON.stringify({
+
+              model:
+                MISTRAL_MODEL,
+
+              messages: [
+
+                {
+
+                  role:
+                    "system",
+
+                  content:
+                    "You are Smart AI. Answer the user's question accurately, clearly, and directly. Use previous conversation context when relevant. Do not assume unrelated context. If an image is provided, analyze it carefully and use it as part of your answer. If the question is mathematical, calculate carefully and provide the final answer.",
+                },
+
+                {
+
+                  role:
+                    "user",
+
+                  content:
+                    userContent,
+                },
+
+              ],
+            }),
+        }
+      );
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok
+    ) {
+
+      return {
+
+        ok:
+          false,
+
+        provider:
+          "Mistral",
+
+        model:
+          MISTRAL_MODEL,
+
+        http_status:
+          response.status,
+
+        error:
+          data?.error?.message ||
+          "Mistral API request failed.",
+      };
     }
 
-    const limited =
-        PROVIDERS.filter(
-            function(name){
+    const answer =
+      data?.choices?.[0]
+        ?.message?.content ||
+      "";
 
-                return (
-                    providerStates[name] ===
-                    "limited"
-                );
-            }
-        );
+    if (
+      !answer
+    ) {
 
-    if(
-        limited.length > 0
-    ){
+      return {
 
-        return limited;
+        ok:
+          false,
+
+        provider:
+          "Mistral",
+
+        model:
+          MISTRAL_MODEL,
+
+        http_status:
+          200,
+
+        error:
+          "Mistral returned an empty answer.",
+      };
     }
 
-    const unknown =
-        PROVIDERS.filter(
-            function(name){
+    return {
 
-                return (
-                    !providerStates[name] ||
-                    providerStates[name] ===
-                    "unknown"
-                );
-            }
-        );
+      ok:
+        true,
 
-    return unknown.length
-        ? unknown
-        : PROVIDERS;
+      provider:
+        "Mistral",
+
+      model:
+        data.model ||
+        MISTRAL_MODEL,
+
+      answer,
+
+      usage:
+        data.usage ||
+        null,
+    };
+
+  } catch (
+    error
+  ) {
+
+    return {
+
+      ok:
+        false,
+
+      provider:
+        "Mistral",
+
+      model:
+        MISTRAL_MODEL,
+
+      http_status:
+        0,
+
+      error:
+        error?.message ||
+        "Unexpected Mistral error.",
+    };
+  }
 }
 
-/* =====================================================
-   RESULTS
-   ===================================================== */
+// =========================================================
+// USER / D1
+// =========================================================
 
-function displayResults(
-    data,
-    elapsed
-){
+async function getUser(
+  DB,
+  userId
+) {
 
-    const resultData =
-        data?.results ||
-        {};
+  const now =
+    Date.now();
 
-    const deepseek =
-        resultData.deepseek;
+  await DB.prepare(
+    `INSERT OR IGNORE INTO users
+      (
+        id,
+        created_at,
+        questions_used,
+        questions_limit
+      )
+     VALUES
+      (?, ?, 0, ?)`
+  ).bind(
 
-    const gemini =
-        resultData.gemini;
+    userId,
 
-    const mistral =
-        resultData.mistral;
+    now,
+
+    DEFAULT_QUESTIONS_LIMIT
+
+  ).run();
+
+  let result =
+    await DB.prepare(
+      `SELECT
+        id,
+        created_at,
+        questions_used,
+        questions_limit
+       FROM users
+       WHERE id = ?`
+    ).bind(
+      userId
+    ).first();
+
+  if (
+    !result
+  ) {
+
+    throw new Error(
+      "Unable to create or retrieve user."
+    );
+  }
+
+  if (
+    now -
+    Number(
+      result.created_at
+    ) >=
+    WINDOW_MS
+  ) {
+
+    await DB.prepare(
+      `UPDATE users
+       SET
+         created_at = ?,
+         questions_used = 0
+       WHERE id = ?`
+    ).bind(
+
+      now,
+
+      userId
+
+    ).run();
+
+    result =
+      await DB.prepare(
+        `SELECT
+          id,
+          created_at,
+          questions_used,
+          questions_limit
+         FROM users
+         WHERE id = ?`
+      ).bind(
+        userId
+      ).first();
+  }
+
+  return result;
+}
+
+async function reserveQuestion(
+  DB,
+  userId
+) {
+
+  const result =
+    await DB.prepare(
+      `UPDATE users
+       SET
+         questions_used =
+           questions_used + 1
+       WHERE id = ?
+         AND questions_used <
+             questions_limit`
+    ).bind(
+      userId
+    ).run();
+
+  const changed =
+    Number(
+      result?.meta?.changes
+    ) || 0;
+
+  return (
+    changed === 1
+  );
+}
+
+async function returnQuestion(
+  DB,
+  userId
+) {
+
+  await DB.prepare(
+    `UPDATE users
+     SET questions_used =
+       CASE
+         WHEN questions_used > 0
+         THEN questions_used - 1
+         ELSE 0
+       END
+     WHERE id = ?`
+  ).bind(
+    userId
+  ).run();
+}
+
+async function getQuota(
+  DB,
+  userId
+) {
+
+  const user =
+    await DB.prepare(
+      `SELECT
+        id,
+        created_at,
+        questions_used,
+        questions_limit
+       FROM users
+       WHERE id = ?`
+    ).bind(
+      userId
+    ).first();
+
+  if (
+    !user
+  ) {
+
+    return null;
+  }
+
+  const used =
+    Number(
+      user.questions_used
+    ) || 0;
+
+  const limit =
+    Number(
+      user.questions_limit
+    ) ||
+    DEFAULT_QUESTIONS_LIMIT;
+
+  return {
+
+    used,
+
+    limit,
+
+    remaining:
+      Math.max(
+        0,
+        limit - used
+      ),
+
+    created_at:
+      Number(
+        user.created_at
+      ),
+  };
+}
+
+// =========================================================
+// USAGE LOGGING
+// =========================================================
+
+function normalizeUsage(
+  provider,
+  usage
+) {
+
+  if (
+    !usage ||
+    typeof usage !==
+      "object"
+  ) {
+
+    return {
+
+      input_tokens:
+        null,
+
+      output_tokens:
+        null,
+
+      total_tokens:
+        null,
+    };
+  }
+
+  const providerId =
+    String(
+      provider ||
+      ""
+    ).toLowerCase();
+
+  let inputTokens =
+    null;
+
+  let outputTokens =
+    null;
+
+  let totalTokens =
+    null;
+
+  // -------------------------------------------------------
+  // Gemini
+  // -------------------------------------------------------
+
+  if (
+    providerId ===
+    "gemini"
+  ) {
+
+    inputTokens =
+      Number(
+        usage.promptTokenCount
+      );
+
+    outputTokens =
+      Number(
+        usage.candidatesTokenCount
+      );
+
+    totalTokens =
+      Number(
+        usage.totalTokenCount
+      );
+
+  }
+
+  // -------------------------------------------------------
+  // DeepSeek / Mistral
+  // -------------------------------------------------------
+
+  else {
+
+    inputTokens =
+      Number(
+        usage.prompt_tokens
+      );
+
+    outputTokens =
+      Number(
+        usage.completion_tokens
+      );
+
+    totalTokens =
+      Number(
+        usage.total_tokens
+      );
+  }
+
+  return {
+
+    input_tokens:
+      Number.isFinite(
+        inputTokens
+      )
+        ? inputTokens
+        : null,
+
+    output_tokens:
+      Number.isFinite(
+        outputTokens
+      )
+        ? outputTokens
+        : null,
+
+    total_tokens:
+      Number.isFinite(
+        totalTokens
+      )
+        ? totalTokens
+        : null,
+  };
+}
+
+async function logUsage(
+  DB,
+  userId,
+  question,
+  image,
+  providerResult
+) {
+
+  try {
+
+    const provider =
+      String(
+        providerResult?.provider ||
+        ""
+      ).toLowerCase();
+
+    const usage =
+      normalizeUsage(
+        provider,
+        providerResult?.usage
+      );
+
+    await DB.prepare(
+      `INSERT INTO usage_logs
+      (
+        user_id,
+        provider,
+        model,
+        created_at,
+        image_attached,
+        question_length,
+        input_tokens,
+        output_tokens,
+        total_tokens,
+        success
+      )
+      VALUES
+      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+
+      userId,
+
+      provider,
+
+      providerResult?.model ||
+        null,
+
+      Date.now(),
+
+      image
+        ? 1
+        : 0,
+
+      question.length,
+
+      usage.input_tokens,
+
+      usage.output_tokens,
+
+      usage.total_tokens,
+
+      providerResult?.ok === true
+        ? 1
+        : 0
+
+    ).run();
+
+  } catch (
+    error
+  ) {
+
+‎    // تسجيل الاستهلاك ميزة إضافية.
+‎    // إذا فشل التسجيل، لا نفشل طلب المستخدم.
+
+    console.error(
+      "Usage logging error:",
+      error?.message
+    );
+  }
+}
+
+// =========================================================
+// WORKER
+// =========================================================
+
+export default {
+
+  async fetch(
+    request,
+    env
+  ) {
+
+    // =====================================================
+    // OPTIONS
+    // =====================================================
+
+    if (
+      request.method ===
+      "OPTIONS"
+    ) {
+
+      return new Response(
+        null,
+        {
+
+          status:
+            204,
+
+          headers:
+            CORS_HEADERS,
+        }
+      );
+    }
+
+    const url =
+      new URL(
+        request.url
+      );
+
+    // =====================================================
+    // GET /status
+    // =====================================================
+
+    if (
+      request.method === "GET" &&
+      url.pathname === "/status"
+    ) {
+
+      try {
+
+        const status =
+          await getProviderStatus(
+            env.DB
+          );
+
+        return json({
+
+          ok:
+            true,
+
+          service:
+            "Smart AI",
+
+          status,
+        });
+
+      } catch (
+        error
+      ) {
+
+        return json(
+
+          {
+
+            ok:
+              false,
+
+            error:
+              "Unable to read provider status.",
+
+            details:
+              error?.message ||
+              "Unknown database error.",
+          },
+
+          500
+
+        );
+      }
+    }
+
+    // =====================================================
+    // GET /quota
+    // =====================================================
+
+    if (
+      request.method === "GET" &&
+      url.pathname === "/quota"
+    ) {
+
+      const userId =
+        (
+          url.searchParams
+            .get("userId") ||
+          ""
+        ).trim();
+
+      if (
+        !userId
+      ) {
+
+        return json(
+
+          {
+
+            ok:
+              false,
+
+            error:
+              "Missing userId.",
+          },
+
+          400
+
+        );
+      }
+
+      if (
+        userId.length >
+        100
+      ) {
+
+        return json(
+
+          {
+
+            ok:
+              false,
+
+            error:
+              "userId is too long.",
+          },
+
+          400
+
+        );
+      }
+
+      try {
+
+        const user =
+          await getUser(
+            env.DB,
+            userId
+          );
+
+        const quota =
+          await getQuota(
+            env.DB,
+            userId
+          );
+
+        return json({
+
+          ok:
+            true,
+
+          userId:
+            user.id,
+
+          quota,
+        });
+
+      } catch (
+        error
+      ) {
+
+        return json(
+
+          {
+
+            ok:
+              false,
+
+            error:
+              "Unable to read quota.",
+
+            details:
+              error?.message ||
+              "Unknown database error.",
+          },
+
+          500
+
+        );
+      }
+    }
+
+    // =====================================================
+    // GET
+    // =====================================================
+
+    if (
+      request.method ===
+      "GET"
+    ) {
+
+      return json({
+
+        ok:
+          true,
+
+        service:
+          "Smart AI",
+
+        providers: [
+
+          {
+
+            id:
+              "deepseek",
+
+            name:
+              "DeepSeek",
+
+            model:
+              DEEPSEEK_MODEL,
+
+            vision_model:
+              DEEPSEEK_VISION_MODEL,
+          },
+
+          {
+
+            id:
+              "gemini",
+
+            name:
+              "Gemini",
+
+            model:
+              GEMINI_MODEL,
+
+            vision:
+              true,
+          },
+
+          {
+
+            id:
+              "mistral",
+
+            name:
+              "Mistral",
+
+            model:
+              MISTRAL_MODEL,
+
+            vision:
+              true,
+          },
+
+        ],
+
+        quota: {
+
+          questions:
+            DEFAULT_QUESTIONS_LIMIT,
+
+          period:
+            "24 hours",
+        },
+
+        memory: {
+
+          enabled:
+            true,
+
+          turns:
+            MAX_MEMORY_TURNS,
+        },
+
+        usage_logging: {
+
+          enabled:
+            true,
+
+          table:
+            "usage_logs",
+        },
+
+        message:
+          "Smart AI Worker is running",
+      });
+    }
+
+    // =====================================================
+    // POST ONLY
+    // =====================================================
+
+    if (
+      request.method !==
+      "POST"
+    ) {
+
+      return json(
+
+        {
+
+          ok:
+            false,
+
+          error:
+            "Method not allowed. Use POST.",
+        },
+
+        405
+
+      );
+    }
+
+    // =====================================================
+    // READ JSON
+    // =====================================================
+
+    let body;
+
+    try {
+
+      body =
+        await request.json();
+
+    } catch (
+      error
+    ) {
+
+      return json(
+
+        {
+
+          ok:
+            false,
+
+          error:
+            "Invalid JSON body.",
+        },
+
+        400
+
+      );
+    }
+
+    // =====================================================
+    // USER ID
+    // =====================================================
+
+    const userId =
+      typeof body.userId ===
+      "string"
+
+        ? body.userId.trim()
+
+        : "";
+
+    if (
+      !userId
+    ) {
+
+      return json(
+
+        {
+
+          ok:
+            false,
+
+          error:
+            "Missing userId.",
+        },
+
+        400
+
+      );
+    }
+
+    if (
+      userId.length >
+      100
+    ) {
+
+      return json(
+
+        {
+
+          ok:
+            false,
+
+          error:
+            "userId is too long.",
+        },
+
+        400
+
+      );
+    }
+
+    // =====================================================
+    // QUESTION
+    // =====================================================
+
+    const question =
+      typeof body.question ===
+      "string"
+
+        ? body.question.trim()
+
+        : "";
+
+    if (
+      !question
+    ) {
+
+      return json(
+
+        {
+
+          ok:
+            false,
+
+          error:
+            "Missing question.",
+        },
+
+        400
+
+      );
+    }
+
+    if (
+      question.length >
+      MAX_QUESTION_LENGTH
+    ) {
+
+      return json(
+
+        {
+
+          ok:
+            false,
+
+          error:
+            `Question is too long. Maximum allowed length is ${MAX_QUESTION_LENGTH} characters.`,
+
+          max_question_length:
+            MAX_QUESTION_LENGTH,
+
+          received_length:
+            question.length,
+        },
+
+        400
+
+      );
+    }
+
+    // =====================================================
+    // IMAGE
+    // =====================================================
+
+    const imageValidation =
+      validateImage(
+        body.image
+      );
+
+    if (
+      !imageValidation.ok
+    ) {
+
+      return json(
+
+        {
+
+          ok:
+            false,
+
+          error:
+            imageValidation.error,
+        },
+
+        400
+
+      );
+    }
+
+    const image =
+      imageValidation.image;
+
+    // =====================================================
+    // LOAD CONVERSATION MEMORY
+    // =====================================================
+
+    let conversationHistory =
+      [];
+
+    try {
+
+      conversationHistory =
+        await getConversationHistory(
+          env.DB,
+          userId
+        );
+
+    } catch (
+      error
+    ) {
+
+      conversationHistory =
+        [];
+    }
+
+    const conversationContext =
+      buildConversationContext(
+        conversationHistory
+      );
+
+    // =====================================================
+    // PROVIDER SELECTION
+    // =====================================================
+
+    let selectedProviders;
+
+    let selectionMode =
+      "user";
+
+    let selectionReason =
+      "Providers selected by user.";
+
+    let automaticStatus =
+      null;
+
+    if (
+      body.providers ===
+      undefined
+    ) {
+
+      try {
+
+        const automaticSelection =
+          await selectProvidersAutomatically(
+            env.DB
+          );
+
+        selectedProviders =
+          automaticSelection.providers;
+
+        selectionMode =
+          automaticSelection.selection_mode;
+
+        selectionReason =
+          automaticSelection.reason;
+
+        automaticStatus =
+          automaticSelection.status;
+
+      } catch (
+        error
+      ) {
+
+        return json(
+
+          {
+
+            ok:
+              false,
+
+            error:
+              "Unable to select an AI provider automatically.",
+
+            details:
+              error?.message ||
+              "Unknown provider status error.",
+          },
+
+          500
+
+        );
+      }
+
+    } else {
+
+      if (
+        !Array.isArray(
+          body.providers
+        )
+      ) {
+
+        return json(
+
+          {
+
+            ok:
+              false,
+
+            error:
+              "providers must be an array.",
+
+            available_providers:
+              AVAILABLE_PROVIDERS,
+          },
+
+          400
+
+        );
+      }
+
+      selectedProviders =
+        [
+
+          ...new Set(
+
+            body.providers
+
+              .filter(
+                provider =>
+                  typeof provider ===
+                  "string"
+              )
+
+              .map(
+                provider =>
+                  provider
+                    .trim()
+                    .toLowerCase()
+              )
+
+          ),
+
+        ].filter(
+
+          provider =>
+            AVAILABLE_PROVIDERS
+              .includes(
+                provider
+              )
+        );
+    }
+
+    if (
+      selectedProviders.length ===
+      0
+    ) {
+
+      return json(
+
+        {
+
+          ok:
+            false,
+
+          error:
+            "No AI provider is currently available.",
+
+          available_providers:
+            AVAILABLE_PROVIDERS,
+
+          selection_mode:
+            selectionMode,
+
+          selection_reason:
+            selectionReason,
+
+          provider_status:
+            automaticStatus,
+        },
+
+        503
+
+      );
+    }
+
+    // =====================================================
+    // GET / CREATE USER
+    // =====================================================
+
+    let user;
+
+    try {
+
+      user =
+        await getUser(
+          env.DB,
+          userId
+        );
+
+    } catch (
+      error
+    ) {
+
+      return json(
+
+        {
+
+          ok:
+            false,
+
+          error:
+            "Database error.",
+
+          details:
+            error?.message ||
+            "Unknown database error.",
+        },
+
+        500
+
+      );
+    }
+
+    // =====================================================
+    // CHECK QUOTA
+    // =====================================================
+
+    const currentUsed =
+      Number(
+        user.questions_used
+      ) || 0;
+
+    const currentLimit =
+      Number(
+        user.questions_limit
+      ) ||
+      DEFAULT_QUESTIONS_LIMIT;
+
+    if (
+      currentUsed >=
+      currentLimit
+    ) {
+
+      return json(
+
+        {
+
+          ok:
+            false,
+
+          error:
+            "Question limit reached.",
+
+          quota: {
+
+            used:
+              currentUsed,
+
+            limit:
+              currentLimit,
+
+            remaining:
+              0,
+          },
+        },
+
+        429
+
+      );
+    }
+
+    // =====================================================
+    // RESERVE
+    // =====================================================
+
+    const reserved =
+      await reserveQuestion(
+        env.DB,
+        userId
+      );
+
+    if (
+      !reserved
+    ) {
+
+      return json(
+
+        {
+
+          ok:
+            false,
+
+          error:
+            "Question limit reached.",
+        },
+
+        429
+
+      );
+    }
+
+    // =====================================================
+    // PROVIDER TASKS
+    // =====================================================
+
+    const providerTasks =
+      [];
+
+    if (
+      selectedProviders.includes(
+        "deepseek"
+      )
+    ) {
+
+      providerTasks.push({
+
+        id:
+          "deepseek",
+
+        promise:
+          askDeepSeek(
+
+            question,
+
+            env.DEEPSEEK_API_KEY,
+
+            image,
+
+            conversationContext
+
+          ),
+      });
+    }
+
+    if (
+      selectedProviders.includes(
+        "gemini"
+      )
+    ) {
+
+      providerTasks.push({
+
+        id:
+          "gemini",
+
+        promise:
+          askGemini(
+
+            question,
+
+            env.GEMINI_API_KEY,
+
+            image,
+
+            conversationContext
+
+          ),
+      });
+    }
+
+    if (
+      selectedProviders.includes(
+        "mistral"
+      )
+    ) {
+
+      providerTasks.push({
+
+        id:
+          "mistral",
+
+        promise:
+          askMistral(
+
+            question,
+
+            env.MISTRAL_API_KEY,
+
+            image,
+
+            conversationContext
+
+          ),
+      });
+    }
+
+    // =====================================================
+    // WAIT
+    // =====================================================
+
+    const providerResponses =
+      await Promise.all(
+
+        providerTasks.map(
+          item =>
+            item.promise
+        )
+
+      );
+
+    // =====================================================
+    // LOG USAGE
+    // =====================================================
+
+    await Promise.all(
+
+      providerTasks.map(
+
+        (
+          item,
+          index
+        ) =>
+
+          logUsage(
+
+            env.DB,
+
+            userId,
+
+            question,
+
+            image,
+
+            providerResponses[index]
+
+          )
+
+      )
+
+    );
+
+    // =====================================================
+    // UPDATE STATUS
+    // =====================================================
+
+    await Promise.all(
+
+      providerTasks.map(
+
+        (
+          item,
+          index
+        ) =>
+
+          updateProviderStatus(
+
+            env.DB,
+
+            item.id,
+
+            providerResponses[index]
+
+          )
+
+      )
+
+    );
+
+    // =====================================================
+    // BUILD RESULTS
+    // =====================================================
+
+    const results = {
+
+      deepseek:
+        null,
+
+      gemini:
+        null,
+
+      mistral:
+        null,
+    };
+
+    providerTasks.forEach(
+
+      (
+        item,
+        index
+      ) => {
+
+        results[
+          item.id
+        ] =
+          providerResponses[
+            index
+          ];
+      }
+
+    );
+
+    // =====================================================
+    // SUCCESS / FAILED
+    // =====================================================
 
     const successful =
-        data?.summary?.successful ??
-        countSuccessful(
-            resultData
-        );
+      providerResponses.filter(
 
-    const total =
-        data?.summary?.total ??
-        countReturned(
-            resultData
-        );
+        result =>
+          result.ok === true
 
-    let cards =
-        "";
+      ).length;
 
-    if(deepseek){
+    const failed =
+      providerResponses.length -
+      successful;
 
-        cards +=
-            createProviderCard(
-                "DeepSeek",
-                deepseek
-            );
+    // =====================================================
+    // ALL FAILED
+    // =====================================================
+
+    if (
+      successful === 0
+    ) {
+
+      await returnQuestion(
+        env.DB,
+        userId
+      );
+
+      return json(
+
+        {
+
+          ok:
+            false,
+
+          service:
+            "Smart AI",
+
+          userId,
+
+          question,
+
+          image_attached:
+            Boolean(
+              image
+            ),
+
+          selected_providers:
+            selectedProviders,
+
+          selection_mode:
+            selectionMode,
+
+          selection_reason:
+            selectionReason,
+
+          provider_status:
+            automaticStatus,
+
+          memory_used:
+            conversationHistory.length >
+            0,
+
+          memory_turns:
+            conversationHistory.length,
+
+          results,
+
+          summary: {
+
+            total:
+              providerResponses.length,
+
+            successful:
+              0,
+
+            failed,
+          },
+
+          quota:
+            await getQuota(
+              env.DB,
+              userId
+            ),
+
+          error:
+            "All selected AI providers failed. Your question was not counted.",
+        },
+
+        502
+
+      );
     }
 
-    if(gemini){
-
-        cards +=
-            createProviderCard(
-                "Gemini",
-                gemini
-            );
-    }
-
-    if(mistral){
-
-        cards +=
-            createProviderCard(
-                "Mistral",
-                mistral
-            );
-    }
-
-    if(!cards){
+    // =====================================================
+    // SAVE CONVERSATION MEMORY
+    // =====================================================
 
-        cards = `
-            <div class="empty">
+    await saveConversationTurn(
 
-                <div class="empty-title">
-                    لم تصل أي إجابة
-                </div>
+      env.DB,
 
-                حاول مرة أخرى لاحقًا.
+      userId,
 
-            </div>
-        `;
-    }
+      question,
 
-    cards += `
-        <div class="summary">
-
-            تم الحصول على
-            <strong>${successful}</strong>
-            من
-            <strong>${total}</strong>
-            إجابات
-            — زمن الطلب:
-            <strong>${elapsed}</strong>
-            ثانية
+      providerResponses
 
-        </div>
-    `;
-
-    results.innerHTML =
-        cards;
-}
+    );
 
-function countSuccessful(
-    resultData
-){
-
-    return Object.values(
-        resultData
-    ).filter(
-        function(result){
-
-            return (
-                result &&
-                result.ok === true
-            );
-        }
-    ).length;
-}
-
-function countReturned(
-    resultData
-){
-
-    return Object.values(
-        resultData
-    ).filter(
-        function(result){
-
-            return result !== null;
-        }
-    ).length;
-}
-
-function createProviderCard(
-    provider,
-    result
-){
-
-    if(!result){
-        return "";
-    }
-
-    if(result.ok){
-
-        const answer =
-            result.answer ||
-            "";
-
-        return `
-            <div class="card">
+    // =====================================================
+    // FINAL QUOTA
+    // =====================================================
 
-                <div class="card-header">
+    const quota =
+      await getQuota(
+        env.DB,
+        userId
+      );
 
-                    <div class="provider">
-                        ${provider}
-                    </div>
+    // =====================================================
+    // FINAL RESPONSE
+    // =====================================================
 
-                    <div class="status success">
-                        نجح
-                    </div>
+    return json({
 
-                </div>
+      ok:
+        true,
 
-                <div class="answer-area">
+      service:
+        "Smart AI",
 
-                    <div class="answer">
-                        ${escapeHTML(answer)}
-                    </div>
+      userId,
 
-                </div>
+      question,
 
-                <div class="card-footer">
+      image_attached:
+        Boolean(
+          image
+        ),
 
-                    <div class="model">
-                        ${escapeHTML(
-                            result.model ||
-                            ""
-                        )}
-                    </div>
+      selected_providers:
+        selectedProviders,
 
-                    <button
-                        class="copy-button"
-                        onclick='copyAnswer(${JSON.stringify(answer)},this)'
-                    >
-                        نسخ
-                    </button>
+      selection_mode:
+        selectionMode,
 
-                </div>
+      selection_reason:
+        selectionReason,
 
-            </div>
-        `;
-    }
+      provider_status:
+        automaticStatus,
 
-    let error =
-        result.error ||
-        result.message ||
-        "حدث خطأ.";
+      memory_used:
+        conversationHistory.length >
+        0,
 
-    const lowerError =
-        String(error).toLowerCase();
+      memory_turns:
+        conversationHistory.length,
 
-    if(
-        lowerError.includes(
-            "insufficient balance"
-        )
-    ){
+      results,
 
-        error =
-            "الرصيد غير كافٍ لاستخدام هذه المنصة.";
-    }
+      summary: {
 
-    if(
-        lowerError.includes(
-            "api key"
-        )
-    ){
+        total:
+          providerResponses.length,
 
-        error =
-            "مفتاح API غير مضبوط.";
-    }
+        successful,
 
-    if(
-        lowerError.includes(
-            "402"
-        )
-    ){
+        failed,
+      },
 
-        error =
-            "الرصيد غير كافٍ حاليًا.";
-    }
+      quota,
 
-    return `
-        <div class="card">
+      memory: {
 
-            <div class="card-header">
+        enabled:
+          true,
 
-                <div class="provider">
-                    ${provider}
-                </div>
+        saved:
+          successful > 0,
 
-                <div class="status error">
-                    فشل
-                </div>
+        turns:
+          Math.min(
 
-            </div>
+            conversationHistory.length +
+              1,
 
-            <div class="answer-area">
+            MAX_MEMORY_TURNS
 
-                <div class="error-message">
-                    ${escapeHTML(error)}
-                </div>
+          ),
+      },
 
-            </div>
+      usage_logging: {
 
-            <div class="card-footer">
-
-                <div class="model">
-                    ${escapeHTML(
-                        result.model ||
-                        ""
-                    )}
-                </div>
-
-            </div>
-
-        </div>
-    `;
-}
-
-function createLoadingCard(
-    provider
-){
-
-    return `
-        <div class="card">
-
-            <div class="card-header">
-
-                <div class="provider">
-                    ${escapeHTML(provider)}
-                </div>
-
-                <div class="status loading-status">
-                    جاري...
-                </div>
-
-            </div>
-
-            <div class="answer-area">
-
-                <div class="answer">
-                    جاري انتظار الإجابة...
-                </div>
-
-            </div>
-
-        </div>
-    `;
-}
-
-/* =====================================================
-   COPY
-   ===================================================== */
-
-async function copyAnswer(
-    text,
-    button
-){
-
-    try{
-
-        await navigator.clipboard.writeText(
-            text
-        );
-
-        const oldText =
-            button.textContent;
-
-        button.textContent =
-            "تم النسخ ✓";
-
-        setTimeout(
-            function(){
-
-                button.textContent =
-                    oldText;
-
-            },
-            1500
-        );
-
-    }catch(error){
-
-        alert(
-            "تعذر نسخ الإجابة."
-        );
-    }
-}
-
-/* =====================================================
-   CLEAR
-   ===================================================== */
-
-function clearAll(){
-
-    questionElement.value =
-        "";
-
-    removeSelectedImage();
-
-    results.innerHTML = `
-        <div class="empty">
-
-            <div class="empty-title">
-                مرحبًا بك في Smart AI
-            </div>
-
-            اكتب سؤالًا واضغط على «اسأل Smart AI»
-
-        </div>
-    `;
-
-    questionElement.focus();
-}
-
-/* =====================================================
-   ESCAPE HTML
-   ===================================================== */
-
-function escapeHTML(text){
-
-    return String(text)
-
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
-}
-
-/* =====================================================
-   EVENTS
-   ===================================================== */
-
-askButton.addEventListener(
-    "click",
-    askSmartAI
-);
-
-clearButton.addEventListener(
-    "click",
-    clearAll
-);
-
-questionElement.addEventListener(
-    "keydown",
-    function(event){
-
-        if(
-            event.key === "Enter" &&
-            (
-                event.ctrlKey ||
-                event.metaKey
-            )
-        ){
-
-            event.preventDefault();
-
-            askSmartAI();
-        }
-    }
-);
-</script>
-
-</body>
-</html>
+        enabled:
+          true,
+
+        recorded:
+          true,
+
+        providers:
+          providerResponses.length,
+      },
+    });
+  },
+};
