@@ -22,223 +22,47 @@ body{
     width:100%;
     max-width:1200px;
     margin:auto;
-    padding:25px 16px calc(50px + env(safe-area-inset-bottom))
+    padding:25px 16px calc(50px + env(safe-area-inset-bottom));
 }
 
-.header{
-    text-align:center;
-    margin-bottom:24px
-}
+.header{text-align:center;margin-bottom:24px}
 
-.logo{
-    font-size:40px;
-    font-weight:900;
-    letter-spacing:-1.5px
-}
+.logo{font-size:40px;font-weight:900;letter-spacing:-1.5px}
 
-.subtitle{
-    margin-top:6px;
-    color:#6b7280;
-    font-size:15px
-}
-
-/* =====================================================
-   SYSTEM BAR
-   ===================================================== */
+.subtitle{margin-top:6px;color:#6b7280;font-size:15px}
 
 .system-bar{
-    background:white;
-    border-radius:20px;
-    padding:17px;
-    margin-bottom:18px;
-    box-shadow:0 7px 25px rgba(0,0,0,.05)
+    background:white;border-radius:20px;padding:17px;margin-bottom:18px;
+    box-shadow:0 7px 25px rgba(0,0,0,.05);
 }
 
 .system-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    margin-bottom:13px
+    display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px;
 }
 
-.system-title{
-    font-weight:900;
-    font-size:18px
-}
+.system-title{font-weight:900;font-size:18px}
 
 .remaining{
-    font-size:14px;
-    font-weight:800;
-    color:#374151;
-    background:#f3f4f6;
-    padding:7px 12px;
-    border-radius:22px;
-    white-space:nowrap
+    font-size:14px;font-weight:800;color:#374151;background:#f3f4f6;
+    padding:7px 12px;border-radius:22px;white-space:nowrap;
 }
 
-.providers-status{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px
-}
+.providers-status{display:flex;flex-wrap:wrap;gap:8px}
 
 .provider-status{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    padding:7px 11px;
-    border-radius:22px;
-    background:#f3f4f6;
-    color:#6b7280;
-    font-size:13px;
-    font-weight:800
+    display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:22px;
+    background:#f3f4f6;color:#6b7280;font-size:13px;font-weight:800;
 }
 
-.provider-status.available{
-    background:#dcfce7;
-    color:#166534
-}
+.provider-status.available{background:#dcfce7;color:#166534}
+.provider-status.unavailable,.provider-status.error{background:#fee2e2;color:#991b1b}
+.provider-status.limited{background:#fef3c7;color:#92400e}
 
-.provider-status.unavailable,
-.provider-status.error{
-    background:#fee2e2;
-    color:#991b1b
-}
-
-.provider-status.limited{
-    background:#fef3c7;
-    color:#92400e
-}
-
-.dot{
-    width:8px;
-    height:8px;
-    border-radius:50%;
-    background:currentColor;
-    flex-shrink:0
-}
-
-/* =====================================================
-   PROVIDER SELECTOR
-   ===================================================== */
-
-.provider-selector{
-    background:white;
-    border-radius:20px;
-    padding:17px;
-    margin-bottom:18px;
-    box-shadow:0 7px 25px rgba(0,0,0,.05)
-}
-
-.provider-selector-title{
-    font-size:16px;
-    font-weight:900;
-    margin-bottom:5px
-}
-
-.provider-selector-note{
-    font-size:12px;
-    color:#9ca3af;
-    margin-bottom:13px
-}
-
-.provider-options{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:9px
-}
-
-.provider-option{
-    position:relative;
-    min-width:0
-}
-
-.provider-option input{
-    position:absolute;
-    opacity:0;
-    pointer-events:none
-}
-
-.provider-label{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:5px;
-    min-height:76px;
-    padding:10px 8px;
-    border:2px solid #e5e7eb;
-    border-radius:16px;
-    background:#f9fafb;
-    color:#374151;
-    cursor:pointer;
-    text-align:center;
-    transition:border .15s,background .15s,transform .15s,opacity .15s
-}
-
-.provider-label:active{
-    transform:scale(.98)
-}
-
-.provider-option input:checked + .provider-label{
-    border-color:#111827;
-    background:#f3f4f6;
-    color:#111827;
-    box-shadow:0 0 0 2px rgba(17,24,39,.05)
-}
-
-.provider-option.disabled .provider-label{
-    opacity:.48;
-    cursor:not-allowed;
-    background:#f3f4f6
-}
-
-.provider-name{
-    font-size:15px;
-    font-weight:900
-}
-
-.provider-state{
-    font-size:11px;
-    font-weight:800;
-    color:#9ca3af
-}
-
-.provider-state.available{
-    color:#166534
-}
-
-.provider-state.limited{
-    color:#92400e
-}
-
-.provider-state.unavailable,
-.provider-state.error{
-    color:#991b1b
-}
-
-.provider-selection-info{
-    margin-top:11px;
-    padding:9px 12px;
-    border-radius:13px;
-    background:#f3f4f6;
-    color:#6b7280;
-    font-size:12px;
-    font-weight:700;
-    text-align:center
-}
-
-/* =====================================================
-   QUESTION
-   ===================================================== */
+.dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
 
 .question-box{
-    background:white;
-    border-radius:24px;
-    padding:18px;
-    box-shadow:0 10px 35px rgba(0,0,0,.07);
-    margin-bottom:20px
+    background:white;border-radius:24px;padding:18px;
+    box-shadow:0 10px 35px rgba(0,0,0,.07);margin-bottom:20px;
 }
 
 textarea{
@@ -258,21 +82,15 @@ textarea{
     transition:border .2s,box-shadow .2s;
     overflow-y:auto;
     overflow-wrap:anywhere;
-    word-break:break-word
+    word-break:break-word;
 }
 
 textarea:focus{
     border-color:#111827;
-    box-shadow:0 0 0 3px rgba(17,24,39,.07)
+    box-shadow:0 0 0 3px rgba(17,24,39,.07);
 }
 
-textarea::placeholder{
-    color:#9ca3af
-}
-
-/* =====================================================
-   IMAGE
-   ===================================================== */
+textarea::placeholder{color:#9ca3af}
 
 .image-preview{
     display:none;
@@ -282,30 +100,22 @@ textarea::placeholder{
     border-radius:15px;
     background:#f9fafb;
     align-items:center;
-    gap:10px
+    gap:10px;
 }
 
-.image-preview.show{
-    display:flex
-}
+.image-preview.show{display:flex}
 
 .image-preview img{
-    width:78px;
-    height:78px;
+    width:58px;
+    height:58px;
     object-fit:cover;
-    border-radius:12px;
+    border-radius:10px;
     border:1px solid #e5e7eb;
-    cursor:zoom-in;
-    -webkit-tap-highlight-color:transparent
-}
-
-.image-preview img:active{
-    transform:scale(.97)
 }
 
 .image-info{
     flex:1;
-    min-width:0
+    min-width:0;
 }
 
 .image-name{
@@ -313,30 +123,26 @@ textarea::placeholder{
     font-weight:800;
     overflow:hidden;
     text-overflow:ellipsis;
-    white-space:nowrap
+    white-space:nowrap;
 }
 
 .image-note{
     font-size:11px;
     color:#9ca3af;
-    margin-top:3px
+    margin-top:3px;
 }
 
 .remove-image{
     padding:7px 10px;
     background:#fee2e2;
     color:#991b1b;
-    font-size:12px
+    font-size:12px;
 }
-
-/* =====================================================
-   BUTTONS
-   ===================================================== */
 
 .button-row{
     display:flex;
     gap:10px;
-    margin-top:13px
+    margin-top:13px;
 }
 
 button{
@@ -347,154 +153,77 @@ button{
     cursor:pointer;
     border-radius:14px;
     padding:14px 20px;
-    transition:transform .15s,opacity .15s,background .15s
+    transition:transform .15s,opacity .15s,background .15s;
 }
 
-button:active{
-    transform:scale(.98)
-}
+button:active{transform:scale(.98)}
 
-.ask-button{
-    flex:1;
-    background:#111827;
-    color:white
-}
+.ask-button{flex:1;background:#111827;color:white}
+.ask-button:hover{background:#1f2937}
+.ask-button:disabled{opacity:.55;cursor:not-allowed}
 
-.ask-button:hover{
-    background:#1f2937
-}
-
-.ask-button:disabled{
-    opacity:.55;
-    cursor:not-allowed
-}
-
-.clear-button{
-    background:#e5e7eb;
-    color:#111827
-}
-
-.clear-button:hover{
-    background:#dfe2e6
-}
+.clear-button{background:#e5e7eb;color:#111827}
+.clear-button:hover{background:#dfe2e6}
 
 .image-button{
     background:#eef2ff;
     color:#3730a3;
     padding-left:16px;
-    padding-right:16px
+    padding-right:16px;
 }
 
-.image-button:hover{
-    background:#e0e7ff
-}
-
-/* =====================================================
-   LOADING
-   ===================================================== */
+.image-button:hover{background:#e0e7ff}
 
 .loading{
-    display:none;
-    background:white;
-    border-radius:16px;
-    padding:14px;
-    margin-bottom:18px;
-    text-align:center;
-    color:#6b7280;
-    box-shadow:0 5px 20px rgba(0,0,0,.05)
+    display:none;background:white;border-radius:16px;padding:14px;margin-bottom:18px;
+    text-align:center;color:#6b7280;box-shadow:0 5px 20px rgba(0,0,0,.05);
 }
 
-.loading.show{
-    display:block
-}
+.loading.show{display:block}
 
 .loading-dot{
-    display:inline-block;
-    width:8px;
-    height:8px;
-    border-radius:50%;
-    background:#6b7280;
-    margin:0 3px;
-    animation:pulse 1s infinite
+    display:inline-block;width:8px;height:8px;border-radius:50%;background:#6b7280;
+    margin:0 3px;animation:pulse 1s infinite;
 }
 
-.loading-dot:nth-child(2){
-    animation-delay:.15s
-}
-
-.loading-dot:nth-child(3){
-    animation-delay:.30s
-}
+.loading-dot:nth-child(2){animation-delay:.15s}
+.loading-dot:nth-child(3){animation-delay:.30s}
 
 @keyframes pulse{
     0%,100%{opacity:.3}
     50%{opacity:1}
 }
 
-/* =====================================================
-   RESULTS
-   ===================================================== */
-
 #results{
     display:grid;
     grid-template-columns:repeat(3,1fr);
-    gap:18px
+    gap:18px;
 }
 
 .card{
-    background:white;
-    border-radius:22px;
-    padding:18px;
-    min-height:300px;
-    display:flex;
-    flex-direction:column;
-    min-width:0;
-    box-shadow:0 10px 30px rgba(0,0,0,.06)
+    background:white;border-radius:22px;padding:18px;min-height:300px;
+    display:flex;flex-direction:column;min-width:0;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
 }
 
 .card-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    padding-bottom:14px;
-    border-bottom:1px solid #edf0f3
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    padding-bottom:14px;border-bottom:1px solid #edf0f3;
 }
 
-.provider{
-    font-size:22px;
-    font-weight:900
-}
+.provider{font-size:22px;font-weight:900}
 
 .status{
-    font-size:13px;
-    font-weight:800;
-    padding:6px 11px;
-    border-radius:30px;
-    background:#f3f4f6;
-    color:#6b7280;
-    white-space:nowrap
+    font-size:13px;font-weight:800;padding:6px 11px;border-radius:30px;
+    background:#f3f4f6;color:#6b7280;white-space:nowrap;
 }
 
-.status.success{
-    background:#dcfce7;
-    color:#166534
-}
-
-.status.error{
-    background:#fee2e2;
-    color:#991b1b
-}
-
-.status.loading-status{
-    background:#f3f4f6;
-    color:#6b7280
-}
+.status.success{background:#dcfce7;color:#166534}
+.status.error{background:#fee2e2;color:#991b1b}
+.status.loading-status{background:#f3f4f6;color:#6b7280}
 
 .answer-area{
-    flex:1;
-    padding-top:18px;
-    min-width:0
+    flex:1;padding-top:18px;min-width:0;
 }
 
 .answer{
@@ -505,86 +234,62 @@ button:active{
     line-height:1.9;
     font-size:17px;
     direction:rtl;
-    text-align:right
+    text-align:right;
 }
 
 .error-message{
-    color:#991b1b;
-    font-size:16px;
-    line-height:1.8;
-    overflow-wrap:anywhere;
-    word-break:break-word
+    color:#991b1b;font-size:16px;line-height:1.8;
+    overflow-wrap:anywhere;word-break:break-word;
 }
 
 .card-footer{
-    margin-top:18px;
-    padding-top:12px;
-    border-top:1px solid #edf0f3;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    min-width:0
+    margin-top:18px;padding-top:12px;border-top:1px solid #edf0f3;
+    display:flex;justify-content:space-between;align-items:center;gap:10px;min-width:0;
 }
 
 .model{
-    color:#9ca3af;
-    font-size:11px;
-    direction:ltr;
-    text-align:left;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-    min-width:0
+    color:#9ca3af;font-size:11px;direction:ltr;text-align:left;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;
 }
 
 .copy-button{
-    padding:7px 11px;
-    background:#f3f4f6;
-    color:#374151;
-    font-size:12px;
-    white-space:nowrap
+    padding:7px 11px;background:#f3f4f6;color:#374151;font-size:12px;white-space:nowrap;
 }
 
-.copy-button:hover{
-    background:#e5e7eb
-}
+.copy-button:hover{background:#e5e7eb}
 
 .empty{
-    grid-column:1 / -1;
-    background:white;
-    border-radius:22px;
-    padding:45px 20px;
-    text-align:center;
-    color:#9ca3af;
-    box-shadow:0 8px 25px rgba(0,0,0,.05)
+    grid-column:1 / -1;background:white;border-radius:22px;padding:45px 20px;
+    text-align:center;color:#9ca3af;box-shadow:0 8px 25px rgba(0,0,0,.05);
 }
 
-.empty-title{
-    color:#374151;
-    font-size:20px;
-    font-weight:800;
-    margin-bottom:8px
-}
+.empty-title{color:#374151;font-size:20px;font-weight:800;margin-bottom:8px}
 
 .summary{
-    grid-column:1 / -1;
-    background:white;
-    border-radius:18px;
-    padding:13px 16px;
-    text-align:center;
-    color:#6b7280;
-    font-size:14px;
-    box-shadow:0 5px 20px rgba(0,0,0,.04)
+    grid-column:1 / -1;background:white;border-radius:18px;padding:13px 16px;
+    text-align:center;color:#6b7280;font-size:14px;box-shadow:0 5px 20px rgba(0,0,0,.04);
 }
 
-.summary strong{
-    color:#111827
+.summary strong{color:#111827}
+
+
+/* =========================================
+   IMAGE PREVIEW / LIGHTBOX
+========================================= */
+
+.image-preview img{
+    width:78px;
+    height:78px;
+    object-fit:cover;
+    border-radius:12px;
+    border:1px solid #e5e7eb;
+    cursor:zoom-in;
+    -webkit-tap-highlight-color:transparent;
 }
 
-/* =====================================================
-   LIGHTBOX
-   ===================================================== */
+.image-preview img:active{
+    transform:scale(.97);
+}
 
 .image-lightbox{
     position:fixed;
@@ -595,11 +300,11 @@ button:active{
     justify-content:center;
     padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));
     background:rgba(0,0,0,.86);
-    touch-action:manipulation
+    touch-action:manipulation;
 }
 
 .image-lightbox.show{
-    display:flex
+    display:flex;
 }
 
 .image-lightbox img{
@@ -612,7 +317,7 @@ button:active{
     border-radius:14px;
     box-shadow:0 20px 60px rgba(0,0,0,.45);
     user-select:none;
-    -webkit-user-select:none
+    -webkit-user-select:none;
 }
 
 .lightbox-close{
@@ -630,7 +335,7 @@ button:active{
     line-height:46px;
     text-align:center;
     font-weight:900;
-    box-shadow:0 5px 20px rgba(0,0,0,.25)
+    box-shadow:0 5px 20px rgba(0,0,0,.25);
 }
 
 .lightbox-hint{
@@ -643,106 +348,36 @@ button:active{
     font-size:13px;
     font-weight:700;
     opacity:.9;
-    pointer-events:none
+    pointer-events:none;
 }
 
-/* =====================================================
-   RESPONSIVE
-   ===================================================== */
-
 @media (max-width:850px){
-
-    #results{
-        grid-template-columns:1fr
-    }
-
-    .provider-options{
-        grid-template-columns:repeat(2,1fr)
-    }
-
-    .logo{
-        font-size:34px
-    }
-
-    .card{
-        min-height:250px
-    }
+    #results{grid-template-columns:1fr}
+    .logo{font-size:34px}
+    .card{min-height:250px}
 }
 
 @media (max-width:500px){
-
-    .container{
-        padding:16px 10px calc(35px + env(safe-area-inset-bottom))
-    }
-
-    .header{
-        margin-bottom:18px
-    }
-
-    .logo{
-        font-size:31px
-    }
-
-    .subtitle{
-        font-size:14px
-    }
-
-    .system-bar,
-    .provider-selector{
-        border-radius:20px;
-        padding:15px
-    }
-
-    .system-top{
-        align-items:flex-start;
-        flex-direction:column
-    }
-
-    .remaining{
-        font-size:13px
-    }
-
-    .question-box{
-        border-radius:20px;
-        padding:13px
-    }
-
-    textarea{
-        min-height:115px;
-        font-size:16px
-    }
-
-    .button-row{
-        flex-wrap:wrap
-    }
-
-    .ask-button{
-        min-width:calc(100% - 70px)
-    }
-
-    .image-button{
-        width:60px;
-        padding-left:8px;
-        padding-right:8px
-    }
-
-    .clear-button{
-        width:100%
-    }
-
-    .card{
-        border-radius:20px
-    }
-
-    .provider{
-        font-size:21px
-    }
+    .container{padding:16px 10px calc(35px + env(safe-area-inset-bottom))}
+    .header{margin-bottom:18px}
+    .logo{font-size:31px}
+    .subtitle{font-size:14px}
+    .system-bar{border-radius:20px;padding:15px}
+    .system-top{align-items:flex-start;flex-direction:column}
+    .remaining{font-size:13px}
+    .question-box{border-radius:20px;padding:13px}
+    textarea{min-height:115px;font-size:16px}
+    .button-row{flex-wrap:wrap}
+    .ask-button{min-width:calc(100% - 70px)}
+    .image-button{width:60px;padding-left:8px;padding-right:8px}
+    .clear-button{width:100%}
+    .card{border-radius:20px}
+    .provider{font-size:21px}
 }
 </style>
 </head>
 
 <body>
-
 <div class="container">
 
 <div class="header">
@@ -750,64 +385,19 @@ button:active{
     <div class="subtitle">سؤال واحد — عدة نماذج ذكاء اصطناعي</div>
 </div>
 
-<!-- =====================================================
-     PROVIDER STATUS
-     ===================================================== -->
-
 <div class="system-bar">
-
     <div class="system-top">
-
-        <div class="system-title">
-            حالة مزودي الذكاء الاصطناعي
-        </div>
-
-        <div id="remaining" class="remaining">
-            الأسئلة المتبقية: —
-        </div>
-
+        <div class="system-title">حالة مزودي الذكاء الاصطناعي</div>
+        <div id="remaining" class="remaining">الأسئلة المتبقية: —</div>
     </div>
 
     <div id="providersStatus" class="providers-status">
-
         <div class="provider-status">
             <span class="dot"></span>
             جاري الفحص...
         </div>
-
     </div>
-
 </div>
-
-<!-- =====================================================
-     PROVIDER SELECTOR
-     ===================================================== -->
-
-<div class="provider-selector">
-
-    <div class="provider-selector-title">
-        اختر المنصات
-    </div>
-
-    <div class="provider-selector-note">
-        يمكنك استخدام الاختيار التلقائي أو تحديد المنصات بنفسك.
-    </div>
-
-    <div id="providerOptions" class="provider-options">
-
-        <!-- يتم بناؤها تلقائيًا من /status -->
-
-    </div>
-
-    <div id="providerSelectionInfo" class="provider-selection-info">
-        الوضع الحالي: تلقائي
-    </div>
-
-</div>
-
-<!-- =====================================================
-     QUESTION
-     ===================================================== -->
 
 <div class="question-box">
 
@@ -819,33 +409,12 @@ button:active{
     ></textarea>
 
     <div id="imagePreview" class="image-preview">
-
-        <img
-            id="previewImage"
-            alt="معاينة الصورة"
-        >
-
+        <img id="previewImage" alt="معاينة الصورة">
         <div class="image-info">
-
-            <div
-                id="imageName"
-                class="image-name"
-            ></div>
-
-            <div class="image-note">
-                الصورة مرفقة بالرسالة
-            </div>
-
+            <div id="imageName" class="image-name"></div>
+            <div class="image-note">الصورة مرفقة بالرسالة</div>
         </div>
-
-        <button
-            id="removeImageButton"
-            class="remove-image"
-            type="button"
-        >
-            إزالة
-        </button>
-
+        <button id="removeImageButton" class="remove-image" type="button">إزالة</button>
     </div>
 
     <input
@@ -856,95 +425,52 @@ button:active{
     >
 
     <div class="button-row">
-
-        <button
-            id="askButton"
-            class="ask-button"
-            type="button"
-        >
+        <button id="askButton" class="ask-button" type="button">
             اسأل Smart AI
         </button>
 
-        <button
-            id="imageButton"
-            class="image-button"
-            type="button"
-            title="إضافة صورة"
-        >
+        <button id="imageButton" class="image-button" type="button" title="إضافة صورة">
             🖼️
         </button>
 
-        <button
-            id="clearButton"
-            class="clear-button"
-            type="button"
-        >
+        <button id="clearButton" class="clear-button" type="button">
             مسح
         </button>
-
     </div>
 
 </div>
-
-<!-- =====================================================
-     LOADING
-     ===================================================== -->
 
 <div id="loading" class="loading">
-
     جاري الحصول على الإجابات
-
     <span class="loading-dot"></span>
     <span class="loading-dot"></span>
     <span class="loading-dot"></span>
-
 </div>
-
-<!-- =====================================================
-     RESULTS
-     ===================================================== -->
 
 <div id="results">
-
     <div class="empty">
-
-        <div class="empty-title">
-            مرحبًا بك في Smart AI
-        </div>
-
+        <div class="empty-title">مرحبًا بك في Smart AI</div>
         اكتب سؤالًا واضغط على «اسأل Smart AI»
-
     </div>
-
 </div>
 
 </div>
 
-<!-- =====================================================
+
+<!-- =========================================
      IMAGE LIGHTBOX
-     ===================================================== -->
+========================================== -->
 
-<div
-    id="imageLightbox"
-    class="image-lightbox"
-    role="dialog"
-    aria-modal="true"
-    aria-label="معاينة الصورة"
->
+<div id="imageLightbox" class="image-lightbox" role="dialog" aria-modal="true" aria-label="معاينة الصورة">
 
     <button
         id="lightboxClose"
         class="lightbox-close"
         type="button"
         aria-label="إغلاق"
-    >
-        ×
-    </button>
+    >×</button>
 
-    <img
-        id="lightboxImage"
-        alt="الصورة بحجم كبير"
-    >
+    <img id="lightboxImage" alt="الصورة بحجم كبير">
 
     <div class="lightbox-hint">
         اضغط خارج الصورة أو × للإغلاق
@@ -956,321 +482,154 @@ button:active{
 "use strict";
 
 /* =====================================================
-   CONFIG
-   ===================================================== */
+   SMART AI FRONTEND
+===================================================== */
 
-const API_URL =
-    "https://smart-ai.kaka10906.workers.dev/";
-
-const PROVIDERS = [
-    "deepseek",
-    "gemini",
-    "mistral"
-];
-
-/* =====================================================
-   USER
-   ===================================================== */
+const API_URL = "https://smart-ai.kaka10906.workers.dev/";
 
 function getUserId(){
-
-    let userId =
-        localStorage.getItem(
-            "smartAI_userId"
-        );
+    let userId = localStorage.getItem("smartAI_userId");
 
     if(!userId){
-
-        userId =
-            "user-" +
-            crypto.randomUUID();
-
-        localStorage.setItem(
-            "smartAI_userId",
-            userId
-        );
+        userId = "user-" + crypto.randomUUID();
+        localStorage.setItem("smartAI_userId", userId);
     }
 
     return userId;
 }
 
-const USER_ID =
-    getUserId();
+const USER_ID = getUserId();
 
-/* =====================================================
-   ELEMENTS
-   ===================================================== */
+const questionElement = document.getElementById("question");
+const askButton = document.getElementById("askButton");
+const clearButton = document.getElementById("clearButton");
+const imageButton = document.getElementById("imageButton");
+const imageInput = document.getElementById("imageInput");
+const imagePreview = document.getElementById("imagePreview");
+const previewImage = document.getElementById("previewImage");
+const imageName = document.getElementById("imageName");
+const removeImageButton = document.getElementById("removeImageButton");
 
-const questionElement =
-    document.getElementById("question");
+const imageLightbox = document.getElementById("imageLightbox");
+const lightboxImage = document.getElementById("lightboxImage");
+const lightboxClose = document.getElementById("lightboxClose");
 
-const askButton =
-    document.getElementById("askButton");
+const loading = document.getElementById("loading");
+const results = document.getElementById("results");
+const providersStatus = document.getElementById("providersStatus");
+const remainingElement = document.getElementById("remaining");
 
-const clearButton =
-    document.getElementById("clearButton");
-
-const imageButton =
-    document.getElementById("imageButton");
-
-const imageInput =
-    document.getElementById("imageInput");
-
-const imagePreview =
-    document.getElementById("imagePreview");
-
-const previewImage =
-    document.getElementById("previewImage");
-
-const imageName =
-    document.getElementById("imageName");
-
-const removeImageButton =
-    document.getElementById("removeImageButton");
-
-const imageLightbox =
-    document.getElementById("imageLightbox");
-
-const lightboxImage =
-    document.getElementById("lightboxImage");
-
-const lightboxClose =
-    document.getElementById("lightboxClose");
-
-const loading =
-    document.getElementById("loading");
-
-const results =
-    document.getElementById("results");
-
-const providersStatus =
-    document.getElementById("providersStatus");
-
-const remainingElement =
-    document.getElementById("remaining");
-
-const providerOptions =
-    document.getElementById("providerOptions");
-
-const providerSelectionInfo =
-    document.getElementById(
-        "providerSelectionInfo"
-    );
-
-/* =====================================================
-   STATE
-   ===================================================== */
-
-let selectedImage =
-    null;
-
-let providerStatusData =
-    {};
-
-let providerStates =
-    {};
-
-let providerSelectionMode =
-    "automatic";
-
-/* =====================================================
-   INITIAL LOAD
-   ===================================================== */
+let selectedImage = null;
 
 loadProviderStatus();
 loadQuota();
 
 /* =====================================================
-   PROVIDER HELPERS
-   ===================================================== */
-
-function getProviderDisplayName(name){
-
-    if(name === "deepseek"){
-        return "DeepSeek";
-    }
-
-    if(name === "gemini"){
-        return "Gemini";
-    }
-
-    if(name === "mistral"){
-        return "Mistral";
-    }
-
-    return name;
-}
-
-function getStateLabel(state){
-
-    const normalized =
-        String(state || "")
-            .toLowerCase();
-
-    if(normalized === "available"){
-        return "متاح";
-    }
-
-    if(normalized === "limited"){
-        return "محدود";
-    }
-
-    if(
-        normalized === "unavailable" ||
-        normalized === "error"
-    ){
-        return "غير متاح";
-    }
-
-    return "غير معروف";
-}
-
-function isProviderAvailable(name){
-
-    const state =
-        String(
-            providerStates[name] ||
-            "unknown"
-        ).toLowerCase();
-
-    return (
-        state === "available" ||
-        state === "limited" ||
-        state === "unknown"
-    );
-}
-
-/* =====================================================
    PROVIDER STATUS
-   ===================================================== */
+===================================================== */
 
 async function loadProviderStatus(){
-
     try{
-
-        const response =
-            await fetch(
-                API_URL + "status"
-            );
-
-        const data =
-            await response.json();
+        const response = await fetch(API_URL + "status");
+        const data = await response.json();
 
         if(!response.ok){
-
-            throw new Error(
-                "Status request failed"
-            );
+            throw new Error("Status request failed");
         }
 
         displayProviderStatus(data);
-
     }catch(error){
-
         providersStatus.innerHTML = `
             <div class="provider-status">
                 <span class="dot"></span>
                 تعذر قراءة حالة المزودين
             </div>
         `;
-
-        providerStates = {};
-
-        renderProviderOptions();
     }
 }
 
+/* =====================================================
+   QUOTA
+===================================================== */
+
+async function loadQuota(){
+    try{
+        const response = await fetch(
+            API_URL + "quota?userId=" + encodeURIComponent(USER_ID)
+        );
+
+        const data = await response.json();
+
+        if(!response.ok){
+            throw new Error("Quota request failed");
+        }
+
+        updateRemaining(data);
+    }catch(error){
+        // لا نعرض خطأ للمستخدم.
+    }
+}
+
+/* =====================================================
+   PROVIDER STATUS DISPLAY
+===================================================== */
+
 function displayProviderStatus(data){
+    const providers = data?.status?.providers || {};
 
-    const providers =
-        data?.status?.providers ||
-        {};
-
-    providerStatusData =
-        providers;
-
-    providerStates = {};
+    const names = ["deepseek","gemini","mistral"];
 
     providersStatus.innerHTML = "";
 
     let found = false;
 
-    PROVIDERS.forEach(
-        function(name){
+    names.forEach(function(name){
+        const info = providers[name];
 
-            const info =
-                providers[name];
+        if(!info) return;
 
-            if(!info){
-                return;
-            }
+        found = true;
 
-            found = true;
+        const state =
+            typeof info === "string"
+                ? info
+                : (info.status || "unknown");
 
-            const state =
-                typeof info === "string"
-                    ? info
-                    : (
-                        info.status ||
-                        "unknown"
-                    );
+        const normalized = String(state).toLowerCase();
 
-            providerStates[name] =
-                String(state).toLowerCase();
+        let label = "غير معروف";
+        let className = "";
 
-            const normalized =
-                String(state)
-                    .toLowerCase();
-
-            let className = "";
-
-            if(
-                normalized ===
-                "available"
-            ){
-                className =
-                    "available";
-            }
-
-            else if(
-                normalized ===
-                "limited"
-            ){
-                className =
-                    "limited";
-            }
-
-            else if(
-                normalized ===
-                    "unavailable" ||
-                normalized ===
-                    "error"
-            ){
-                className =
-                    "unavailable";
-            }
-
-            const displayName =
-                getProviderDisplayName(
-                    name
-                );
-
-            const label =
-                getStateLabel(
-                    normalized
-                );
-
-            providersStatus.innerHTML += `
-                <div class="provider-status ${className}">
-                    <span class="dot"></span>
-                    ${displayName}: ${label}
-                </div>
-            `;
+        if(normalized === "available"){
+            label = "متاح";
+            className = "available";
+        }else if(normalized === "limited"){
+            label = "محدود";
+            className = "limited";
+        }else if(
+            normalized === "unavailable" ||
+            normalized === "error"
+        ){
+            label = "غير متاح";
+            className = "unavailable";
         }
-    );
+
+        const displayName =
+            name === "deepseek"
+                ? "DeepSeek"
+                : name === "gemini"
+                    ? "Gemini"
+                    : "Mistral";
+
+        providersStatus.innerHTML += `
+            <div class="provider-status ${className}">
+                <span class="dot"></span>
+                ${displayName}: ${label}
+            </div>
+        `;
+    });
 
     if(!found){
-
         providersStatus.innerHTML = `
             <div class="provider-status">
                 <span class="dot"></span>
@@ -1278,349 +637,35 @@ function displayProviderStatus(data){
             </div>
         `;
     }
-
-    renderProviderOptions();
 }
 
 /* =====================================================
-   PROVIDER SELECTOR UI
-   ===================================================== */
-
-function renderProviderOptions(){
-
-    providerOptions.innerHTML = "";
-
-    /* -----------------------------------------------
-       AUTOMATIC
-       ----------------------------------------------- */
-
-    const automaticWrapper =
-        document.createElement("div");
-
-    automaticWrapper.className =
-        "provider-option";
-
-    automaticWrapper.innerHTML = `
-        <input
-            type="radio"
-            name="providerSelection"
-            id="providerAutomatic"
-            value="automatic"
-        >
-
-        <label
-            class="provider-label"
-            for="providerAutomatic"
-        >
-            <div class="provider-name">
-                تلقائي
-            </div>
-
-            <div class="provider-state">
-                Smart AI يختار تلقائيًا
-            </div>
-        </label>
-    `;
-
-    providerOptions.appendChild(
-        automaticWrapper
-    );
-
-    /* -----------------------------------------------
-       PROVIDERS
-       ----------------------------------------------- */
-
-    PROVIDERS.forEach(
-        function(name){
-
-            const state =
-                String(
-                    providerStates[name] ||
-                    "unknown"
-                ).toLowerCase();
-
-            const disabled =
-                state === "unavailable" ||
-                state === "error";
-
-            const wrapper =
-                document.createElement("div");
-
-            wrapper.className =
-                "provider-option" +
-                (
-                    disabled
-                        ? " disabled"
-                        : ""
-                );
-
-            const inputType =
-                "checkbox";
-
-            const id =
-                "provider-" +
-                name;
-
-            const stateClass =
-                (
-                    state === "available" ||
-                    state === "limited" ||
-                    state === "unavailable" ||
-                    state === "error"
-                )
-                    ? state
-                    : "";
-
-            wrapper.innerHTML = `
-                <input
-                    type="${inputType}"
-                    id="${id}"
-                    value="${name}"
-                    ${disabled ? "disabled" : ""}
-                >
-
-                <label
-                    class="provider-label"
-                    for="${id}"
-                >
-
-                    <div class="provider-name">
-                        ${getProviderDisplayName(name)}
-                    </div>
-
-                    <div class="provider-state ${stateClass}">
-                        ${getStateLabel(state)}
-                    </div>
-
-                </label>
-            `;
-
-            providerOptions.appendChild(
-                wrapper
-            );
-
-            const input =
-                wrapper.querySelector(
-                    "input"
-                );
-
-            input.addEventListener(
-                "change",
-                function(){
-
-                    if(
-                        input.checked
-                    ){
-
-                        providerSelectionMode =
-                            "manual";
-
-                        const automatic =
-                            document.getElementById(
-                                "providerAutomatic"
-                            );
-
-                        automatic.checked =
-                            false;
-
-                    }
-
-                    updateProviderSelectionInfo();
-                }
-            );
-        }
-    );
-
-    const automatic =
-        document.getElementById(
-            "providerAutomatic"
-        );
-
-    automatic.checked =
-        providerSelectionMode ===
-        "automatic";
-
-    automatic.addEventListener(
-        "change",
-        function(){
-
-            if(
-                automatic.checked
-            ){
-
-                providerSelectionMode =
-                    "automatic";
-
-                PROVIDERS.forEach(
-                    function(name){
-
-                        const checkbox =
-                            document.getElementById(
-                                "provider-" +
-                                name
-                            );
-
-                        if(checkbox){
-                            checkbox.checked =
-                                false;
-                        }
-                    }
-                );
-
-                updateProviderSelectionInfo();
-            }
-        }
-    );
-
-    updateProviderSelectionInfo();
-}
-
-function getSelectedProviders(){
-
-    if(
-        providerSelectionMode ===
-        "automatic"
-    ){
-
-        return null;
-    }
-
-    return PROVIDERS.filter(
-        function(name){
-
-            const checkbox =
-                document.getElementById(
-                    "provider-" +
-                    name
-                );
-
-            return (
-                checkbox &&
-                checkbox.checked
-            );
-        }
-    );
-}
-
-function updateProviderSelectionInfo(){
-
-    if(
-        providerSelectionMode ===
-        "automatic"
-    ){
-
-        providerSelectionInfo.textContent =
-            "الوضع الحالي: تلقائي — Smart AI يختار المنصات المناسبة.";
-
-        return;
-    }
-
-    const selected =
-        getSelectedProviders() ||
-        [];
-
-    if(
-        selected.length === 0
-    ){
-
-        providerSelectionInfo.textContent =
-            "لم يتم اختيار منصة. اختر منصة واحدة على الأقل أو استخدم «تلقائي».";
-
-        return;
-    }
-
-    const names =
-        selected.map(
-            getProviderDisplayName
-        );
-
-    providerSelectionInfo.textContent =
-        "المنصات المختارة: " +
-        names.join(" + ");
-}
-
-/* =====================================================
-   QUOTA
-   ===================================================== */
-
-async function loadQuota(){
-
-    try{
-
-        const response =
-            await fetch(
-                API_URL +
-                "quota?userId=" +
-                encodeURIComponent(
-                    USER_ID
-                )
-            );
-
-        const data =
-            await response.json();
-
-        if(!response.ok){
-
-            throw new Error(
-                "Quota request failed"
-            );
-        }
-
-        updateRemaining(data);
-
-    }catch(error){
-
-        // لا نعرض خطأ للمستخدم.
-    }
-}
+   REMAINING
+===================================================== */
 
 function updateRemaining(data){
+    const remaining = findRemaining(data);
 
-    const remaining =
-        findRemaining(data);
-
-    if(
-        remaining !== null &&
-        remaining !== undefined
-    ){
-
+    if(remaining !== null && remaining !== undefined){
         remainingElement.textContent =
-            "الأسئلة المتبقية: " +
-            remaining;
+            "الأسئلة المتبقية: " + remaining;
     }
 }
 
 function findRemaining(data){
-
     const possibleValues = [
-
         data?.remaining,
-
         data?.questionsRemaining,
-
         data?.remainingQuestions,
-
         data?.quota?.remaining,
-
         data?.usage?.remaining,
-
         data?.user?.remaining,
-
         data?.user?.questionsRemaining,
-
         data?.summary?.remaining
     ];
 
-    for(
-        const value of
-        possibleValues
-    ){
-
-        if(
-            value !== undefined &&
-            value !== null
-        ){
-
+    for(const value of possibleValues){
+        if(value !== undefined && value !== null){
             return value;
         }
     }
@@ -1630,416 +675,202 @@ function findRemaining(data){
 
 /* =====================================================
    IMAGE
-   ===================================================== */
+===================================================== */
 
-imageButton.addEventListener(
-    "click",
-    function(){
+imageButton.addEventListener("click", function(){
+    imageInput.click();
+});
 
-        imageInput.click();
+imageInput.addEventListener("change", function(){
+    const file = imageInput.files?.[0];
+
+    if(!file){
+        return;
     }
-);
 
-imageInput.addEventListener(
-    "change",
-    function(){
-
-        const file =
-            imageInput.files?.[0];
-
-        if(!file){
-            return;
-        }
-
-        if(
-            !file.type ||
-            !file.type.startsWith(
-                "image/"
-            )
-        ){
-
-            alert(
-                "الملف المختار ليس صورة."
-            );
-
-            imageInput.value = "";
-
-            return;
-        }
-
-        const MAX_CLIENT_IMAGE_BYTES =
-            12 * 1024 * 1024;
-
-        if(
-            file.size >
-            MAX_CLIENT_IMAGE_BYTES
-        ){
-
-            alert(
-                "الصورة كبيرة جدًا. اختر صورة أصغر من 12 MB."
-            );
-
-            imageInput.value = "";
-
-            return;
-        }
-
-        selectedImage =
-            file;
-
-        const reader =
-            new FileReader();
-
-        reader.onload =
-            function(event){
-
-                previewImage.src =
-                    event.target.result;
-
-                imageName.textContent =
-                    file.name ||
-                    "صورة مرفقة";
-
-                imagePreview.classList.add(
-                    "show"
-                );
-            };
-
-        reader.onerror =
-            function(){
-
-                selectedImage =
-                    null;
-
-                imageInput.value =
-                    "";
-
-                previewImage.removeAttribute(
-                    "src"
-                );
-
-                imagePreview.classList.remove(
-                    "show"
-                );
-
-                alert(
-                    "تعذر معاينة الصورة."
-                );
-            };
-
-        reader.readAsDataURL(file);
+    if(!file.type || !file.type.startsWith("image/")){
+        alert("الملف المختار ليس صورة.");
+        imageInput.value = "";
+        return;
     }
-);
+
+    const MAX_CLIENT_IMAGE_BYTES =
+        12 * 1024 * 1024;
+
+    if(file.size > MAX_CLIENT_IMAGE_BYTES){
+        alert(
+            "الصورة كبيرة جدًا. اختر صورة أصغر من 12 MB."
+        );
+        imageInput.value = "";
+        return;
+    }
+
+    selectedImage = file;
+
+    /*
+     * نستخدم FileReader بدل Object URL حتى تكون
+     * المعاينة موثوقة على iPhone/iPad سواء كانت
+     * الصورة من الاستوديو أو ملتقطة بالكاميرا.
+     */
+    const reader = new FileReader();
+
+    reader.onload = function(event){
+        previewImage.src = event.target.result;
+        imageName.textContent =
+            file.name || "صورة مرفقة";
+
+        imagePreview.classList.add("show");
+    };
+
+    reader.onerror = function(){
+        selectedImage = null;
+        imageInput.value = "";
+        previewImage.removeAttribute("src");
+        imagePreview.classList.remove("show");
+
+        alert("تعذر معاينة الصورة.");
+    };
+
+    reader.readAsDataURL(file);
+});
+
 
 async function fileToDataURL(file){
 
-    return new Promise(
-        function(resolve,reject){
+    return new Promise(function(resolve,reject){
 
-            const reader =
-                new FileReader();
+        const reader = new FileReader();
 
-            reader.onload =
-                function(event){
+        reader.onload = function(event){
+            resolve(event.target.result);
+        };
 
-                    resolve(
-                        event.target.result
-                    );
-                };
+        reader.onerror = function(){
+            reject(
+                new Error("تعذر قراءة الصورة.")
+            );
+        };
 
-            reader.onerror =
-                function(){
-
-                    reject(
-                        new Error(
-                            "تعذر قراءة الصورة."
-                        )
-                    );
-                };
-
-            reader.readAsDataURL(file);
-        }
-    );
+        reader.readAsDataURL(file);
+    });
 }
 
-removeImageButton.addEventListener(
-    "click",
-    removeSelectedImage
-);
+removeImageButton.addEventListener("click", removeSelectedImage);
 
 function removeSelectedImage(){
-
-    selectedImage =
-        null;
-
-    imageInput.value =
-        "";
-
-    previewImage.removeAttribute(
-        "src"
-    );
-
-    imageName.textContent =
-        "";
-
-    imagePreview.classList.remove(
-        "show"
-    );
-
+    selectedImage = null;
+    imageInput.value = "";
+    previewImage.removeAttribute("src");
+    imageName.textContent = "";
+    imagePreview.classList.remove("show");
     closeImageLightbox();
 }
 
-previewImage.addEventListener(
-    "click",
-    function(){
+/* =====================================================
+   IMAGE LIGHTBOX
+===================================================== */
 
-        if(
-            !previewImage.src
-        ){
-            return;
-        }
-
-        lightboxImage.src =
-            previewImage.src;
-
-        imageLightbox.classList.add(
-            "show"
-        );
-
-        document.body.style.overflow =
-            "hidden";
+previewImage.addEventListener("click", function(){
+    if(!previewImage.src){
+        return;
     }
-);
+
+    lightboxImage.src = previewImage.src;
+    imageLightbox.classList.add("show");
+    document.body.style.overflow = "hidden";
+});
 
 function closeImageLightbox(){
-
-    imageLightbox.classList.remove(
-        "show"
-    );
-
-    lightboxImage.removeAttribute(
-        "src"
-    );
-
-    document.body.style.overflow =
-        "";
+    imageLightbox.classList.remove("show");
+    lightboxImage.removeAttribute("src");
+    document.body.style.overflow = "";
 }
 
-lightboxClose.addEventListener(
-    "click",
-    closeImageLightbox
-);
+lightboxClose.addEventListener("click", closeImageLightbox);
 
-imageLightbox.addEventListener(
-    "click",
-    function(event){
-
-        if(
-            event.target ===
-            imageLightbox
-        ){
-
-            closeImageLightbox();
-        }
+imageLightbox.addEventListener("click", function(event){
+    if(event.target === imageLightbox){
+        closeImageLightbox();
     }
-);
+});
 
-document.addEventListener(
-    "keydown",
-    function(event){
-
-        if(
-            event.key === "Escape" &&
-            imageLightbox.classList.contains(
-                "show"
-            )
-        ){
-
-            closeImageLightbox();
-        }
+document.addEventListener("keydown", function(event){
+    if(event.key === "Escape" && imageLightbox.classList.contains("show")){
+        closeImageLightbox();
     }
-);
+});
 
 /* =====================================================
    ASK
-   ===================================================== */
+===================================================== */
 
 async function askSmartAI(){
 
-    const question =
-        questionElement.value.trim();
+    const question = questionElement.value.trim();
 
     if(!question){
-
-        alert(
-            "اكتب السؤال أولًا."
-        );
-
+        alert("اكتب السؤال أولًا.");
         questionElement.focus();
-
         return;
     }
 
-    /* -----------------------------------------------
-       GET PROVIDER SELECTION
-       ----------------------------------------------- */
+    askButton.disabled = true;
+    imageButton.disabled = true;
+    clearButton.disabled = true;
 
-    const selectedProviders =
-        getSelectedProviders();
+    askButton.textContent = "جاري السؤال...";
+    loading.classList.add("show");
 
-    if(
-        providerSelectionMode ===
-            "manual" &&
-        (
-            !selectedProviders ||
-            selectedProviders.length === 0
-        )
-    ){
+    results.innerHTML = `
+        ${createLoadingCard("Gemini")}
+        ${createLoadingCard("Mistral")}
+    `;
 
-        alert(
-            "اختر منصة واحدة على الأقل أو اختر «تلقائي»."
-        );
-
-        return;
-    }
-
-    /* -----------------------------------------------
-       UI LOCK
-       ----------------------------------------------- */
-
-    askButton.disabled =
-        true;
-
-    imageButton.disabled =
-        true;
-
-    clearButton.disabled =
-        true;
-
-    askButton.textContent =
-        "جاري السؤال...";
-
-    loading.classList.add(
-        "show"
-    );
-
-    /* -----------------------------------------------
-       LOADING CARDS
-       ----------------------------------------------- */
-
-    const loadingProviders =
-        providerSelectionMode ===
-            "automatic"
-
-            ? getAutomaticLoadingProviders()
-
-            : selectedProviders;
-
-    results.innerHTML =
-        loadingProviders
-            .map(
-                function(name){
-
-                    return createLoadingCard(
-                        getProviderDisplayName(
-                            name
-                        )
-                    );
-                }
-            )
-            .join("");
-
-    const startTime =
-        performance.now();
+    const startTime = performance.now();
 
     try{
 
-        let imagePayload =
-            null;
+        let imagePayload = null;
 
-        if(
-            selectedImage
-        ){
+        if(selectedImage){
 
             const imageData =
-                await fileToDataURL(
-                    selectedImage
-                );
+                await fileToDataURL(selectedImage);
 
             if(!imageData){
-
                 throw new Error(
                     "تعذر تجهيز الصورة للإرسال."
                 );
             }
 
+            /*
+             * نرسل الصورة كـ data URL إلى Worker.
+             * Worker هو الذي يقرر أي مزود يدعم الصورة
+             * وكيف يرسلها إلى Gemini / Mistral / DeepSeek.
+             */
             imagePayload = {
-
-                data:
-                    imageData,
-
+                data:imageData,
                 mimeType:
                     selectedImage.type ||
                     "image/jpeg"
             };
         }
 
-        const requestBody = {
+        const response = await fetch(API_URL,{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
+            },
+            body:JSON.stringify({
+                userId:USER_ID,
+                question:question,
+                image:imagePayload
+            })
+        });
 
-            userId:
-                USER_ID,
-
-            question:
-                question,
-
-            image:
-                imagePayload
-        };
-
-        /*
-         * مهم:
-         *
-         * automatic:
-         * لا نرسل providers.
-         *
-         * manual:
-         * نرسل قائمة المنصات المختارة.
-         */
-
-        if(
-            providerSelectionMode ===
-            "manual"
-        ){
-
-            requestBody.providers =
-                selectedProviders;
-        }
-
-        const response =
-            await fetch(
-                API_URL,
-                {
-
-                    method:
-                        "POST",
-
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify(
-                            requestBody
-                        )
-                }
-            );
-
-        const data =
-            await response.json();
+        const data = await response.json();
 
         if(!response.ok){
-
             throw new Error(
                 data?.error ||
                 data?.message ||
@@ -2047,204 +878,82 @@ async function askSmartAI(){
             );
         }
 
-        const elapsed =
-            (
-                (
-                    performance.now() -
-                    startTime
-                ) /
-                1000
-            ).toFixed(2);
+        const elapsed = (
+            (performance.now() - startTime) / 1000
+        ).toFixed(2);
 
-        updateRemaining(
-            data
-        );
-
-        displayResults(
-            data,
-            elapsed
-        );
+        updateRemaining(data);
+        displayResults(data,elapsed);
 
         await loadProviderStatus();
 
     }catch(error){
-
         results.innerHTML = `
             <div class="empty">
-
                 <div class="empty-title">
                     تعذر الحصول على الإجابة
                 </div>
-
                 ${escapeHTML(
                     error?.message ||
                     "حدث خطأ غير معروف."
                 )}
-
             </div>
         `;
-
     }finally{
+        askButton.disabled = false;
+        imageButton.disabled = false;
+        clearButton.disabled = false;
 
-        askButton.disabled =
-            false;
-
-        imageButton.disabled =
-            false;
-
-        clearButton.disabled =
-            false;
-
-        askButton.textContent =
-            "اسأل Smart AI";
-
-        loading.classList.remove(
-            "show"
-        );
+        askButton.textContent = "اسأل Smart AI";
+        loading.classList.remove("show");
     }
-}
-
-/* =====================================================
-   AUTOMATIC LOADING
-   ===================================================== */
-
-function getAutomaticLoadingProviders(){
-
-    const available =
-        PROVIDERS.filter(
-            function(name){
-
-                return (
-                    providerStates[name] ===
-                    "available"
-                );
-            }
-        );
-
-    if(
-        available.length > 0
-    ){
-
-        return available;
-    }
-
-    const limited =
-        PROVIDERS.filter(
-            function(name){
-
-                return (
-                    providerStates[name] ===
-                    "limited"
-                );
-            }
-        );
-
-    if(
-        limited.length > 0
-    ){
-
-        return limited;
-    }
-
-    const unknown =
-        PROVIDERS.filter(
-            function(name){
-
-                return (
-                    !providerStates[name] ||
-                    providerStates[name] ===
-                    "unknown"
-                );
-            }
-        );
-
-    return unknown.length
-        ? unknown
-        : PROVIDERS;
 }
 
 /* =====================================================
    RESULTS
-   ===================================================== */
+===================================================== */
 
-function displayResults(
-    data,
-    elapsed
-){
+function displayResults(data,elapsed){
 
-    const resultData =
-        data?.results ||
-        {};
+    const resultData = data?.results || {};
 
-    const deepseek =
-        resultData.deepseek;
-
-    const gemini =
-        resultData.gemini;
-
-    const mistral =
-        resultData.mistral;
+    const deepseek = resultData.deepseek;
+    const gemini = resultData.gemini;
+    const mistral = resultData.mistral;
 
     const successful =
         data?.summary?.successful ??
-        countSuccessful(
-            resultData
-        );
+        countSuccessful(resultData);
 
     const total =
         data?.summary?.total ??
-        countReturned(
-            resultData
-        );
+        countReturned(resultData);
 
-    let cards =
-        "";
+    let cards = "";
 
     if(deepseek){
-
-        cards +=
-            createProviderCard(
-                "DeepSeek",
-                deepseek
-            );
+        cards += createProviderCard("DeepSeek",deepseek);
     }
 
     if(gemini){
-
-        cards +=
-            createProviderCard(
-                "Gemini",
-                gemini
-            );
+        cards += createProviderCard("Gemini",gemini);
     }
 
     if(mistral){
-
-        cards +=
-            createProviderCard(
-                "Mistral",
-                mistral
-            );
+        cards += createProviderCard("Mistral",mistral);
     }
 
     if(!cards){
-
         cards = `
             <div class="empty">
-
-                <div class="empty-title">
-                    لم تصل أي إجابة
-                </div>
-
+                <div class="empty-title">لم تصل أي إجابة</div>
                 حاول مرة أخرى لاحقًا.
-
             </div>
         `;
     }
 
     cards += `
         <div class="summary">
-
             تم الحصول على
             <strong>${successful}</strong>
             من
@@ -2253,49 +962,29 @@ function displayResults(
             — زمن الطلب:
             <strong>${elapsed}</strong>
             ثانية
-
         </div>
     `;
 
-    results.innerHTML =
-        cards;
+    results.innerHTML = cards;
 }
 
-function countSuccessful(
-    resultData
-){
-
-    return Object.values(
-        resultData
-    ).filter(
-        function(result){
-
-            return (
-                result &&
-                result.ok === true
-            );
-        }
-    ).length;
+function countSuccessful(resultData){
+    return Object.values(resultData).filter(function(result){
+        return result && result.ok === true;
+    }).length;
 }
 
-function countReturned(
-    resultData
-){
-
-    return Object.values(
-        resultData
-    ).filter(
-        function(result){
-
-            return result !== null;
-        }
-    ).length;
+function countReturned(resultData){
+    return Object.values(resultData).filter(function(result){
+        return result !== null;
+    }).length;
 }
 
-function createProviderCard(
-    provider,
-    result
-){
+/* =====================================================
+   PROVIDER CARD
+===================================================== */
+
+function createProviderCard(provider,result){
 
     if(!result){
         return "";
@@ -2303,51 +992,36 @@ function createProviderCard(
 
     if(result.ok){
 
-        const answer =
-            result.answer ||
-            "";
+        const answer = result.answer || "";
 
         return `
             <div class="card">
-
                 <div class="card-header">
-
-                    <div class="provider">
-                        ${provider}
-                    </div>
-
-                    <div class="status success">
-                        نجح
-                    </div>
-
+                    <div class="provider">${provider}</div>
+                    <div class="status success">نجح</div>
                 </div>
 
                 <div class="answer-area">
-
                     <div class="answer">
                         ${escapeHTML(answer)}
                     </div>
-
                 </div>
 
                 <div class="card-footer">
-
                     <div class="model">
-                        ${escapeHTML(
-                            result.model ||
-                            ""
-                        )}
+                        ${escapeHTML(result.model || "")}
                     </div>
 
                     <button
                         class="copy-button"
-                        onclick='copyAnswer(${JSON.stringify(answer)},this)'
+                        onclick='copyAnswer(
+                            ${JSON.stringify(answer)},
+                            this
+                        )'
                     >
                         نسخ
                     </button>
-
                 </div>
-
             </div>
         `;
     }
@@ -2357,167 +1031,99 @@ function createProviderCard(
         result.message ||
         "حدث خطأ.";
 
-    const lowerError =
-        String(error).toLowerCase();
+    const lowerError = String(error).toLowerCase();
 
-    if(
-        lowerError.includes(
-            "insufficient balance"
-        )
-    ){
-
-        error =
-            "الرصيد غير كافٍ لاستخدام هذه المنصة.";
+    if(lowerError.includes("insufficient balance")){
+        error = "الرصيد غير كافٍ لاستخدام هذه المنصة.";
     }
 
-    if(
-        lowerError.includes(
-            "api key"
-        )
-    ){
-
-        error =
-            "مفتاح API غير مضبوط.";
+    if(lowerError.includes("api key")){
+        error = "مفتاح API غير مضبوط.";
     }
 
-    if(
-        lowerError.includes(
-            "402"
-        )
-    ){
-
-        error =
-            "الرصيد غير كافٍ حاليًا.";
+    if(lowerError.includes("402")){
+        error = "الرصيد غير كافٍ حاليًا.";
     }
 
     return `
         <div class="card">
-
             <div class="card-header">
-
-                <div class="provider">
-                    ${provider}
-                </div>
-
-                <div class="status error">
-                    فشل
-                </div>
-
+                <div class="provider">${provider}</div>
+                <div class="status error">فشل</div>
             </div>
 
             <div class="answer-area">
-
                 <div class="error-message">
                     ${escapeHTML(error)}
                 </div>
-
             </div>
 
             <div class="card-footer">
-
                 <div class="model">
-                    ${escapeHTML(
-                        result.model ||
-                        ""
-                    )}
+                    ${escapeHTML(result.model || "")}
                 </div>
-
             </div>
-
         </div>
     `;
 }
 
-function createLoadingCard(
-    provider
-){
+/* =====================================================
+   LOADING CARD
+===================================================== */
 
+function createLoadingCard(provider){
     return `
         <div class="card">
-
             <div class="card-header">
-
-                <div class="provider">
-                    ${escapeHTML(provider)}
-                </div>
-
-                <div class="status loading-status">
-                    جاري...
-                </div>
-
+                <div class="provider">${provider}</div>
+                <div class="status loading-status">جاري...</div>
             </div>
 
             <div class="answer-area">
-
                 <div class="answer">
                     جاري انتظار الإجابة...
                 </div>
-
             </div>
-
         </div>
     `;
 }
 
 /* =====================================================
    COPY
-   ===================================================== */
+===================================================== */
 
-async function copyAnswer(
-    text,
-    button
-){
+async function copyAnswer(text,button){
 
     try{
+        await navigator.clipboard.writeText(text);
 
-        await navigator.clipboard.writeText(
-            text
-        );
+        const oldText = button.textContent;
+        button.textContent = "تم النسخ ✓";
 
-        const oldText =
-            button.textContent;
-
-        button.textContent =
-            "تم النسخ ✓";
-
-        setTimeout(
-            function(){
-
-                button.textContent =
-                    oldText;
-
-            },
-            1500
-        );
+        setTimeout(function(){
+            button.textContent = oldText;
+        },1500);
 
     }catch(error){
-
-        alert(
-            "تعذر نسخ الإجابة."
-        );
+        alert("تعذر نسخ الإجابة.");
     }
 }
 
 /* =====================================================
    CLEAR
-   ===================================================== */
+===================================================== */
 
 function clearAll(){
 
-    questionElement.value =
-        "";
-
+    questionElement.value = "";
     removeSelectedImage();
 
     results.innerHTML = `
         <div class="empty">
-
             <div class="empty-title">
                 مرحبًا بك في Smart AI
             </div>
-
             اكتب سؤالًا واضغط على «اسأل Smart AI»
-
         </div>
     `;
 
@@ -2525,71 +1131,42 @@ function clearAll(){
 }
 
 /* =====================================================
-   ESCAPE HTML
-   ===================================================== */
+   ESCAPE
+===================================================== */
 
 function escapeHTML(text){
-
     return String(text)
-
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
 }
 
 /* =====================================================
-   EVENTS
-   ===================================================== */
+   BUTTONS
+===================================================== */
 
-askButton.addEventListener(
-    "click",
-    askSmartAI
-);
+askButton.addEventListener("click",askSmartAI);
+clearButton.addEventListener("click",clearAll);
 
-clearButton.addEventListener(
-    "click",
-    clearAll
-);
+/* =====================================================
+   KEYBOARD
+   Enter = سطر جديد
+   Ctrl+Enter / Cmd+Enter = إرسال
+===================================================== */
 
-questionElement.addEventListener(
-    "keydown",
-    function(event){
+questionElement.addEventListener("keydown",function(event){
 
-        if(
-            event.key === "Enter" &&
-            (
-                event.ctrlKey ||
-                event.metaKey
-            )
-        ){
-
-            event.preventDefault();
-
-            askSmartAI();
-        }
+    if(
+        event.key === "Enter" &&
+        (event.ctrlKey || event.metaKey)
+    ){
+        event.preventDefault();
+        askSmartAI();
     }
-);
+
+});
 </script>
 
 </body>
