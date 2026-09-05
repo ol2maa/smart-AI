@@ -28,8 +28,10 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans
 .question-box{border-radius:24px;padding:18px;margin-bottom:20px}
 textarea{width:100%;min-height:125px;max-height:45vh;resize:vertical;border:2px solid #e5e7eb;border-radius:17px;padding:16px;font-family:inherit;font-size:17px;line-height:1.7;outline:none;direction:rtl;text-align:right;overflow-y:auto;overflow-wrap:anywhere}
 textarea:focus{border-color:#111827;box-shadow:0 0 0 3px rgba(17,24,39,.07)}textarea::placeholder{color:#9ca3af}
-.image-preview{display:none;margin-top:10px;padding:10px;border:1px solid #e5e7eb;border-radius:15px;background:#f9fafb;align-items:center;gap:10px}.image-preview.show{display:flex}.attachment-compatibility{display:none;margin-top:8px;padding:9px 11px;border-radius:12px;font-size:12px;font-weight:800;line-height:1.6}.attachment-compatibility.show{display:block}.attachment-compatibility.ok{background:#ecfdf5;color:#166534}.attachment-compatibility.warning{background:#fffbeb;color:#92400e}.attachment-compatibility.error{background:#fef2f2;color:#991b1b}
-.image-preview img{width:78px;height:78px;object-fit:cover;border-radius:12px;border:1px solid #e5e7eb;cursor:zoom-in}.image-info{flex:1;min-width:0}.image-name{font-size:13px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.image-note{font-size:11px;color:#9ca3af;margin-top:3px}
+.image-preview{display:none;margin-top:10px;padding:10px;border:1px solid #e5e7eb;border-radius:15px;background:#f9fafb}.image-preview.show{display:block}
+.image-preview-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.image-count{font-size:13px;font-weight:900;color:#374151}.image-note{font-size:11px;color:#9ca3af;margin-top:3px}
+.image-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.image-item{position:relative;aspect-ratio:1/1;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;background:#fff}.image-item img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in}.image-item-remove{position:absolute;top:5px;left:5px;width:28px;height:28px;padding:0;border-radius:50%;background:rgba(255,255,255,.94);color:#991b1b;font-size:20px;line-height:28px;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.attachment-compatibility{margin-top:10px;padding:9px 12px;border-radius:13px;background:#ecfdf5;color:#166534;font-size:12px;font-weight:800;line-height:1.7}.attachment-compatibility.error{background:#fef2f2;color:#991b1b}
 button{border:none;font-family:inherit;font-size:16px;font-weight:800;cursor:pointer;border-radius:14px;padding:14px 20px;transition:.15s}button:active{transform:scale(.98)}button:disabled{opacity:.55;cursor:not-allowed}
 .button-row{display:flex;gap:10px;margin-top:13px}.ask-button{flex:1;background:#111827;color:#fff}.clear-button{background:#e5e7eb;color:#111827}.image-button{background:#eef2ff;color:#3730a3;padding:8px 16px}.remove-image{padding:7px 10px;background:#fee2e2;color:#991b1b;font-size:12px}
 .loading{display:none;background:#fff;border-radius:16px;padding:14px;margin-bottom:18px;text-align:center;color:#6b7280;box-shadow:0 5px 20px rgba(0,0,0,.05)}.loading.show{display:block}
@@ -46,50 +48,51 @@ button{border:none;font-family:inherit;font-size:16px;font-weight:800;cursor:poi
 .lightbox-close{position:absolute;top:calc(14px + env(safe-area-inset-top));left:16px;width:46px;height:46px;padding:0;border-radius:50%;background:#fff;color:#111827;font-size:30px;line-height:46px}
 .lightbox-hint{position:absolute;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom));text-align:center;color:#fff;font-size:13px}
 @media(max-width:850px){#results{grid-template-columns:1fr}.logo{font-size:34px}.card{min-height:250px}}
-@media(max-width:500px){.container{padding:16px 10px calc(35px + env(safe-area-inset-bottom))}.logo{font-size:31px}.subtitle{font-size:14px}.system-bar,.provider-selector{padding:15px}.provider-options{display:grid;grid-template-columns:1fr 1fr}.provider-label{justify-content:center;padding:8px 9px}.system-top{align-items:flex-start;flex-direction:column}.question-box{padding:13px}textarea{min-height:115px;font-size:16px}.button-row{flex-wrap:wrap}.ask-button{min-width:calc(100% - 70px)}.image-button{width:60px;padding:8px}.clear-button{width:100%}}
+@media(max-width:500px){.container{padding:16px 10px calc(35px + env(safe-area-inset-bottom))}.logo{font-size:31px}.subtitle{font-size:14px}.system-bar,.provider-selector{padding:15px}.provider-options{display:grid;grid-template-columns:1fr 1fr}.provider-label{justify-content:center;padding:8px 9px}.system-top{align-items:flex-start;flex-direction:column}.question-box{padding:13px}textarea{min-height:115px;font-size:16px}.button-row{flex-wrap:wrap}.ask-button{min-width:calc(100% - 70px)}.image-button{width:60px;padding:8px}.clear-button{width:100%}.image-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 </head>
 <body>
 <div class="container">
-<div class="header"><div class="logo">اسأل Smart AI</div><div class="subtitle">سؤال واحد — عدة نماذج ذكاء اصطناعي</div></div>
+<div class="header"><div class="logo">Ø§Ø³Ø£Ù Smart AI</div><div class="subtitle">Ø³Ø¤Ø§Ù ÙØ§Ø­Ø¯ â Ø¹Ø¯Ø© ÙÙØ§Ø°Ø¬ Ø°ÙØ§Ø¡ Ø§ØµØ·ÙØ§Ø¹Ù</div></div>
 
 <div class="system-bar">
-<div class="system-top"><div class="system-title">حالة مزودي الذكاء الاصطناعي</div><div id="remaining" class="remaining">الأسئلة المتبقية: —</div></div>
-<div id="providersStatus" class="providers-status"><div class="provider-status"><span class="dot"></span>جاري الفحص...</div></div>
+<div class="system-top"><div class="system-title">Ø­Ø§ÙØ© ÙØ²ÙØ¯Ù Ø§ÙØ°ÙØ§Ø¡ Ø§ÙØ§ØµØ·ÙØ§Ø¹Ù</div><div id="remaining" class="remaining">Ø§ÙØ£Ø³Ø¦ÙØ© Ø§ÙÙØªØ¨ÙÙØ©: â</div></div>
+<div id="providersStatus" class="providers-status"><div class="provider-status"><span class="dot"></span>Ø¬Ø§Ø±Ù Ø§ÙÙØ­Øµ...</div></div>
 </div>
 
 <div class="provider-selector">
-<div class="provider-selector-title">اختيار المنصات</div>
-<div class="provider-selector-note">اختر من المنصات المتاحة فقط. يمكنك اختيار منصة واحدة أو أكثر، حتى 3 منصات، أو استخدام الاختيار التلقائي.</div>
+<div class="provider-selector-title">Ø§Ø®ØªÙØ§Ø± Ø§ÙÙÙØµØ§Øª</div>
+<div class="provider-selector-note">Ø§Ø®ØªØ± ÙÙ Ø§ÙÙÙØµØ§Øª Ø§ÙÙØªØ§Ø­Ø© ÙÙØ·. ÙÙÙÙÙ Ø§Ø®ØªÙØ§Ø± ÙÙØµØ© ÙØ§Ø­Ø¯Ø© Ø£Ù Ø£ÙØ«Ø±Ø Ø­ØªÙ 3 ÙÙØµØ§ØªØ Ø£Ù Ø§Ø³ØªØ®Ø¯Ø§Ù Ø§ÙØ§Ø®ØªÙØ§Ø± Ø§ÙØªÙÙØ§Ø¦Ù.</div>
 <div id="providerOptions" class="provider-options"></div>
-<div id="providerSelectionCount" class="provider-selection-count">جاري تجهيز قائمة المنصات...</div>
+<div id="providerSelectionCount" class="provider-selection-count">Ø¬Ø§Ø±Ù ØªØ¬ÙÙØ² ÙØ§Ø¦ÙØ© Ø§ÙÙÙØµØ§Øª...</div>
 </div>
 
 <div class="question-box">
-<textarea id="question" maxlength="50000" placeholder="اكتب سؤالك هنا...
-اضغط Enter لسطر جديد، واضغط Ctrl+Enter أو ⌘+Enter للإرسال." autocomplete="off"></textarea>
+<textarea id="question" maxlength="50000" placeholder="Ø§ÙØªØ¨ Ø³Ø¤Ø§ÙÙ ÙÙØ§...&#10;Ø§Ø¶ØºØ· Enter ÙØ³Ø·Ø± Ø¬Ø¯ÙØ¯Ø ÙØ§Ø¶ØºØ· Ctrl+Enter Ø£Ù â+Enter ÙÙØ¥Ø±Ø³Ø§Ù." autocomplete="off"></textarea>
 <div id="imagePreview" class="image-preview">
-<img id="previewImage" alt="معاينة الصورة">
-<div class="image-info"><div id="imageName" class="image-name"></div><div class="image-note">الصورة مرفقة بالرسالة</div></div>
-<button id="removeImageButton" class="remove-image" type="button">إزالة</button>
+<div class="image-preview-top">
+<div><div id="imageCount" class="image-count"></div><div class="image-note">ÙÙÙÙ Ø¥Ø±Ø³Ø§Ù Ø¹Ø¯Ø© ØµÙØ± ÙÙ Ø±Ø³Ø§ÙØ© ÙØ§Ø­Ø¯Ø©</div></div>
+<button id="removeImageButton" class="remove-image" type="button">Ø¥Ø²Ø§ÙØ© Ø§ÙÙÙ</button>
 </div>
-<div id="attachmentCompatibility" class="attachment-compatibility" aria-live="polite"></div>
-<input id="imageInput" type="file" accept="image/*" hidden>
+<div id="imageGrid" class="image-grid"></div>
+<div id="attachmentCompatibility" class="attachment-compatibility"></div>
+</div>
+<input id="imageInput" type="file" accept="image/*" multiple hidden>
 <div class="button-row">
-<button id="askButton" class="ask-button" type="button">اسأل Smart AI</button>
-<button id="imageButton" class="image-button" type="button" title="إضافة صورة">🖼️</button>
-<button id="clearButton" class="clear-button" type="button">مسح</button>
+<button id="askButton" class="ask-button" type="button">Ø§Ø³Ø£Ù Smart AI</button>
+<button id="imageButton" class="image-button" type="button" title="Ø¥Ø¶Ø§ÙØ© ØµÙØ±Ø©">ð¼ï¸</button>
+<button id="clearButton" class="clear-button" type="button">ÙØ³Ø­</button>
 </div>
 </div>
 
-<div id="loading" class="loading">جاري الحصول على الإجابات <span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>
-<div id="results"><div class="empty"><div class="empty-title">مرحبًا بك في Smart AI</div>اكتب سؤالًا واضغط على «اسأل Smart AI»</div></div>
+<div id="loading" class="loading">Ø¬Ø§Ø±Ù Ø§ÙØ­ØµÙÙ Ø¹ÙÙ Ø§ÙØ¥Ø¬Ø§Ø¨Ø§Øª <span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>
+<div id="results"><div class="empty"><div class="empty-title">ÙØ±Ø­Ø¨ÙØ§ Ø¨Ù ÙÙ Smart AI</div>Ø§ÙØªØ¨ Ø³Ø¤Ø§ÙÙØ§ ÙØ§Ø¶ØºØ· Ø¹ÙÙ Â«Ø§Ø³Ø£Ù Smart AIÂ»</div></div>
 </div>
 
 <div id="imageLightbox" class="image-lightbox" role="dialog" aria-modal="true">
-<button id="lightboxClose" class="lightbox-close" type="button">×</button>
-<img id="lightboxImage" alt="الصورة بحجم كبير">
-<div class="lightbox-hint">اضغط خارج الصورة أو × للإغلاق</div>
+<button id="lightboxClose" class="lightbox-close" type="button">Ã</button>
+<img id="lightboxImage" alt="Ø§ÙØµÙØ±Ø© Ø¨Ø­Ø¬Ù ÙØ¨ÙØ±">
+<div class="lightbox-hint">Ø§Ø¶ØºØ· Ø®Ø§Ø±Ø¬ Ø§ÙØµÙØ±Ø© Ø£Ù Ã ÙÙØ¥ØºÙØ§Ù</div>
 </div>
 
 <script>
@@ -112,15 +115,14 @@ const USER_ID=getUserId();
 const $=id=>document.getElementById(id);
 const questionElement=$("question"),askButton=$("askButton"),clearButton=$("clearButton");
 const imageButton=$("imageButton"),imageInput=$("imageInput"),imagePreview=$("imagePreview");
-const previewImage=$("previewImage"),imageName=$("imageName"),removeImageButton=$("removeImageButton");
-const attachmentCompatibility=$("attachmentCompatibility");
+const imageGrid=$("imageGrid"),imageCount=$("imageCount"),attachmentCompatibility=$("attachmentCompatibility"),removeImageButton=$("removeImageButton");
 const imageLightbox=$("imageLightbox"),lightboxImage=$("lightboxImage"),lightboxClose=$("lightboxClose");
 const loading=$("loading"),results=$("results"),providersStatus=$("providersStatus");
 const remainingElement=$("remaining"),providerOptions=$("providerOptions"),providerSelectionCount=$("providerSelectionCount");
 
 let providerStates={};
 let providerSelectionMode="automatic";
-let selectedImage=null;
+let selectedImages=[];
 
 document.addEventListener("DOMContentLoaded",()=>{
     loadProviderStatus();
@@ -140,7 +142,7 @@ async function fetchJSON(url,options={},timeout=12000){
 }
 
 async function loadProviderStatus(){
-    providersStatus.innerHTML='<div class="provider-status"><span class="dot"></span>جاري الفحص...</div>';
+    providersStatus.innerHTML='<div class="provider-status"><span class="dot"></span>Ø¬Ø§Ø±Ù Ø§ÙÙØ­Øµ...</div>';
     try{
         const {response,data}=await fetchJSON(API_URL+"status");
         if(!response.ok)throw new Error("Status request failed");
@@ -155,7 +157,7 @@ async function loadProviderStatus(){
     }catch(error){
         providerStates={};
         PROVIDERS.forEach(name=>providerStates[name]="unknown");
-        providersStatus.innerHTML='<div class="provider-status error"><span class="dot"></span>تعذر قراءة حالة المزودين</div>';
+        providersStatus.innerHTML='<div class="provider-status error"><span class="dot"></span>ØªØ¹Ø°Ø± ÙØ±Ø§Ø¡Ø© Ø­Ø§ÙØ© Ø§ÙÙØ²ÙØ¯ÙÙ</div>';
         renderProviderOptions();
     }
 }
@@ -175,7 +177,8 @@ function getSelectedProviders(){
 function updateProviderSelectionInfo(){
     if(providerSelectionMode==="automatic"){
         providerSelectionCount.className="provider-selection-count";
-        providerSelectionCount.textContent="الوضع الحالي: تلقائي — Smart AI ستختار المنصات المتاحة.";
+        providerSelectionCount.textContent="Ø§ÙÙØ¶Ø¹ Ø§ÙØ­Ø§ÙÙ: ØªÙÙØ§Ø¦Ù â Smart AI Ø³ØªØ®ØªØ§Ø± Ø§ÙÙÙØµØ§Øª Ø§ÙÙØªØ§Ø­Ø©.";
+        updateAttachmentCompatibility();
         return;
     }
 
@@ -185,8 +188,10 @@ function updateProviderSelectionInfo(){
 
     providerSelectionCount.textContent=
         selected.length===0
-        ?"اختر منصة واحدة على الأقل، أو اختر «تلقائي»."
-        :"تم اختيار "+selected.length+" من "+PROVIDERS.length+" منصات.";
+        ?"Ø§Ø®ØªØ± ÙÙØµØ© ÙØ§Ø­Ø¯Ø© Ø¹ÙÙ Ø§ÙØ£ÙÙØ Ø£Ù Ø§Ø®ØªØ± Â«ØªÙÙØ§Ø¦ÙÂ»."
+        :"ØªÙ Ø§Ø®ØªÙØ§Ø± "+selected.length+" ÙÙ "+PROVIDERS.length+" ÙÙØµØ§Øª.";
+
+    updateAttachmentCompatibility();
 }
 
 function renderProviderOptions(){
@@ -194,7 +199,7 @@ function renderProviderOptions(){
 
     const auto=document.createElement("div");
     auto.className="provider-option";
-    auto.innerHTML='<input type="radio" name="providerSelection" id="providerAutomatic" '+(providerSelectionMode==="automatic"?"checked":"")+'><label class="provider-label" for="providerAutomatic"><div class="provider-name">تلقائي</div><div class="provider-state">Smart AI تختار</div></label>';
+    auto.innerHTML='<input type="radio" name="providerSelection" id="providerAutomatic" '+(providerSelectionMode==="automatic"?"checked":"")+'><label class="provider-label" for="providerAutomatic"><div class="provider-name">ØªÙÙØ§Ø¦Ù</div><div class="provider-state">Smart AI ØªØ®ØªØ§Ø±</div></label>';
     providerOptions.appendChild(auto);
 
     const automatic=$("providerAutomatic");
@@ -207,7 +212,6 @@ function renderProviderOptions(){
             if(el)el.checked=false;
         });
         updateProviderSelectionInfo();
-    updateAttachmentCompatibility();
     });
 
     const available=getAvailableProviders();
@@ -217,7 +221,7 @@ function renderProviderOptions(){
         wrapper.className="provider-option";
         const id="provider-"+name;
 
-        wrapper.innerHTML='<input type="checkbox" id="'+id+'" value="'+name+'"><label class="provider-label" for="'+id+'"><div class="provider-name">'+PROVIDER_NAMES[name]+'</div><div class="provider-state available">متاح</div></label>';
+        wrapper.innerHTML='<input type="checkbox" id="'+id+'" value="'+name+'"><label class="provider-label" for="'+id+'"><div class="provider-name">'+PROVIDER_NAMES[name]+'</div><div class="provider-state available">ÙØªØ§Ø­</div></label>';
 
         providerOptions.appendChild(wrapper);
 
@@ -229,7 +233,7 @@ function renderProviderOptions(){
 
                 if(selected.length>3){
                     this.checked=false;
-                    alert("يمكنك اختيار 3 منصات كحد أقصى.");
+                    alert("ÙÙÙÙÙ Ø§Ø®ØªÙØ§Ø± 3 ÙÙØµØ§Øª ÙØ­Ø¯ Ø£ÙØµÙ.");
                     return;
                 }
 
@@ -243,7 +247,7 @@ function renderProviderOptions(){
     if(available.length===0){
         const message=document.createElement("div");
         message.className="provider-selection-info";
-        message.textContent="لا توجد منصة متاحة حاليًا للاختيار اليدوي. يمكنك استخدام «تلقائي» وسيختار Worker المنصات المتاحة.";
+        message.textContent="ÙØ§ ØªÙØ¬Ø¯ ÙÙØµØ© ÙØªØ§Ø­Ø© Ø­Ø§ÙÙÙØ§ ÙÙØ§Ø®ØªÙØ§Ø± Ø§ÙÙØ¯ÙÙ. ÙÙÙÙÙ Ø§Ø³ØªØ®Ø¯Ø§Ù Â«ØªÙÙØ§Ø¦ÙÂ» ÙØ³ÙØ®ØªØ§Ø± Worker Ø§ÙÙÙØµØ§Øª Ø§ÙÙØªØ§Ø­Ø©.";
         providerOptions.appendChild(message);
     }
 
@@ -269,18 +273,18 @@ function displayProviderStatus(data){
         const info=providers[name];
         const normalized=String(typeof info==="string"?info:(info?.status||"unknown")).toLowerCase();
 
-        let label="غير معروف",cls="";
+        let label="ØºÙØ± ÙØ¹Ø±ÙÙ",cls="";
 
         if(normalized==="available"){
-            label="متاح";
+            label="ÙØªØ§Ø­";
             cls="available";
         }
         else if(normalized==="limited"){
-            label="محدود";
+            label="ÙØ­Ø¯ÙØ¯";
             cls="limited";
         }
         else if(normalized==="unavailable"||normalized==="error"){
-            label="غير متاح";
+            label="ØºÙØ± ÙØªØ§Ø­";
             cls="unavailable";
         }
 
@@ -288,7 +292,7 @@ function displayProviderStatus(data){
     });
 
     if(!found){
-        providersStatus.innerHTML='<div class="provider-status"><span class="dot"></span>لم تصل حالة المزودين</div>';
+        providersStatus.innerHTML='<div class="provider-status"><span class="dot"></span>ÙÙ ØªØµÙ Ø­Ø§ÙØ© Ø§ÙÙØ²ÙØ¯ÙÙ</div>';
     }
 }
 
@@ -305,108 +309,156 @@ function updateRemaining(data){
     ].find(v=>v!==undefined&&v!==null);
 
     if(value!==undefined){
-        remainingElement.textContent="الأسئلة المتبقية: "+value;
+        remainingElement.textContent="Ø§ÙØ£Ø³Ø¦ÙØ© Ø§ÙÙØªØ¨ÙÙØ©: "+value;
     }
 }
+
+const MAX_IMAGES_PER_MESSAGE=4;
+const MAX_IMAGE_SIZE_BYTES=12*1024*1024;
 
 imageButton.addEventListener("click",()=>imageInput.click());
 
-const ATTACHMENT_CAPABILITIES={deepseek:{image:true},gemini:{image:true},mistral:{image:true}};
+imageInput.addEventListener("change",async()=>{
+    const files=Array.from(imageInput.files||[]);
+    imageInput.value="";
 
-function getAttachmentProviders(){
-    return providerSelectionMode==="manual"?(getSelectedProviders()||[]):getAvailableProviders();
+    if(!files.length)return;
+
+    const availableSlots=MAX_IMAGES_PER_MESSAGE-selectedImages.length;
+
+    if(availableSlots<=0){
+        alert("ÙÙÙÙÙ Ø¥Ø±ÙØ§Ù 4 ØµÙØ± ÙØ­Ø¯ Ø£ÙØµÙ ÙÙ Ø§ÙØ±Ø³Ø§ÙØ© Ø§ÙÙØ§Ø­Ø¯Ø©.");
+        return;
+    }
+
+    const accepted=files.slice(0,availableSlots);
+
+    if(files.length>availableSlots){
+        alert("ÙÙÙÙÙ Ø¥Ø±ÙØ§Ù 4 ØµÙØ± ÙØ­Ø¯ Ø£ÙØµÙ ÙÙ Ø§ÙØ±Ø³Ø§ÙØ© Ø§ÙÙØ§Ø­Ø¯Ø©.");
+    }
+
+    for(const file of accepted){
+        if(!file.type.startsWith("image/")){
+            alert("ØªÙ ØªØ¬Ø§ÙÙ ÙÙÙ ÙÙØ³ ØµÙØ±Ø©: "+(file.name||"ÙÙÙ"));
+            continue;
+        }
+
+        if(file.size>MAX_IMAGE_SIZE_BYTES){
+            alert("ØªÙ ØªØ¬Ø§ÙÙ Ø§ÙØµÙØ±Ø© Ø§ÙÙØ¨ÙØ±Ø© Ø¬Ø¯ÙØ§: "+(file.name||"ØµÙØ±Ø©")+". Ø§ÙØ­Ø¯ Ø§ÙØ£ÙØµÙ 12 MB ÙÙØµÙØ±Ø©.");
+            continue;
+        }
+
+        selectedImages.push({
+            id:crypto.randomUUID?crypto.randomUUID():String(Date.now())+"_"+Math.random(),
+            file,
+            url:URL.createObjectURL(file)
+        });
+    }
+
+    renderSelectedImages();
+});
+
+function renderSelectedImages(){
+    imageGrid.innerHTML="";
+
+    if(selectedImages.length===0){
+        imagePreview.classList.remove("show");
+        imageCount.textContent="";
+        attachmentCompatibility.textContent="";
+        attachmentCompatibility.className="attachment-compatibility";
+        return;
+    }
+
+    imagePreview.classList.add("show");
+    imageCount.textContent="Ø§ÙØµÙØ± Ø§ÙÙØ±ÙÙØ©: "+selectedImages.length+" ÙÙ "+MAX_IMAGES_PER_MESSAGE;
+    updateAttachmentCompatibility();
+
+    selectedImages.forEach((item,index)=>{
+        const wrapper=document.createElement("div");
+        wrapper.className="image-item";
+
+        const img=document.createElement("img");
+        img.src=item.url;
+        img.alt=item.file.name||("Ø§ÙØµÙØ±Ø© "+(index+1));
+
+        img.addEventListener("click",()=>{
+            lightboxImage.src=item.url;
+            imageLightbox.classList.add("show");
+            document.body.style.overflow="hidden";
+        });
+
+        const remove=document.createElement("button");
+        remove.type="button";
+        remove.className="image-item-remove";
+        remove.textContent="Ã";
+        remove.title="Ø¥Ø²Ø§ÙØ© ÙØ°Ù Ø§ÙØµÙØ±Ø©";
+        remove.addEventListener("click",e=>{
+            e.stopPropagation();
+            removeSelectedImageAt(index);
+        });
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(remove);
+        imageGrid.appendChild(wrapper);
+    });
+}
+
+function removeSelectedImageAt(index){
+    const item=selectedImages[index];
+
+    if(item?.url){
+        URL.revokeObjectURL(item.url);
+    }
+
+    selectedImages.splice(index,1);
+    renderSelectedImages();
+    closeImageLightbox();
+}
+
+removeImageButton.addEventListener("click",removeAllImages);
+
+function removeAllImages(){
+    selectedImages.forEach(item=>{
+        if(item?.url)URL.revokeObjectURL(item.url);
+    });
+
+    selectedImages=[];
+    imageInput.value="";
+    renderSelectedImages();
+    closeImageLightbox();
 }
 
 function updateAttachmentCompatibility(){
-    if(!selectedImage){
-        attachmentCompatibility.className="attachment-compatibility";
-        attachmentCompatibility.textContent="";
-        return true;
+    if(selectedImages.length===0)return;
+
+    const targets=
+        providerSelectionMode==="manual"
+        ?getSelectedProviders()||[]
+        :getAvailableProviders();
+
+    if(!targets.length){
+        attachmentCompatibility.textContent="â ï¸ ÙØ§ ØªÙØ¬Ø¯ ÙÙØµØ© ÙØªØ§Ø­Ø© Ø­Ø§ÙÙÙØ§ ÙÙØ¹Ø§ÙØ¬Ø© Ø§ÙØµÙØ±.";
+        attachmentCompatibility.className="attachment-compatibility error";
+        return;
     }
-    const providers=getAttachmentProviders();
-    if(!providers.length){
-        attachmentCompatibility.className="attachment-compatibility warning show";
-        attachmentCompatibility.textContent="سيتم التحقق من توافق الصورة مع المنصات عند الإرسال.";
-        return true;
-    }
-    const unsupported=providers.filter(name=>!ATTACHMENT_CAPABILITIES[name]?.image);
-    if(unsupported.length){
-        const names=unsupported.map(name=>PROVIDER_NAMES[name]).join("، ");
-        attachmentCompatibility.className="attachment-compatibility error show";
-        attachmentCompatibility.textContent="هذه الصورة غير مدعومة من: "+names+". أزل الصورة أو غيّر اختيار المنصات قبل الإرسال.";
-        return false;
-    }
-    const names=providers.map(name=>PROVIDER_NAMES[name]).join("، ");
-    attachmentCompatibility.className="attachment-compatibility ok show";
-    attachmentCompatibility.textContent="✓ الصورة متوافقة مع المنصات المختارة: "+names;
-    return true;
+
+    attachmentCompatibility.textContent=
+        "â Ø§ÙØµÙØ± ÙØªÙØ§ÙÙØ© ÙØ¹ Ø§ÙÙÙØµØ§Øª Ø§ÙÙØ®ØªØ§Ø±Ø©: "+
+        targets.map(name=>PROVIDER_NAMES[name]).join(" Ù ");
+
+    attachmentCompatibility.className="attachment-compatibility";
 }
-
-imageInput.addEventListener("change",()=>{
-    const file=imageInput.files?.[0];
-    if(!file)return;
-
-    if(!file.type.startsWith("image/")){
-        alert("الملف المختار ليس صورة.");
-        imageInput.value="";
-        return;
-    }
-
-    if(file.size>12*1024*1024){
-        alert("الصورة كبيرة جدًا. اختر صورة أصغر من 12 MB.");
-        imageInput.value="";
-        return;
-    }
-
-    selectedImage=file;
-    updateAttachmentCompatibility();
-
-    const reader=new FileReader();
-
-    reader.onload=e=>{
-        previewImage.src=e.target.result;
-        imageName.textContent=file.name||"صورة مرفقة";
-        imagePreview.classList.add("show");
-    };
-
-    reader.onerror=()=>{
-        removeSelectedImage();
-        alert("تعذر معاينة الصورة.");
-    };
-
-    reader.readAsDataURL(file);
-});
 
 function fileToDataURL(file){
     return new Promise((resolve,reject)=>{
         const reader=new FileReader();
 
         reader.onload=e=>resolve(e.target.result);
-        reader.onerror=()=>reject(new Error("تعذر قراءة الصورة."));
+        reader.onerror=()=>reject(new Error("ØªØ¹Ø°Ø± ÙØ±Ø§Ø¡Ø© Ø§ÙØµÙØ±Ø©."));
 
         reader.readAsDataURL(file);
     });
 }
-
-removeImageButton.addEventListener("click",removeSelectedImage);
-
-function removeSelectedImage(){
-    selectedImage=null;
-    updateAttachmentCompatibility();
-    imageInput.value="";
-    previewImage.removeAttribute("src");
-    imageName.textContent="";
-    imagePreview.classList.remove("show");
-    closeImageLightbox();
-}
-
-previewImage.addEventListener("click",()=>{
-    if(!previewImage.src)return;
-
-    lightboxImage.src=previewImage.src;
-    imageLightbox.classList.add("show");
-    document.body.style.overflow="hidden";
-});
 
 function closeImageLightbox(){
     imageLightbox.classList.remove("show");
@@ -430,9 +482,9 @@ askButton.addEventListener("click",askSmartAI);
 
 clearButton.addEventListener("click",()=>{
     questionElement.value="";
-    removeSelectedImage();
+    removeAllImages();
 
-    results.innerHTML='<div class="empty"><div class="empty-title">مرحبًا بك في Smart AI</div>اكتب سؤالًا واضغط على «اسأل Smart AI»</div>';
+    results.innerHTML='<div class="empty"><div class="empty-title">ÙØ±Ø­Ø¨ÙØ§ Ø¨Ù ÙÙ Smart AI</div>Ø§ÙØªØ¨ Ø³Ø¤Ø§ÙÙØ§ ÙØ§Ø¶ØºØ· Ø¹ÙÙ Â«Ø§Ø³Ø£Ù Smart AIÂ»</div>';
 
     questionElement.focus();
 });
@@ -448,32 +500,46 @@ async function askSmartAI(){
     const question=questionElement.value.trim();
 
     if(!question){
-        alert("اكتب السؤال أولًا.");
+        alert("Ø§ÙØªØ¨ Ø§ÙØ³Ø¤Ø§Ù Ø£ÙÙÙØ§.");
         questionElement.focus();
         return;
     }
 
     const selected=getSelectedProviders();
 
-    // التعديل الأساسي:
-    // يسمح الآن باختيار منصة واحدة فقط.
+    // Ø§ÙØªØ¹Ø¯ÙÙ Ø§ÙØ£Ø³Ø§Ø³Ù:
+    // ÙØ³ÙØ­ Ø§ÙØ¢Ù Ø¨Ø§Ø®ØªÙØ§Ø± ÙÙØµØ© ÙØ§Ø­Ø¯Ø© ÙÙØ·.
     if(providerSelectionMode==="manual"&&(!selected||selected.length<1)){
-        alert("اختر منصة واحدة على الأقل، أو اختر «تلقائي».");
+        alert("Ø§Ø®ØªØ± ÙÙØµØ© ÙØ§Ø­Ø¯Ø© Ø¹ÙÙ Ø§ÙØ£ÙÙØ Ø£Ù Ø§Ø®ØªØ± Â«ØªÙÙØ§Ø¦ÙÂ».");
         return;
     }
 
     if(providerSelectionMode==="manual"&&selected.length>3){
-        alert("يمكنك اختيار 3 منصات كحد أقصى.");
+        alert("ÙÙÙÙÙ Ø§Ø®ØªÙØ§Ø± 3 ÙÙØµØ§Øª ÙØ­Ø¯ Ø£ÙØµÙ.");
         return;
     }
 
-    
-    if(selectedImage&&!updateAttachmentCompatibility()){
+    if(selectedImages.length>MAX_IMAGES_PER_MESSAGE){
+        alert("ÙÙÙÙÙ Ø¥Ø±ÙØ§Ù 4 ØµÙØ± ÙØ­Ø¯ Ø£ÙØµÙ ÙÙ Ø§ÙØ±Ø³Ø§ÙØ© Ø§ÙÙØ§Ø­Ø¯Ø©.");
         return;
     }
 
-askButton.disabled=imageButton.disabled=clearButton.disabled=true;
-    askButton.textContent="جاري السؤال...";
+    if(selectedImages.length>0){
+        updateAttachmentCompatibility();
+
+        const targets=
+            providerSelectionMode==="manual"
+            ?selected
+            :getAvailableProviders();
+
+        if(!targets.length){
+            alert("ÙØ§ ØªÙØ¬Ø¯ ÙÙØµØ© ÙØªØ§Ø­Ø© Ø­Ø§ÙÙÙØ§ ÙÙØ¹Ø§ÙØ¬Ø© Ø§ÙØµÙØ±.");
+            return;
+        }
+    }
+
+    askButton.disabled=imageButton.disabled=clearButton.disabled=true;
+    askButton.textContent="Ø¬Ø§Ø±Ù Ø§ÙØ³Ø¤Ø§Ù...";
     loading.classList.add("show");
 
     const loadingProviders=
@@ -490,20 +556,21 @@ askButton.disabled=imageButton.disabled=clearButton.disabled=true;
     const start=performance.now();
 
     try{
-        let imagePayload=null;
+        const imagePayloads=await Promise.all(
+            selectedImages.map(async item=>{
+                const data=await fileToDataURL(item.file);
 
-        if(selectedImage){
-            const data=await fileToDataURL(selectedImage);
-            imagePayload={
-                data,
-                mimeType:selectedImage.type||"image/jpeg"
-            };
-        }
+                return {
+                    data,
+                    mimeType:item.file.type||"image/jpeg"
+                };
+            })
+        );
 
         const body={
             userId:USER_ID,
             question,
-            image:imagePayload
+            images:imagePayloads
         };
 
         if(providerSelectionMode==="manual"){
@@ -524,7 +591,7 @@ askButton.disabled=imageButton.disabled=clearButton.disabled=true;
             throw new Error(
                 data?.error||
                 data?.message||
-                "حدث خطأ في الاتصال."
+                "Ø­Ø¯Ø« Ø®Ø·Ø£ ÙÙ Ø§ÙØ§ØªØµØ§Ù."
             );
         }
 
@@ -538,24 +605,24 @@ askButton.disabled=imageButton.disabled=clearButton.disabled=true;
 
         results.innerHTML=
             '<div class="empty">'+
-            '<div class="empty-title">تعذر الحصول على الإجابة</div>'+
+            '<div class="empty-title">ØªØ¹Ø°Ø± Ø§ÙØ­ØµÙÙ Ø¹ÙÙ Ø§ÙØ¥Ø¬Ø§Ø¨Ø©</div>'+
             escapeHTML(
                 error?.name==="AbortError"
-                ?"انتهت مهلة الاتصال. حاول مرة أخرى."
-                :error?.message||"حدث خطأ غير معروف."
+                ?"Ø§ÙØªÙØª ÙÙÙØ© Ø§ÙØ§ØªØµØ§Ù. Ø­Ø§ÙÙ ÙØ±Ø© Ø£Ø®Ø±Ù."
+                :error?.message||"Ø­Ø¯Ø« Ø®Ø·Ø£ ØºÙØ± ÙØ¹Ø±ÙÙ."
             )+
             '</div>';
 
     }finally{
 
         askButton.disabled=imageButton.disabled=clearButton.disabled=false;
-        askButton.textContent="اسأل Smart AI";
+        askButton.textContent="Ø§Ø³Ø£Ù Smart AI";
         loading.classList.remove("show");
     }
 }
 
 function createLoadingCard(provider){
-    return '<div class="card"><div class="card-header"><div class="provider">'+escapeHTML(provider)+'</div><div class="status">جاري...</div></div><div class="answer-area"><div class="answer">جاري انتظار الإجابة...</div></div></div>';
+    return '<div class="card"><div class="card-header"><div class="provider">'+escapeHTML(provider)+'</div><div class="status">Ø¬Ø§Ø±Ù...</div></div><div class="answer-area"><div class="answer">Ø¬Ø§Ø±Ù Ø§ÙØªØ¸Ø§Ø± Ø§ÙØ¥Ø¬Ø§Ø¨Ø©...</div></div></div>';
 }
 
 function displayResults(data,elapsed){
@@ -577,15 +644,15 @@ function displayResults(data,elapsed){
         countReturned(r);
 
     if(!cards){
-        cards='<div class="empty"><div class="empty-title">لم تصل أَي إجابة</div>حاول مرة أخرى لاحقًا.</div>';
+        cards='<div class="empty"><div class="empty-title">ÙÙ ØªØµÙ Ø£ÙÙ Ø¥Ø¬Ø§Ø¨Ø©</div>Ø­Ø§ÙÙ ÙØ±Ø© Ø£Ø®Ø±Ù ÙØ§Ø­ÙÙØ§.</div>';
     }
 
     cards+=
         '<div class="summary">'+
-        'تم الحصول على <strong>'+successful+
-        '</strong> من <strong>'+total+
-        '</strong> إجابات — زمن الطلب: <strong>'+
-        elapsed+'</strong> ثانية</div>';
+        'ØªÙ Ø§ÙØ­ØµÙÙ Ø¹ÙÙ <strong>'+successful+
+        '</strong> ÙÙ <strong>'+total+
+        '</strong> Ø¥Ø¬Ø§Ø¨Ø§Øª â Ø²ÙÙ Ø§ÙØ·ÙØ¨: <strong>'+
+        elapsed+'</strong> Ø«Ø§ÙÙØ©</div>';
 
     results.innerHTML=cards;
 }
@@ -611,7 +678,7 @@ function createProviderCard(provider,result){
     const error=
         result?.error??
         result?.message??
-        "تعذر الحصول على إجابة.";
+        "ØªØ¹Ø°Ø± Ø§ÙØ­ØµÙÙ Ø¹ÙÙ Ø¥Ø¬Ø§Ø¨Ø©.";
 
     const model=
         result?.model??
@@ -624,7 +691,7 @@ function createProviderCard(provider,result){
         '<div class="card-header">'+
         '<div class="provider">'+escapeHTML(provider)+'</div>'+
         '<div class="status '+(ok?"success":"error")+'">'+
-        (ok?"نجح":"فشل")+
+        (ok?"ÙØ¬Ø­":"ÙØ´Ù")+
         '</div></div>'+
         '<div class="answer-area">'+
         (ok
@@ -634,7 +701,7 @@ function createProviderCard(provider,result){
         '</div>'+
         '<div class="card-footer">'+
         (ok
-            ?'<button class="copy-button" type="button" onclick="copyAnswer(this)">نسخ</button>'
+            ?'<button class="copy-button" type="button" onclick="copyAnswer(this)">ÙØ³Ø®</button>'
             :"<span></span>"
         )+
         '<div class="model">'+escapeHTML(String(model))+'</div>'+
@@ -649,22 +716,25 @@ async function copyAnswer(button){
 
     try{
         await navigator.clipboard.writeText(answer);
-        button.textContent="تم النسخ";
-        setTimeout(()=>button.textContent="نسخ",1200);
+        button.textContent="ØªÙ Ø§ÙÙØ³Ø®";
+        setTimeout(()=>button.textContent="ÙØ³Ø®",1200);
     }
     catch{
-        alert("تعذر نسخ الإجابة.");
+        alert("ØªØ¹Ø°Ø± ÙØ³Ø® Ø§ÙØ¥Ø¬Ø§Ø¨Ø©.");
     }
 }
 
 function escapeHTML(value){
-    return String(value).replace(/[&<>"']/g,c=>({
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#39;"
-    }[c]));
+    return String(value).replace(
+        /[&<>"']/g,
+        c=>({
+            "&":"&amp;",
+            "<":"&lt;",
+            ">":"&gt;",
+            '"':"&quot;",
+            "'":"&#039;"
+        }[c])
+    );
 }
 </script>
 </body>
