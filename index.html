@@ -28,7 +28,7 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans
 .question-box{border-radius:24px;padding:18px;margin-bottom:20px}
 textarea{width:100%;min-height:125px;max-height:45vh;resize:vertical;border:2px solid #e5e7eb;border-radius:17px;padding:16px;font-family:inherit;font-size:17px;line-height:1.7;outline:none;direction:rtl;text-align:right;overflow-y:auto;overflow-wrap:anywhere}
 textarea:focus{border-color:#111827;box-shadow:0 0 0 3px rgba(17,24,39,.07)}textarea::placeholder{color:#9ca3af}
-.image-preview{display:none;margin-top:10px;padding:10px;border:1px solid #e5e7eb;border-radius:15px;background:#f9fafb;align-items:center;gap:10px}.image-preview.show{display:flex}
+.image-preview{display:none;margin-top:10px;padding:10px;border:1px solid #e5e7eb;border-radius:15px;background:#f9fafb;align-items:center;gap:10px}.image-preview.show{display:flex}.attachment-compatibility{display:none;margin-top:8px;padding:9px 11px;border-radius:12px;font-size:12px;font-weight:800;line-height:1.6}.attachment-compatibility.show{display:block}.attachment-compatibility.ok{background:#ecfdf5;color:#166534}.attachment-compatibility.warning{background:#fffbeb;color:#92400e}.attachment-compatibility.error{background:#fef2f2;color:#991b1b}
 .image-preview img{width:78px;height:78px;object-fit:cover;border-radius:12px;border:1px solid #e5e7eb;cursor:zoom-in}.image-info{flex:1;min-width:0}.image-name{font-size:13px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.image-note{font-size:11px;color:#9ca3af;margin-top:3px}
 button{border:none;font-family:inherit;font-size:16px;font-weight:800;cursor:pointer;border-radius:14px;padding:14px 20px;transition:.15s}button:active{transform:scale(.98)}button:disabled{opacity:.55;cursor:not-allowed}
 .button-row{display:flex;gap:10px;margin-top:13px}.ask-button{flex:1;background:#111827;color:#fff}.clear-button{background:#e5e7eb;color:#111827}.image-button{background:#eef2ff;color:#3730a3;padding:8px 16px}.remove-image{padding:7px 10px;background:#fee2e2;color:#991b1b;font-size:12px}
@@ -66,12 +66,14 @@ button{border:none;font-family:inherit;font-size:16px;font-weight:800;cursor:poi
 </div>
 
 <div class="question-box">
-<textarea id="question" maxlength="50000" placeholder="اكتب سؤالك هنا...&#10;اضغط Enter لسطر جديد، واضغط Ctrl+Enter أو ⌘+Enter للإرسال." autocomplete="off"></textarea>
+<textarea id="question" maxlength="50000" placeholder="اكتب سؤالك هنا...
+اضغط Enter لسطر جديد، واضغط Ctrl+Enter أو ⌘+Enter للإرسال." autocomplete="off"></textarea>
 <div id="imagePreview" class="image-preview">
 <img id="previewImage" alt="معاينة الصورة">
 <div class="image-info"><div id="imageName" class="image-name"></div><div class="image-note">الصورة مرفقة بالرسالة</div></div>
 <button id="removeImageButton" class="remove-image" type="button">إزالة</button>
 </div>
+<div id="attachmentCompatibility" class="attachment-compatibility" aria-live="polite"></div>
 <input id="imageInput" type="file" accept="image/*" hidden>
 <div class="button-row">
 <button id="askButton" class="ask-button" type="button">اسأل Smart AI</button>
@@ -111,6 +113,7 @@ const $=id=>document.getElementById(id);
 const questionElement=$("question"),askButton=$("askButton"),clearButton=$("clearButton");
 const imageButton=$("imageButton"),imageInput=$("imageInput"),imagePreview=$("imagePreview");
 const previewImage=$("previewImage"),imageName=$("imageName"),removeImageButton=$("removeImageButton");
+const attachmentCompatibility=$("attachmentCompatibility");
 const imageLightbox=$("imageLightbox"),lightboxImage=$("lightboxImage"),lightboxClose=$("lightboxClose");
 const loading=$("loading"),results=$("results"),providersStatus=$("providersStatus");
 const remainingElement=$("remaining"),providerOptions=$("providerOptions"),providerSelectionCount=$("providerSelectionCount");
@@ -204,6 +207,7 @@ function renderProviderOptions(){
             if(el)el.checked=false;
         });
         updateProviderSelectionInfo();
+    updateAttachmentCompatibility();
     });
 
     const available=getAvailableProviders();
@@ -307,6 +311,37 @@ function updateRemaining(data){
 
 imageButton.addEventListener("click",()=>imageInput.click());
 
+const ATTACHMENT_CAPABILITIES={deepseek:{image:true},gemini:{image:true},mistral:{image:true}};
+
+function getAttachmentProviders(){
+    return providerSelectionMode==="manual"?(getSelectedProviders()||[]):getAvailableProviders();
+}
+
+function updateAttachmentCompatibility(){
+    if(!selectedImage){
+        attachmentCompatibility.className="attachment-compatibility";
+        attachmentCompatibility.textContent="";
+        return true;
+    }
+    const providers=getAttachmentProviders();
+    if(!providers.length){
+        attachmentCompatibility.className="attachment-compatibility warning show";
+        attachmentCompatibility.textContent="سيتم التحقق من توافق الصورة مع المنصات عند الإرسال.";
+        return true;
+    }
+    const unsupported=providers.filter(name=>!ATTACHMENT_CAPABILITIES[name]?.image);
+    if(unsupported.length){
+        const names=unsupported.map(name=>PROVIDER_NAMES[name]).join("، ");
+        attachmentCompatibility.className="attachment-compatibility error show";
+        attachmentCompatibility.textContent="هذه الصورة غير مدعومة من: "+names+". أزل الصورة أو غيّر اختيار المنصات قبل الإرسال.";
+        return false;
+    }
+    const names=providers.map(name=>PROVIDER_NAMES[name]).join("، ");
+    attachmentCompatibility.className="attachment-compatibility ok show";
+    attachmentCompatibility.textContent="✓ الصورة متوافقة مع المنصات المختارة: "+names;
+    return true;
+}
+
 imageInput.addEventListener("change",()=>{
     const file=imageInput.files?.[0];
     if(!file)return;
@@ -324,6 +359,7 @@ imageInput.addEventListener("change",()=>{
     }
 
     selectedImage=file;
+    updateAttachmentCompatibility();
 
     const reader=new FileReader();
 
@@ -356,6 +392,7 @@ removeImageButton.addEventListener("click",removeSelectedImage);
 
 function removeSelectedImage(){
     selectedImage=null;
+    updateAttachmentCompatibility();
     imageInput.value="";
     previewImage.removeAttribute("src");
     imageName.textContent="";
@@ -430,7 +467,12 @@ async function askSmartAI(){
         return;
     }
 
-    askButton.disabled=imageButton.disabled=clearButton.disabled=true;
+    
+    if(selectedImage&&!updateAttachmentCompatibility()){
+        return;
+    }
+
+askButton.disabled=imageButton.disabled=clearButton.disabled=true;
     askButton.textContent="جاري السؤال...";
     loading.classList.add("show");
 
@@ -616,16 +658,13 @@ async function copyAnswer(button){
 }
 
 function escapeHTML(value){
-    return String(value).replace(
-        /[&<>"']/g,
-        c=>({
-            "&":"&amp;",
-            "<":"&lt;",
-            ">":"&gt;",
-            '"':"&quot;",
-            "'":"&#039;"
-        }[c])
-    );
+    return String(value).replace(/[&<>"']/g,c=>({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#39;"
+    }[c]));
 }
 </script>
 </body>
