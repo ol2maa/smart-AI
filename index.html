@@ -1729,8 +1729,8 @@ imageInput.addEventListener(
                     )
                         ?crypto.randomUUID()
                         :String(Date.now())+
-                         "_"+
-                         Math.random(),
+                        "_"+
+                        Math.random(),
 
                 file:file,
 
@@ -2369,7 +2369,7 @@ async function askSmartAI(){
                     ?"انتهت مهلة الاتصال. حاول مرة أخرى."
 
                     :error?.message||
-                     "حدث خطأ غير معروف."
+                    "حدث خطأ غير معروف."
 
             )+
             '</div>';
@@ -2629,75 +2629,75 @@ function countReturned(r){
    Provider Card
 ========================================================= */
 
-function createProviderCard(
-    provider,
-    result
-){
-
-    const ok=
-        result?.ok===true;
-
-
-    const answer=
-        result?.answer??
-        result?.response??
-        result?.content??
-        "";
-
-
-    const errorMessage=
-        result?.error||
-        result?.message||
-        "تعذر الحصول على إجابة من هذه المنصة.";
-
-
-    const model=
-        result?.model||
-        result?.model_name||
-        result?.modelName||
-        "";
-
-
+function createProviderCard(provider,result){
+    const ok=result?.ok===true;
+    const answer=result?.answer??result?.response??result?.content??"";
+    const errorMessage=result?.error||result?.message||"تعذر الحصول على إجابة من هذه المنصة.";
+    const model=result?.model||result?.model_name||result?.modelName||"";
     let answerHTML="";
-
-
     if(ok){
-
-        answerHTML=
-            '<div class="answer">'+
-            escapeHTML(
-                String(answer)
-            )+
-            '</div>';
-
+        answerHTML='<div class="answer">'+escapeHTML(String(answer))+'</div>';
     }else{
-
-        answerHTML=
-            '<div class="error-message">'+
-            escapeHTML(
-                String(errorMessage)
-            )+
-            '</div>';
-
+        answerHTML='<div class="error-message">'+escapeHTML(String(errorMessage))+'</div>';
     }
+    const statusHTML=ok
+        ?'<div class="status success">نجاح</div>'
+        :'<div class="status error">خطأ</div>';
+    const copyButton=ok&&String(answer).trim()
+        ?'<button class="copy-button" type="button" data-copy-answer="'+encodeURIComponent(String(answer))+'">نسخ</button>'
+        :"";
+    return '<div class="card">'+
+        '<div class="card-header">'+
+            '<div class="provider">'+escapeHTML(provider)+'</div>'+statusHTML+
+        '</div>'+
+        '<div class="answer-area">'+answerHTML+'</div>'+
+        '<div class="card-footer">'+
+            '<div class="model">'+escapeHTML(String(model))+'</div>'+copyButton+
+        '</div>'+
+    '</div>';
+}
 
+function escapeHTML(value){
+    return String(value)
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/\"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+}
 
-    const statusHTML=
-        ok
+results.addEventListener("click",async e=>{
+    const button=e.target.closest("[data-copy-answer]");
+    if(!button)return;
+    let text="";
+    try{
+        text=decodeURIComponent(button.getAttribute("data-copy-answer")||"");
+    }catch{ text=""; }
+    if(!text)return;
+    try{
+        await navigator.clipboard.writeText(text);
+        const oldText=button.textContent;
+        button.textContent="تم النسخ ✓";
+        setTimeout(()=>{button.textContent=oldText;},1500);
+    }catch{
+        const temp=document.createElement("textarea");
+        temp.value=text;
+        temp.style.position="fixed";
+        temp.style.opacity="0";
+        document.body.appendChild(temp);
+        temp.focus();
+        temp.select();
+        try{
+            document.execCommand("copy");
+            button.textContent="تم النسخ ✓";
+            setTimeout(()=>{button.textContent="نسخ";},1500);
+        }catch{
+            alert("تعذر نسخ الإجابة.");
+        }
+        temp.remove();
+    }
+});
+</script>
 
-            ?'<div class="status success">نجاح</div>'
-
-            :'<div class="status error">خطأ</div>';
-
-
-    const copyButton=
-        ok&&String(answer).trim()
-
-            ?'<button '+
-             'class="copy-button" '+
-             'type="button" '+
-             'data-copy-answer="'+
-             encodeURIComponent(
-                 String(answer)
-             )+
-             '">نسخ</button>'
+</body>
+</html>
