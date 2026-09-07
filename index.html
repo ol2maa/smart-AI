@@ -54,19 +54,16 @@ button{border:none;font-family:inherit;font-size:16px;font-weight:800;cursor:poi
 <body>
 <div class="container">
 <div class="header"><div class="logo">اسأل Smart AI</div><div class="subtitle">سؤال واحد — عدة نماذج ذكاء اصطناعي</div></div>
-
 <div class="system-bar">
 <div class="system-top"><div class="system-title">حالة مزودي الذكاء الاصطناعي</div><div id="remaining" class="remaining">الأسئلة المتبقية: —</div></div>
 <div id="providersStatus" class="providers-status"><div class="provider-status"><span class="dot"></span>جاري الفحص...</div></div>
 </div>
-
 <div class="provider-selector">
 <div class="provider-selector-title">اختيار المنصات</div>
 <div class="provider-selector-note">اختر من المنصات المتاحة فقط. يمكنك اختيار منصة واحدة أو أكثر، حتى 3 منصات، أو استخدام الاختيار التلقائي.</div>
 <div id="providerOptions" class="provider-options"></div>
 <div id="providerSelectionCount" class="provider-selection-count">جاري تجهيز قائمة المنصات...</div>
 </div>
-
 <div class="question-box">
 <textarea id="question" maxlength="50000" placeholder="اكتب سؤالك هنا...&#10;اضغط Enter لسطر جديد، واضغط Ctrl+Enter أو ⌘+Enter للإرسال." autocomplete="off"></textarea>
 <div id="imagePreview" class="image-preview">
@@ -84,24 +81,45 @@ button{border:none;font-family:inherit;font-size:16px;font-weight:800;cursor:poi
 <button id="clearButton" class="clear-button" type="button">مسح</button>
 </div>
 </div>
-
 <div id="loading" class="loading">جاري الحصول على الإجابات <span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>
 <div id="results"><div class="empty"><div class="empty-title">مرحبًا بك في Smart AI</div>اكتب سؤالًا واضغط على «اسأل Smart AI»</div></div>
 </div>
-
 <div id="imageLightbox" class="image-lightbox" role="dialog" aria-modal="true">
 <button id="lightboxClose" class="lightbox-close" type="button">×</button>
 <img id="lightboxImage" alt="الصورة بحجم كبير">
 <div class="lightbox-hint">اضغط خارج الصورة أو × للإغلاق</div>
 </div>
-
 <script>
 "use strict";
-
 const API_URL="https://smart-ai.kaka10906.workers.dev/";
 const PROVIDERS=["deepseek","gemini","mistral"];
 const PROVIDER_NAMES={deepseek:"DeepSeek",gemini:"Gemini",mistral:"Mistral"};
-
+const HISTORY_STORAGE_KEY="smartAI_conversationHistory";
+const MAX_HISTORY_TURNS=12;
+const MAX_HISTORY_ITEM_CHARS=6000;
+function loadConversationHistory(){
+    try{
+        const raw=localStorage.getItem(HISTORY_STORAGE_KEY);
+        const parsed=raw?JSON.parse(raw):[];
+        if(!Array.isArray(parsed))return [];
+        return parsed.filter(item=>item&&typeof item.user==="string"&&item.user.trim()&&typeof item.assistant==="string"&&item.assistant.trim()).slice(-MAX_HISTORY_TURNS);
+    }catch{return [];}
+}
+function saveConversationHistory(){
+    try{localStorage.setItem(HISTORY_STORAGE_KEY,JSON.stringify(conversationHistory.slice(-MAX_HISTORY_TURNS)));}catch{}
+}
+function clearConversationHistory(){
+    conversationHistory=[];
+    try{localStorage.removeItem(HISTORY_STORAGE_KEY);}catch{}
+}
+function getHistoryMessages(){
+    const messages=[];
+    conversationHistory.slice(-MAX_HISTORY_TURNS).forEach(turn=>{
+        if(turn?.user)messages.push({role:"user",content:String(turn.user).slice(0,MAX_HISTORY_ITEM_CHARS)});
+        if(turn?.assistant)messages.push({role:"assistant",content:String(turn.assistant).slice(0,MAX_HISTORY_ITEM_CHARS)});
+    });
+    return messages;
+}
 function getUserId(){
     let id=localStorage.getItem("smartAI_userId");
     if(!id){
@@ -111,7 +129,6 @@ function getUserId(){
     return id;
 }
 const USER_ID=getUserId();
-
 const $=id=>document.getElementById(id);
 const questionElement=$("question"),askButton=$("askButton"),clearButton=$("clearButton");
 const imageButton=$("imageButton"),imageInput=$("imageInput"),imagePreview=$("imagePreview");
@@ -119,16 +136,14 @@ const imageGrid=$("imageGrid"),imageCount=$("imageCount"),attachmentCompatibilit
 const imageLightbox=$("imageLightbox"),lightboxImage=$("lightboxImage"),lightboxClose=$("lightboxClose");
 const loading=$("loading"),results=$("results"),providersStatus=$("providersStatus");
 const remainingElement=$("remaining"),providerOptions=$("providerOptions"),providerSelectionCount=$("providerSelectionCount");
-
 let providerStates={};
 let providerSelectionMode="automatic";
 let selectedImages=[];
-
+let conversationHistory=loadConversationHistory();
 document.addEventListener("DOMContentLoaded",()=>{
     loadProviderStatus();
     loadQuota();
 });
-
 async function fetchJSON(url,options={},timeout=12000){
     const controller=new AbortController();
     const timer=setTimeout(()=>controller.abort(),timeout);
@@ -140,7 +155,6 @@ async function fetchJSON(url,options={},timeout=12000){
         return {response,data};
     }finally{clearTimeout(timer);}
 }
-
 async function loadProviderStatus(){
     providersStatus.innerHTML='<div class="provider-status"><span class="dot"></span>جاري الفحص...</div>';
     try{
@@ -161,11 +175,9 @@ async function loadProviderStatus(){
         renderProviderOptions();
     }
 }
-
 function getAvailableProviders(){
     return PROVIDERS.filter(name=>providerStates[name]==="available");
 }
-
 function getSelectedProviders(){
     if(providerSelectionMode==="automatic")return null;
     return PROVIDERS.filter(name=>{
@@ -173,7 +185,6 @@ function getSelectedProviders(){
         return el&&el.checked;
     });
 }
-
 function updateProviderSelectionInfo(){
     if(providerSelectionMode==="automatic"){
         providerSelectionCount.className="provider-selection-count";
@@ -181,29 +192,21 @@ function updateProviderSelectionInfo(){
         updateAttachmentCompatibility();
         return;
     }
-
     const selected=getSelectedProviders()||[];
-
     providerSelectionCount.className="provider-selection-count"+((selected.length<1||selected.length>3)?" error":"");
-
     providerSelectionCount.textContent=
         selected.length===0
         ?"اختر منصة واحدة على الأقل، أو اختر «تلقائي»."
         :"تم اختيار "+selected.length+" من "+PROVIDERS.length+" منصات.";
-
     updateAttachmentCompatibility();
 }
-
 function renderProviderOptions(){
     providerOptions.innerHTML="";
-
     const auto=document.createElement("div");
     auto.className="provider-option";
     auto.innerHTML='<input type="radio" name="providerSelection" id="providerAutomatic" '+(providerSelectionMode==="automatic"?"checked":"")+'><label class="provider-label" for="providerAutomatic"><div class="provider-name">تلقائي</div><div class="provider-state">Smart AI تختار</div></label>';
     providerOptions.appendChild(auto);
-
     const automatic=$("providerAutomatic");
-
     automatic.addEventListener("change",()=>{
         if(!automatic.checked)return;
         providerSelectionMode="automatic";
@@ -213,68 +216,51 @@ function renderProviderOptions(){
         });
         updateProviderSelectionInfo();
     });
-
     const available=getAvailableProviders();
-
     available.forEach(name=>{
         const wrapper=document.createElement("div");
         wrapper.className="provider-option";
         const id="provider-"+name;
-
         wrapper.innerHTML='<input type="checkbox" id="'+id+'" value="'+name+'"><label class="provider-label" for="'+id+'"><div class="provider-name">'+PROVIDER_NAMES[name]+'</div><div class="provider-state available">متاح</div></label>';
-
         providerOptions.appendChild(wrapper);
-
         $(id).addEventListener("change",function(){
             if(this.checked){
                 providerSelectionMode="manual";
-
                 const selected=getSelectedProviders()||[];
-
                 if(selected.length>3){
                     this.checked=false;
                     alert("يمكنك اختيار 3 منصات كحد أقصى.");
                     return;
                 }
-
                 automatic.checked=false;
             }
-
             updateProviderSelectionInfo();
         });
     });
-
     if(available.length===0){
         const message=document.createElement("div");
         message.className="provider-selection-info";
         message.textContent="لا توجد منصة متاحة حاليًا للاختيار اليدوي. يمكنك استخدام «تلقائي» وسيختار Worker المنصات المتاحة.";
         providerOptions.appendChild(message);
     }
-
     updateProviderSelectionInfo();
 }
-
 async function loadQuota(){
     try{
         const {response,data}=await fetchJSON(API_URL+"quota?userId="+encodeURIComponent(USER_ID));
         if(response.ok)updateRemaining(data);
     }catch{}
 }
-
 function displayProviderStatus(data){
     const providers=data?.status?.providers||data?.providers||{};
     providersStatus.innerHTML="";
     let found=false;
-
     PROVIDERS.forEach(name=>{
         if(providers[name]===undefined)return;
-
         found=true;
         const info=providers[name];
         const normalized=String(typeof info==="string"?info:(info?.status||"unknown")).toLowerCase();
-
         let label="غير معروف",cls="";
-
         if(normalized==="available"){
             label="متاح";
             cls="available";
@@ -287,15 +273,12 @@ function displayProviderStatus(data){
             label="غير متاح";
             cls="unavailable";
         }
-
         providersStatus.innerHTML+='<div class="provider-status '+cls+'"><span class="dot"></span>'+PROVIDER_NAMES[name]+": "+label+"</div>";
     });
-
     if(!found){
         providersStatus.innerHTML='<div class="provider-status"><span class="dot"></span>لم تصل حالة المزودين</div>';
     }
 }
-
 function updateRemaining(data){
     const value=[
         data?.remaining,
@@ -307,60 +290,46 @@ function updateRemaining(data){
         data?.user?.questionsRemaining,
         data?.summary?.remaining
     ].find(v=>v!==undefined&&v!==null);
-
     if(value!==undefined){
         remainingElement.textContent="الأسئلة المتبقية: "+value;
     }
 }
-
 const MAX_IMAGES_PER_MESSAGE=4;
 const MAX_IMAGE_SIZE_BYTES=12*1024*1024;
-
 imageButton.addEventListener("click",()=>imageInput.click());
-
 imageInput.addEventListener("change",async()=>{
     const files=Array.from(imageInput.files||[]);
     if(!files.length)return;
-
     const availableSlots=MAX_IMAGES_PER_MESSAGE-selectedImages.length;
-
     if(availableSlots<=0){
         imageInput.value="";
         alert("يمكنك إرفاق 4 صور كحد أقصى في الرسالة الواحدة.");
         return;
     }
-
     const accepted=files.slice(0,availableSlots);
-
     if(files.length>availableSlots){
         alert("يمكنك إرفاق 4 صور كحد أقصى في الرسالة الواحدة.");
     }
-
     for(const file of accepted){
         if(!file.type.startsWith("image/")){
             alert("تم تجاهل ملف ليس صورة: "+(file.name||"ملف"));
             continue;
         }
-
         if(file.size>MAX_IMAGE_SIZE_BYTES){
             alert("تم تجاهل الصورة الكبيرة جدًا: "+(file.name||"صورة")+". الحد الأقصى 12 MB للصورة.");
             continue;
         }
-
         selectedImages.push({
             id:(crypto.randomUUID?crypto.randomUUID():String(Date.now())+"_"+Math.random()),
             file:file,
             url:URL.createObjectURL(file)
         });
     }
-
     renderSelectedImages();
     imageInput.value="";
 });
-
 function renderSelectedImages(){
     imageGrid.innerHTML="";
-
     if(selectedImages.length===0){
         imagePreview.classList.remove("show");
         imageCount.textContent="";
@@ -368,25 +337,20 @@ function renderSelectedImages(){
         attachmentCompatibility.className="attachment-compatibility";
         return;
     }
-
     imagePreview.classList.add("show");
     imageCount.textContent="الصور المرفقة: "+selectedImages.length+" من "+MAX_IMAGES_PER_MESSAGE;
     updateAttachmentCompatibility();
-
     selectedImages.forEach((item,index)=>{
         const wrapper=document.createElement("div");
         wrapper.className="image-item";
-
         const img=document.createElement("img");
         img.src=item.url;
         img.alt=item.file.name||("الصورة "+(index+1));
-
         img.addEventListener("click",()=>{
             lightboxImage.src=item.url;
             imageLightbox.classList.add("show");
             document.body.style.overflow="hidden";
         });
-
         const remove=document.createElement("button");
         remove.type="button";
         remove.className="image-item-remove";
@@ -396,185 +360,145 @@ function renderSelectedImages(){
             e.stopPropagation();
             removeSelectedImageAt(index);
         });
-
         wrapper.appendChild(img);
         wrapper.appendChild(remove);
         imageGrid.appendChild(wrapper);
     });
 }
-
 function removeSelectedImageAt(index){
     const item=selectedImages[index];
-
     if(item?.url){
         URL.revokeObjectURL(item.url);
     }
-
     selectedImages.splice(index,1);
     renderSelectedImages();
     closeImageLightbox();
 }
-
 removeImageButton.addEventListener("click",removeAllImages);
-
 function removeAllImages(){
     selectedImages.forEach(item=>{
         if(item?.url)URL.revokeObjectURL(item.url);
     });
-
     selectedImages=[];
     imageInput.value="";
     renderSelectedImages();
     closeImageLightbox();
 }
-
 function updateAttachmentCompatibility(){
     if(selectedImages.length===0)return;
-
     const targets=
         providerSelectionMode==="manual"
         ?getSelectedProviders()||[]
         :getAvailableProviders();
-
     if(!targets.length){
         attachmentCompatibility.textContent="⚠️ لا توجد منصة متاحة حاليًا لمعالجة الصور.";
         attachmentCompatibility.className="attachment-compatibility error";
         return;
     }
-
     attachmentCompatibility.textContent=
         "✓ الصور متوافقة مع المنصات المختارة: "+
         targets.map(name=>PROVIDER_NAMES[name]).join(" و ");
-
     attachmentCompatibility.className="attachment-compatibility";
 }
-
 function fileToDataURL(file){
     return new Promise((resolve,reject)=>{
         const reader=new FileReader();
-
         reader.onload=e=>resolve(e.target.result);
         reader.onerror=()=>reject(new Error("تعذر قراءة الصورة."));
-
         reader.readAsDataURL(file);
     });
 }
-
 function closeImageLightbox(){
     imageLightbox.classList.remove("show");
     lightboxImage.removeAttribute("src");
     document.body.style.overflow="";
 }
-
 lightboxClose.addEventListener("click",closeImageLightbox);
-
 imageLightbox.addEventListener("click",e=>{
     if(e.target===imageLightbox)closeImageLightbox();
 });
-
 document.addEventListener("keydown",e=>{
     if(e.key==="Escape"&&imageLightbox.classList.contains("show")){
         closeImageLightbox();
     }
 });
-
 askButton.addEventListener("click",askSmartAI);
-
 clearButton.addEventListener("click",()=>{
     questionElement.value="";
     removeAllImages();
-
+    clearConversationHistory();
     results.innerHTML='<div class="empty"><div class="empty-title">مرحبًا بك في Smart AI</div>اكتب سؤالًا واضغط على «اسأل Smart AI»</div>';
-
     questionElement.focus();
 });
-
 questionElement.addEventListener("keydown",e=>{
     if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){
         e.preventDefault();
         askSmartAI();
     }
 });
-
 async function askSmartAI(){
     const question=questionElement.value.trim();
-
     if(!question){
         alert("اكتب السؤال أولًا.");
         questionElement.focus();
         return;
     }
-
     const selected=getSelectedProviders();
-
     if(providerSelectionMode==="manual"&&(!selected||selected.length<1)){
         alert("اختر منصة واحدة على الأقل، أو اختر «تلقائي».");
         return;
     }
-
     if(providerSelectionMode==="manual"&&selected.length>3){
         alert("يمكنك اختيار 3 منصات كحد أقصى.");
         return;
     }
-
     if(selectedImages.length>MAX_IMAGES_PER_MESSAGE){
         alert("يمكنك إرفاق 4 صور كحد أقصى في الرسالة الواحدة.");
         return;
     }
-
     if(selectedImages.length>0){
         updateAttachmentCompatibility();
-
         const targets=
             providerSelectionMode==="manual"
             ?selected
             :getAvailableProviders();
-
         if(!targets.length){
             alert("لا توجد منصة متاحة حاليًا لمعالجة الصور.");
             return;
         }
     }
-
     askButton.disabled=imageButton.disabled=clearButton.disabled=true;
     askButton.textContent="جاري السؤال...";
     loading.classList.add("show");
-
     const loadingProviders=
         providerSelectionMode==="manual"
         ?selected
         :getAvailableProviders();
-
     results.innerHTML=(
         loadingProviders.length
         ?loadingProviders.map(n=>createLoadingCard(PROVIDER_NAMES[n])).join("")
         :createLoadingCard("Smart AI")
     );
-
     const start=performance.now();
-
     try{
         const imagePayloads=await Promise.all(
             selectedImages.map(async item=>{
                 const data=await fileToDataURL(item.file);
-
                 return {
                     data,
                     mimeType:item.file.type||"image/jpeg"
                 };
             })
         );
-
         const body={
             userId:USER_ID,
             question,
+            history:getHistoryMessages(),
             images:imagePayloads
         };
-
         if(providerSelectionMode==="manual"){
             body.providers=selected;
         }
-
         const {response,data}=await fetchJSON(
             API_URL,
             {
@@ -584,7 +508,6 @@ async function askSmartAI(){
             },
             120000
         );
-
         if(!response.ok){
             throw new Error(
                 data?.error||
@@ -592,15 +515,12 @@ async function askSmartAI(){
                 "حدث خطأ في الاتصال."
             );
         }
-
         const elapsed=((performance.now()-start)/1000).toFixed(2);
-
         updateRemaining(data);
         displayResults(data,elapsed);
+        saveSuccessfulConversationTurn(question,data);
         loadProviderStatus();
-
     }catch(error){
-
         results.innerHTML=
             '<div class="empty">'+
             '<div class="empty-title">تعذر الحصول على الإجابة</div>'+
@@ -610,130 +530,82 @@ async function askSmartAI(){
                 :error?.message||"حدث خطأ غير معروف."
             )+
             '</div>';
-
     }finally{
-
         askButton.disabled=imageButton.disabled=clearButton.disabled=false;
         askButton.textContent="اسأل Smart AI";
         loading.classList.remove("show");
     }
 }
-
+function saveSuccessfulConversationTurn(question,data){
+    const r=data?.results||{};
+    const selected=Array.isArray(data?.selected_providers)?data.selected_providers:[];
+    const preferred=[...selected,...PROVIDERS.filter(name=>!selected.includes(name))];
+    let answer="";
+    for(const name of preferred){
+        const result=r[name];
+        if(result?.ok===true&&typeof result.answer==="string"&&result.answer.trim()){
+            answer=result.answer.trim();
+            break;
+        }
+    }
+    if(!answer)return;
+    conversationHistory.push({user:String(question).slice(0,MAX_HISTORY_ITEM_CHARS),assistant:answer.slice(0,MAX_HISTORY_ITEM_CHARS)});
+    conversationHistory=conversationHistory.slice(-MAX_HISTORY_TURNS);
+    saveConversationHistory();
+}
 function createLoadingCard(provider){
     return '<div class="card"><div class="card-header"><div class="provider">'+escapeHTML(provider)+'</div><div class="status">جاري...</div></div><div class="answer-area"><div class="answer">جاري انتظار الإجابة...</div></div></div>';
 }
-
 function displayResults(data,elapsed){
     const r=data?.results||{};
     let cards="";
-
     PROVIDERS.forEach(name=>{
         if(r[name]){
             cards+=createProviderCard(PROVIDER_NAMES[name],r[name]);
         }
     });
-
     const successful=
         data?.summary?.successful??
         countSuccessful(r);
-
     const total=
         data?.summary?.total??
         countReturned(r);
-
     if(!cards){
         cards='<div class="empty"><div class="empty-title">لم تصل أَي إجابة</div>حاول مرة أخرى لاحقًا.</div>';
     }
-
     cards+=
         '<div class="summary">'+
         'تم الحصول على <strong>'+successful+
         '</strong> من <strong>'+total+
         '</strong> إجابات — زمن الطلب: <strong>'+
         elapsed+'</strong> ثانية</div>';
-
     results.innerHTML=cards;
 }
-
 function countSuccessful(r){
     return Object.values(r).filter(x=>x&&x.ok===true).length;
 }
-
 function countReturned(r){
     return Object.values(r).filter(x=>x!==null&&x!==undefined).length;
 }
-
 function createProviderCard(provider,result){
     const ok=result?.ok===true;
-
     const answer=
         result?.answer??
         result?.response??
         result?.text??
         result?.message??
         "";
-
     const error=
         result?.error??
         result?.message??
         "تعذر الحصول على إجابة.";
-
     const model=
         result?.model??
         result?.modelName??
         "";
-
     const safeAnswer=escapeHTML(String(answer));
-
     return '<div class="card">'+
         '<div class="card-header">'+
         '<div class="provider">'+escapeHTML(provider)+'</div>'+
         '<div class="status '+(ok?"success":"error")+'">'+
-        (ok?"نجح":"فشل")+
-        '</div></div>'+
-        '<div class="answer-area">'+
         (ok
-            ?'<div class="answer">'+safeAnswer+'</div>'
-            :'<div class="error-message">'+escapeHTML(String(error))+'</div>'
-        )+
-        '</div>'+
-        '<div class="card-footer">'+
-        (ok
-            ?'<button class="copy-button" type="button" onclick="copyAnswer(this)">نسخ</button>'
-            :"<span></span>"
-        )+
-        '<div class="model">'+escapeHTML(String(model))+'</div>'+
-        '</div></div>';
-}
-
-async function copyAnswer(button){
-    const card=button.closest(".card");
-    const answer=card?.querySelector(".answer")?.innerText||"";
-
-    if(!answer)return;
-
-    try{
-        await navigator.clipboard.writeText(answer);
-        button.textContent="تم النسخ";
-        setTimeout(()=>button.textContent="نسخ",1200);
-    }
-    catch{
-        alert("تعذر نسخ الإجابة.");
-    }
-}
-
-function escapeHTML(value){
-    return String(value).replace(
-        /[&<>"']/g,
-        c=>({
-            "&":"&amp;",
-            "<":"&lt;",
-            ">":"&gt;",
-            '"':"&quot;",
-            "'":"&#039;"
-        }[c])
-    );
-}
-</script>
-</body>
-</html>
