@@ -140,10 +140,15 @@ let providerStates={};
 let providerSelectionMode="automatic";
 let selectedImages=[];
 let conversationHistory=loadConversationHistory();
-document.addEventListener("DOMContentLoaded",()=>{
+function initializeSmartAI(){
     loadProviderStatus();
     loadQuota();
-});
+}
+if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",initializeSmartAI,{once:true});
+}else{
+    initializeSmartAI();
+}
 async function fetchJSON(url,options={},timeout=12000){
     const controller=new AbortController();
     const timer=setTimeout(()=>controller.abort(),timeout);
@@ -171,7 +176,7 @@ async function loadProviderStatus(){
     }catch(error){
         providerStates={};
         PROVIDERS.forEach(name=>providerStates[name]="unknown");
-        providersStatus.innerHTML='<div class="provider-status error"><span class="dot"></span>تعذر قراءة حالة المزودين</div>';
+        providersStatus.innerHTML=PROVIDERS.map(name=>'<div class="provider-status"><span class="dot"></span>'+PROVIDER_NAMES[name]+': غير معروف</div>').join("");
         renderProviderOptions();
     }
 }
@@ -216,31 +221,45 @@ function renderProviderOptions(){
         });
         updateProviderSelectionInfo();
     });
-    const available=getAvailableProviders();
-    available.forEach(name=>{
+    PROVIDERS.forEach(name=>{
+        const state=providerStates[name]||"unknown";
+        const isAvailable=state==="available";
         const wrapper=document.createElement("div");
         wrapper.className="provider-option";
         const id="provider-"+name;
-        wrapper.innerHTML='<input type="checkbox" id="'+id+'" value="'+name+'"><label class="provider-label" for="'+id+'"><div class="provider-name">'+PROVIDER_NAMES[name]+'</div><div class="provider-state available">متاح</div></label>';
+        let label="غير معروف";
+        let stateClass="";
+        if(state==="available"){
+            label="متاح";
+            stateClass="available";
+        }else if(state==="limited"){
+            label="محدود";
+            stateClass="limited";
+        }else if(state==="unavailable"||state==="error"){
+            label="غير متاح";
+            stateClass="unavailable";
+        }
+        wrapper.innerHTML='<input type="checkbox" id="'+id+'" value="'+name+'" '+(!isAvailable?"disabled":"")+'><label class="provider-label" for="'+id+'"><div class="provider-name">'+PROVIDER_NAMES[name]+'</div><div class="provider-state '+stateClass+'">'+label+'</div></label>';
         providerOptions.appendChild(wrapper);
-        $(id).addEventListener("change",function(){
-            if(this.checked){
-                providerSelectionMode="manual";
-                const selected=getSelectedProviders()||[];
-                if(selected.length>3){
-                    this.checked=false;
-                    alert("يمكنك اختيار 3 منصات كحد أقصى.");
-                    return;
-                }
-                automatic.checked=false;
+        const checkbox=$(id);
+        checkbox.addEventListener("change",function(){
+            if(!this.checked)return;
+            providerSelectionMode="manual";
+            const selected=getSelectedProviders()||[];
+            if(selected.length>3){
+                this.checked=false;
+                alert("يمكنك اختيار 3 منصات كحد أقصى.");
+                return;
             }
+            automatic.checked=false;
             updateProviderSelectionInfo();
         });
     });
+    const available=getAvailableProviders();
     if(available.length===0){
         const message=document.createElement("div");
         message.className="provider-selection-info";
-        message.textContent="لا توجد منصة متاحة حاليًا للاختيار اليدوي. يمكنك استخدام «تلقائي» وسيختار Worker المنصات المتاحة.";
+        message.textContent="لا توجد منصة مؤكدة كمتاحة حاليًا للاختيار اليدوي. يمكنك استخدام «تلقائي» وسيحاول Worker اختيار المنصات المناسبة.";
         providerOptions.appendChild(message);
     }
     updateProviderSelectionInfo();
@@ -254,30 +273,27 @@ async function loadQuota(){
 function displayProviderStatus(data){
     const providers=data?.status?.providers||data?.providers||{};
     providersStatus.innerHTML="";
-    let found=false;
     PROVIDERS.forEach(name=>{
-        if(providers[name]===undefined)return;
-        found=true;
         const info=providers[name];
-        const normalized=String(typeof info==="string"?info:(info?.status||"unknown")).toLowerCase();
-        let label="غير معروف",cls="";
+        const normalized=String(
+            typeof info==="string"
+                ?info
+                :(info?.status||providerStates[name]||"unknown")
+        ).toLowerCase();
+        let label="غير معروف";
+        let cls="";
         if(normalized==="available"){
             label="متاح";
             cls="available";
-        }
-        else if(normalized==="limited"){
+        }else if(normalized==="limited"){
             label="محدود";
             cls="limited";
-        }
-        else if(normalized==="unavailable"||normalized==="error"){
+        }else if(normalized==="unavailable"||normalized==="error"){
             label="غير متاح";
             cls="unavailable";
         }
         providersStatus.innerHTML+='<div class="provider-status '+cls+'"><span class="dot"></span>'+PROVIDER_NAMES[name]+": "+label+"</div>";
     });
-    if(!found){
-        providersStatus.innerHTML='<div class="provider-status"><span class="dot"></span>لم تصل حالة المزودين</div>';
-    }
 }
 function updateRemaining(data){
     const value=[
@@ -591,21 +607,4 @@ function createProviderCard(provider,result){
     const ok=result?.ok===true;
     const answer=
         result?.answer??
-        result?.response??
-        result?.text??
-        result?.message??
-        "";
-    const error=
-        result?.error??
-        result?.message??
-        "تعذر الحصول على إجابة.";
-    const model=
-        result?.model??
-        result?.modelName??
-        "";
-    const safeAnswer=escapeHTML(String(answer));
-    return '<div class="card">'+
-        '<div class="card-header">'+
-        '<div class="provider">'+escapeHTML(provider)+'</div>'+
-        '<div class="status '+(ok?"success":"error")+'">'+
-        (ok
+        result?.response
